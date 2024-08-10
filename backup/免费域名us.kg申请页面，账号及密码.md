@@ -1,0 +1,12 @@
+1.申请页面：https://register.us.kg/panel/main
+2.账号：qq别名邮箱
+3.密码：大小写姓生日年份生日年份
+4.该账号下已申请3个免费域名
+   yuyf.us.kg
+   yuqy.us.kg 
+   yusy.us.kg
+5.另一账号：网易邮箱名同qq别名邮箱账号
+6.另一密码：同上
+7.另一账号已申请1个免费域名
+   mafl.us.kg
+8.前一账号三个域名已托管至cloudflare，设置dns即可用。
