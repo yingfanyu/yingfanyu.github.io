@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.kaihe.work</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.kaihe.work</link></image><lastBuildDate>Mon, 12 Aug 2024 02:10:28 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>TCL语言UG后处理中不重复的刀具清单列表获取方式</title><link>https://bk.kaihe.work/post/TCL-yu-yan-UG-hou-chu-li-zhong-bu-zhong-fu-de-dao-ju-qing-dan-lie-biao-huo-qu-fang-shi.html</link><description>.在程序头，非中间循环过程建立一个空列表&#13;
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.kaihe.work</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.kaihe.work</link></image><lastBuildDate>Mon, 12 Aug 2024 04:56:49 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>TCL语言UG后处理中不重复的刀具清单列表获取方式</title><link>https://bk.kaihe.work/post/TCL-yu-yan-UG-hou-chu-li-zhong-bu-zhong-fu-de-dao-ju-qing-dan-lie-biao-huo-qu-fang-shi.html</link><description>.在程序头，非中间循环过程建立一个空列表&#13;
 &#13;
 global toollist&#13;
 &#13;
@@ -45,18 +45,7 @@ set tooln [expr $tooln+1]                                                       
 &#13;
 使用MATCH()函数，从导入的表格中提取拆分后字符在字典中的行号，MATCH(K$1,$A:$A,0)，意思就是K1单元格中的内容在A列所有数据中的行号&#13;
 &#13;
-使用INDIRECT()函数，获取F列所在行号的16进制编码。</description><guid isPermaLink="true">https://bk.kaihe.work/post/FANUC-hong-cheng-xu-PMC-bao-jing-zhong-wen-zhuan-16-jin-zhi-bian-ma-ji-suan-yuan-li.html</guid><pubDate>Mon, 12 Aug 2024 01:47:13 +0000</pubDate></item><item><title>教员在《毛选》中，告诉我们的10个做事方法。</title><link>https://bk.kaihe.work/post/jiao-yuan-zai-%E3%80%8A-mao-xuan-%E3%80%8B-zhong-%EF%BC%8C-gao-su-wo-men-de-10-ge-zuo-shi-fang-fa-%E3%80%82.html</link><description>1，要善于对事物进行划分和归类。</description><guid isPermaLink="true">https://bk.kaihe.work/post/jiao-yuan-zai-%E3%80%8A-mao-xuan-%E3%80%8B-zhong-%EF%BC%8C-gao-su-wo-men-de-10-ge-zuo-shi-fang-fa-%E3%80%82.html</guid><pubDate>Sat, 10 Aug 2024 03:21:07 +0000</pubDate></item><item><title>免费域名us.kg申请页面，账号及密码</title><link>https://bk.kaihe.work/post/mian-fei-yu-ming-us.kg-shen-qing-ye-mian-%EF%BC%8C-zhang-hao-ji-mi-ma.html</link><description>1.申请页面：https://register.us.kg/panel/main&#13;
-2.账号：qq别名邮箱&#13;
-3.密码：大小写姓生日年份生日年份&#13;
-4.该账号下已申请3个免费域名&#13;
-   yuyf.us.kg&#13;
-   yuqy.us.kg &#13;
-   yusy.us.kg&#13;
-5.另一账号：网易邮箱名同qq别名邮箱账号&#13;
-6.另一密码：同上&#13;
-7.另一账号已申请1个免费域名&#13;
-   mafl.us.kg&#13;
-8.前一账号三个域名已托管至cloudflare，设置dns即可用。</description><guid isPermaLink="true">https://bk.kaihe.work/post/mian-fei-yu-ming-us.kg-shen-qing-ye-mian-%EF%BC%8C-zhang-hao-ji-mi-ma.html</guid><pubDate>Sat, 10 Aug 2024 03:17:55 +0000</pubDate></item><item><title>端驱动双顶尖车削切深进给原则</title><link>https://bk.kaihe.work/post/duan-qu-dong-shuang-ding-jian-che-xue-qie-shen-jin-gei-yuan-ze.html</link><description>1.车间报告端驱动双顶尖车削时端驱动易损坏。</description><guid isPermaLink="true">https://bk.kaihe.work/post/duan-qu-dong-shuang-ding-jian-che-xue-qie-shen-jin-gei-yuan-ze.html</guid><pubDate>Sat, 10 Aug 2024 01:03:24 +0000</pubDate></item><item><title>动作行为调理内脏</title><link>https://bk.kaihe.work/post/dong-zuo-xing-wei-diao-li-nei-zang.html</link><description>1. 强肝，怎么做最好？当然是——徒步！&#13;
+使用INDIRECT()函数，获取F列所在行号的16进制编码。</description><guid isPermaLink="true">https://bk.kaihe.work/post/FANUC-hong-cheng-xu-PMC-bao-jing-zhong-wen-zhuan-16-jin-zhi-bian-ma-ji-suan-yuan-li.html</guid><pubDate>Mon, 12 Aug 2024 01:47:13 +0000</pubDate></item><item><title>教员在《毛选》中，告诉我们的10个做事方法。</title><link>https://bk.kaihe.work/post/jiao-yuan-zai-%E3%80%8A-mao-xuan-%E3%80%8B-zhong-%EF%BC%8C-gao-su-wo-men-de-10-ge-zuo-shi-fang-fa-%E3%80%82.html</link><description>1，要善于对事物进行划分和归类。</description><guid isPermaLink="true">https://bk.kaihe.work/post/jiao-yuan-zai-%E3%80%8A-mao-xuan-%E3%80%8B-zhong-%EF%BC%8C-gao-su-wo-men-de-10-ge-zuo-shi-fang-fa-%E3%80%82.html</guid><pubDate>Sat, 10 Aug 2024 03:21:07 +0000</pubDate></item><item><title>端驱动双顶尖车削切深进给原则</title><link>https://bk.kaihe.work/post/duan-qu-dong-shuang-ding-jian-che-xue-qie-shen-jin-gei-yuan-ze.html</link><description>1.车间报告端驱动双顶尖车削时端驱动易损坏。</description><guid isPermaLink="true">https://bk.kaihe.work/post/duan-qu-dong-shuang-ding-jian-che-xue-qie-shen-jin-gei-yuan-ze.html</guid><pubDate>Sat, 10 Aug 2024 01:03:24 +0000</pubDate></item><item><title>动作行为调理内脏</title><link>https://bk.kaihe.work/post/dong-zuo-xing-wei-diao-li-nei-zang.html</link><description>1. 强肝，怎么做最好？当然是——徒步！&#13;
 &#13;
 2. 强肺，最佳选择是什么呢？当然就是——慢跑啦！&#13;
 &#13;
