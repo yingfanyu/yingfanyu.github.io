@@ -6,7 +6,7 @@
         2.stun穿透设置如下：
           ①启用stun穿透模块
           ②开启全局stun穿透模块webhook
-          ③接口地址：http://iyuu.cn/IYUU40841Tcbbb500627e9227241c151ee0e4b23b2c483ce10.send?text=映射线路：#{ruleName}&desp=IP端口：#{ipAddr}        .sen前面部分为爱语飞飞的token
+          ③接口地址：http://iyuu.cn/IYUU4**********************************c483ce10.send?text=映射线路：#{ruleName}&desp=IP端口：#{ipAddr}        .sen前面部分为爱语飞飞的token
           ④webhook手动触发测试，此时微信爱语飞飞账号会推送虚拟的IP和端口号码
         3.添加穿透规则：
           ①规则名称：自定义即可
