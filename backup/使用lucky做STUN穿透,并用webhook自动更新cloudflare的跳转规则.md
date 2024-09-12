@@ -1,4 +1,6 @@
-    现状：家中有一条移动宽带，是个大内网，光猫做桥接，ikuai路由器拨号，网络类型设置为NAT1。没有办法获取公网ipv4地址，虽然可以获取公网ipv6地址，但是在绝大多数的环境下并没有ipv6的上网环境，所以无法直连家中设备。如果需要连家中设备的时候需要使用frp做中转，frp服务端也是必须有公网ipv4地址才行，所以适应性受限。
+    现状：家中有一条移动宽带，是个大内网，光猫做桥接，ikuai路由器拨号，网络类型设置为NAT1。没有办法获取公网ipv4
+地址，虽然可以获取公网ipv6地址，但是在绝大多数的环境下并没有ipv6的上网环境，所以无法直连家中设备。如果需要连家
+中设备的时候需要使用frp做中转，frp服务端也是必须有公网ipv4地址才行，所以适应性受限。
    解决方案：1.移动宽带是NAT1（full cone）类型网络，可以使用lucky在公网ip+端口号1的方式来访问映射到内网IP+端口号2的服务，而且网速不受限。缺点是内网ip和端口固定，但是外网的ip和端口经常发生变化，需要及时知道公网ip和端口号。
 2.鉴于以上原因采用cloudflare的跳转规则来达到访问固定域名，然后跳转到stun穿透后的公网ip（或者DDNS后域名）和端口号的方式，这样就不需要知道具体的公网ip和端口号。而公网ip和端口号可以通过webhook和cloudflare的api接口实时更新到已经建立的跳转规则。
    具体步骤：
@@ -32,19 +34,19 @@ Content-Type: application/json ，注意把文本2记录的令牌替换掉连接
             9.请求方法：patch    请求头：跟计划任务的一样  
             10.请求体如下：
 {
-  "description": "stun-redirect-nas",                   “”内的为跳转规则名称
- "expression": "(http.host eq \"nas.yusy.us.kg\")",           nas.yusy.us.kg为跳转时用的网址
+  "description": "stun-redirect-nas",                   **_“”内的为跳转规则名称_**
+ "expression": "(http.host eq \"nas.yusy.us.kg\")",           **_nas.yusy.us.kg为跳转时用的网址_**
   "action": "redirect",
   "action_parameters": {
     "from_value": {
       "status_code": 302,
       "target_url": {
         "expression": "wildcard_replace(http.request.full_uri, \"*://*.yusy.us.kg/*\", \"http://#{ip}:#{port}/${3}\")" 
-      },                                                               如果用https，改此处，#{ip}表示穿透后的公网ip  #{port}表示穿透后的公网端口           
+      },                                                               **_如果用https，改此处，#{ip}表示穿透后的公网ip  #{port}表示穿透后的公网端口_**           
       "preserve_query_string": true
     }
   }
 } 
-                   注意：复制的时候去除注释部分
+                   注意：复制的时候去除粗斜体注释部分
               11.接口调用成功包含的字符串："success": true，然后保存
               12.如此，当移动宽带重启后或重拨或移动更改ip地址端口后可以自动更新cloudflare的重定向规则，当我们访问在cloudflare托管的访问网址的时候，可以重定向到穿透后的ip+端口的网址。
