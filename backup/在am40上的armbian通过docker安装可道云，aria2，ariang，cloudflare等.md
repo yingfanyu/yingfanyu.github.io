@@ -20,12 +20,6 @@ local_ip = 192.168.95.102
 local_port = 22
 remote_port = 5222
 
-
-
-sudo dpkg -i cloudflared.deb && 
-
-sudo cloudflared service install eyJhIjoiN2RhYTFjODZlZDRiZTkxZmVmZmZjYTlmNGYxYTIzZTQiLCJ0IjoiMzRhYjRlNzYtN2Y4OS00NDY1LWExOTMtODE0ZDhiMTZmY2Y1IiwicyI6IlkyVTVOVFkwTWpjdE9UZG1ZUzAwTjJZNUxXSmlZVEV0T1dZeFlXTXlZekppWVdVeCJ9
-
 docker run -d --restart=always \
   --name aria2-pro \
   -p 6800:6800 \
