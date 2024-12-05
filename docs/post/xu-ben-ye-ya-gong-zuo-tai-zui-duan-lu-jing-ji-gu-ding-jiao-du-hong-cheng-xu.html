@@ -10,9 +10,9 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="###本宏程序分为计算部分O9001,执行部分O9002两部分，适用于广数系统，理论上fanuc系统也相同。">
+<meta name="description" content="###本宏程序分为计算部分O9001,执行部分O9002两部分，如果需要使用坐标跟随还有坐标跟随部分O9003 .适用于广数系统，理论上fanuc系统也相同。">
 <meta property="og:title" content="旭本液压工作台最短路径及固定角度宏程序">
-<meta property="og:description" content="###本宏程序分为计算部分O9001,执行部分O9002两部分，适用于广数系统，理论上fanuc系统也相同。">
+<meta property="og:description" content="###本宏程序分为计算部分O9001,执行部分O9002两部分，如果需要使用坐标跟随还有坐标跟随部分O9003 .适用于广数系统，理论上fanuc系统也相同。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://bk.kaihe.work/post/xu-ben-ye-ya-gong-zuo-tai-zui-duan-lu-jing-ji-gu-ding-jiao-du-hong-cheng-xu.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
@@ -73,7 +73,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><p>###本宏程序分为计算部分O9001,执行部分O9002两部分，适用于广数系统，理论上fanuc系统也相同。执行的时候使用G65P9001F90(定位角度，F必须是介于-360到+360之间能被90整除的角度，液压转台每一次旋转只能转90°)<br>
+<div class="markdown-body" id="postBody"><p>###本宏程序分为计算部分O9001,执行部分O9002两部分，如果需要使用坐标跟随还有坐标跟随部分O9003 .适用于广数系统，理论上fanuc系统也相同。执行的时候使用G65P9001F90，需要坐标跟随后面再跟上G65P9003(定位角度，F必须是介于-360到+360之间能被90整除的角度，液压转台每一次旋转只能转90°)<br>
 #O9001内容如下：<br>
 O09001;<br>
 #4=FIX[#9/90];  (输入角度/90，下取整整数)<br>
@@ -132,7 +132,21 @@ G04X0.5;   (暂停0.5秒)<br>
 #17=FIX[#801/360];       (计算当前角度需减次数下取整)<br>
 #801=#801-#17*360;    (更新当前角度到±360)<br>
 M99;       (返回上级程序)<br>
-<a href="https://github.com/user-attachments/files/18004930/default.zip">旭本液压转台宏程序.zip</a></p></div>
+<a href="https://github.com/user-attachments/files/18004930/default.zip">旭本液压转台宏程序.zip</a></p>
+<p>#9003内容如下：<br>
+O9003<br>
+(ROT_CENTER_X_G54P1X_#7246)    (B轴旋转中心设置在G54P50的坐标系中X)<br>
+(ROT_CENTER_Z_G54P1Z_#7248)    (B轴旋转中心设置在G54P50的坐标系中Z)<br>
+(B0_OFFSET_G55X_#5211)               (B0时的坐标系设置在G55中X)<br>
+(B0_OFFSET_G55Z_#5213)               (B0时的坐标系设置在G55中Y)<br>
+(WORK_OFFSET_G54X_#5206)        (B轴任意角度的坐标系自动更新到G54的X)<br>
+(WORK_OFFSET_G54Z_#5208)        (B轴任意角度的坐标系自动更新到G54的Z)<br>
+(G65 P9001 F90)                              (液压四轴角度定位到90°)<br>
+(G65 P9003)                                     (启用坐标跟随，B旋转后的坐标更新到G54)<br>
+#5208=[#5213-#7248]*COS[#801]-[#5211-#7246]*SIN[#801]+#7248;<br>
+#5206=[#5213-#7248]*SIN[#801]+[#5211-#7246]*COS[#801]+#7246;<br>
+#5207=#5212;                                 (由于绕Y轴旋转，Y坐标直接从G55赋值到G54)<br>
+M99;</p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
