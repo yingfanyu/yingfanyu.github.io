@@ -128,9 +128,9 @@ G04X0.5;   (暂停0.5秒)<br>
 M10;         (夹紧)<br>
 M#25;       (锁紧)<br>
 G04X0.5;   (暂停0.5秒)<br>
-#801=#801+#1<em>90;       (更新当前角度到#801)<br>
+#801=#801+#1*90;       (更新当前角度到#801)<br>
 #17=FIX[#801/360];       (计算当前角度需减次数下取整)<br>
-#801=#801-#17</em>360;    (更新当前角度到±360)<br>
+#801=#801-#17*360;    (更新当前角度到±360)<br>
 M99;       (返回上级程序)<br>
 <a href="https://github.com/user-attachments/files/18004930/default.zip">旭本液压转台宏程序.zip</a></p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
