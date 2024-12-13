@@ -10,9 +10,9 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="#1.与mazak iv系列机型的测头打开(M81)关闭(M82)不同，e420H机型的测头打开关闭分别是M281和M282，在默认设置的时候运行M281和M282都报非法M指令报警，咨询售后得知需要修改系统PLC参数中的RB13参数，原参数00000000，修改后为00000011.修改完毕后重启系统，再次运行M281能打开测头 ，M282能关闭测头。">
+<meta name="description" content="1.与mazak iv系列机型的测头打开(M81)关闭(M82)不同，e420H机型的测头打开关闭分别是M281和M282，在默认设置的时候运行M281和M282都报非法M指令报警，咨询售后得知需要修改系统PLC参数中的RB13参数，原参数00000000，修改后为00000011.修改完毕后重启系统，再次运行M281能打开测头 ，M282能关闭测头。">
 <meta property="og:title" content="MAZAK INTe420H测头校准及旋心校准过程中碰到的问题记录">
-<meta property="og:description" content="#1.与mazak iv系列机型的测头打开(M81)关闭(M82)不同，e420H机型的测头打开关闭分别是M281和M282，在默认设置的时候运行M281和M282都报非法M指令报警，咨询售后得知需要修改系统PLC参数中的RB13参数，原参数00000000，修改后为00000011.修改完毕后重启系统，再次运行M281能打开测头 ，M282能关闭测头。">
+<meta property="og:description" content="1.与mazak iv系列机型的测头打开(M81)关闭(M82)不同，e420H机型的测头打开关闭分别是M281和M282，在默认设置的时候运行M281和M282都报非法M指令报警，咨询售后得知需要修改系统PLC参数中的RB13参数，原参数00000000，修改后为00000011.修改完毕后重启系统，再次运行M281能打开测头 ，M282能关闭测头。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://bk.kaihe.work/post/MAZAK%20INTe420H-ce-tou-xiao-zhun-ji-xuan-xin-xiao-zhun-guo-cheng-zhong-peng-dao-de-wen-ti-ji-lu.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
@@ -73,11 +73,11 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><p>#1.与mazak iv系列机型的测头打开(M81)关闭(M82)不同，e420H机型的测头打开关闭分别是M281和M282，在默认设置的时候运行M281和M282都报非法M指令报警，咨询售后得知需要修改系统PLC参数中的RB13参数，原参数00000000，修改后为00000011.修改完毕后重启系统，再次运行M281能打开测头 ，M282能关闭测头。<br>
-#2.使用基准球自动校准测头长度，偏心，及半径。程序号码为8500，需设置以下参数#2=25.(SETTING SPHERE DIAMETER SIZE)<br>
+<div class="markdown-body" id="postBody"><p>1.与mazak iv系列机型的测头打开(M81)关闭(M82)不同，e420H机型的测头打开关闭分别是M281和M282，在默认设置的时候运行M281和M282都报非法M指令报警，咨询售后得知需要修改系统PLC参数中的RB13参数，原参数00000000，修改后为00000011.修改完毕后重启系统，再次运行M281能打开测头 ，M282能关闭测头。<br>
+2.使用基准球自动校准测头长度，偏心，及半径。程序号码为8500，需设置以下参数#2=25.(SETTING SPHERE DIAMETER SIZE)<br>
 #3=2(STYLUS BALL DIAMETER)<br>
 #5=0(MULTI STYLUS REQUIRED 0=NO 11 OR 12=YES)<br>
-#3.在程序9574中设置以下参数#101=40(PROBE TOOL NUMBER)<br>
+3.在程序9574中设置以下参数#101=40(PROBE TOOL NUMBER)<br>
 #102=5(WORK OFFSET NUMBER)<br>
 #103=1(ALARM LANGUAGE)<br>
 #104=0(SAFE INDEX POS X)<br>
@@ -86,9 +86,9 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 #111=700(EDIT HORZ BASE NO.)<br>
 #112=750(EDIT VERT BASE NO.)<br>
 #120=2(SELECT T/O OPTIONS)<br>
-#4.使用千分表和基准刀设置基准球球心位置到G58坐标系中，开始运行8500程序，B0测量球心位置，主轴180再次测量球心位置，主轴0再次测量球心位置，进行矢量半径校准。B90测量球心位置，主轴180再次测量球心位置，主轴0再次测量球心位置，进行矢量半径校准。B0和B90的测球触发半径，偏心，矢量半径在#700和#750之后。探针长度进入刀具数据页面进行更新。<br>
-#5.B轴0°移动测球到基准球中心，测尖距离基准球表面约10mm处，运行8501的B轴旋心校准程序，G65 P9592 D25. C3.。其中D25表示基准球直径，C3表示测三个角度。程序运行期间将在B0,B45,B90三个角度对基准球进行测量，并输出报告到硬盘打印目录。复制数据到电脑上用renishaw软件进行计算，并把计算结果补偿到对应的系统参数，再次运行，误差小于0.01即可。<br>
-#6.B轴0°移动测球到基准球中心，测尖距离基准球表面约10mm处，运行8502的C轴旋心校准程序，G65 P9593 C5. D25. V360.。其中C5表示测5个点，D25表示基准球直径25，V360表示测量总角度360°。程序运行期间将在C0,C90,C180,C270,C360五个角度对基准球进行测量，并输出报告到硬盘打印目录。复制数据到电脑上用renishaw软件进行计算，并把计算结果补偿到对应的系统参数，再次运行，误差小于0.01即可。</p></div>
+4.使用千分表和基准刀设置基准球球心位置到G58坐标系中，开始运行8500程序，B0测量球心位置，主轴180再次测量球心位置，主轴0再次测量球心位置，进行矢量半径校准。B90测量球心位置，主轴180再次测量球心位置，主轴0再次测量球心位置，进行矢量半径校准。B0和B90的测球触发半径，偏心，矢量半径在#700和#750之后。探针长度进入刀具数据页面进行更新。<br>
+5.B轴0°移动测球到基准球中心，测尖距离基准球表面约10mm处，运行8501的B轴旋心校准程序，G65 P9592 D25. C3.。其中D25表示基准球直径，C3表示测三个角度。程序运行期间将在B0,B45,B90三个角度对基准球进行测量，并输出报告到硬盘打印目录。复制数据到电脑上用renishaw软件进行计算，并把计算结果补偿到对应的系统参数，再次运行，误差小于0.01即可。<br>
+6.B轴0°移动测球到基准球中心，测尖距离基准球表面约10mm处，运行8502的C轴旋心校准程序，G65 P9593 C5. D25. V360.。其中C5表示测5个点，D25表示基准球直径25，V360表示测量总角度360°。程序运行期间将在C0,C90,C180,C270,C360五个角度对基准球进行测量，并输出报告到硬盘打印目录。复制数据到电脑上用renishaw软件进行计算，并把计算结果补偿到对应的系统参数，再次运行，误差小于0.01即可。</p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
