@@ -1,51 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.kaihe.work</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.kaihe.work</link></image><lastBuildDate>Mon, 17 Feb 2025 10:18:33 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>六爻卜卦工具链接</title><link>https://bk.kaihe.work/post/liu-yao-bu-gua-gong-ju-lian-jie.html</link><description>&lt;!DOCTYPE html&gt;
-&lt;html lang='zh-CN'&gt;
-&lt;head&gt;
-  &lt;meta charset='UTF-8'&gt;
-  &lt;meta name='viewport' content='width=device-width, initial-scale=1.0'&gt;
-  &lt;title&gt;六爻卜卦工具&lt;/title&gt;
-  &lt;style&gt;
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      line-height: 1.6;
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    input, button {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 10px;
-      font-size: 16px;
-    }
-    .result {
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      background-color: #f9f9f9;
-    }
-    .instructions {
-      margin-bottom: 20px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      background-color: #f0f8ff;
-    }
-  &lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-  &lt;h1&gt;六爻卜卦工具&lt;/h1&gt;
-  &lt;div class='container'&gt;
-    &lt;!-- 投掷硬币注意事项 --&gt;
-    &lt;div class='instructions'&gt;
-      &lt;h2&gt;投掷硬币注意事项：&lt;/h2&gt;
-      &lt;p&gt;1. 每次投掷三枚硬币，记录总点数。</description><guid isPermaLink="true">https://bk.kaihe.work/post/liu-yao-bu-gua-gong-ju-lian-jie.html</guid><pubDate>Mon, 17 Feb 2025 09:24:20 +0000</pubDate></item><item><title>本科生面试遴选测试</title><link>https://bk.kaihe.work/post/ben-ke-sheng-mian-shi-lin-xuan-ce-shi.html</link><description>机械制造助理面试测验卷:
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.kaihe.work</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.kaihe.work</link></image><lastBuildDate>Mon, 17 Feb 2025 10:19:07 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>六爻卜卦工具链接</title><link>https://bk.kaihe.work/post/liu-yao-bu-gua-gong-ju-lian-jie.html</link><description>https://bk.kaihe.work/tuoguan/。</description><guid isPermaLink="true">https://bk.kaihe.work/post/liu-yao-bu-gua-gong-ju-lian-jie.html</guid><pubDate>Mon, 17 Feb 2025 09:24:20 +0000</pubDate></item><item><title>本科生面试遴选测试</title><link>https://bk.kaihe.work/post/ben-ke-sheng-mian-shi-lin-xuan-ce-shi.html</link><description>机械制造助理面试测验卷:
 一、基础知识考察（单选题，共5题，每题2分）
 #####以下哪一项不属于常见的机械加工工艺？
 
