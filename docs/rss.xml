@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.kaihe.work</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.kaihe.work</link></image><lastBuildDate>Mon, 24 Mar 2025 02:59:57 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>开机自动启动存在加密的(TPM2.0)虚拟机的脚本</title><link>https://bk.kaihe.work/post/kai-ji-zi-dong-qi-dong-cun-zai-jia-mi-de-%28TPM2.0%29-xu-ni-ji-de-jiao-ben.html</link><description>运行加密虚拟机的脚本
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.kaihe.work</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.kaihe.work</link></image><lastBuildDate>Mon, 24 Mar 2025 06:37:01 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>开机自动启动存在加密的(TPM2.0)虚拟机的脚本</title><link>https://bk.kaihe.work/post/kai-ji-zi-dong-qi-dong-cun-zai-jia-mi-de-%28TPM2.0%29-xu-ni-ji-de-jiao-ben.html</link><description>运行加密虚拟机的脚本
 @echo off
 chcp 65001 &gt;nul
-'C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe'  -vp 'yu19761976' start 'D:\Virtual Machines\Windows 11 x64\Windows 11 x64.vmx'  nogui
+'C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe'  -vp 'y********6' start 'D:\Virtual Machines\Windows 11 x64\Windows 11 x64.vmx'  nogui
 关闭加密虚拟机的脚本
 @echo off
 chcp 65001 &gt;nul
-'C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe'  -vp 'yu19761976' stop 'D:\Virtual Machines\Windows 11 x64\Windows 11 x64.vmx'  nogui
+'C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe'  -vp 'y********6' stop 'D:\Virtual Machines\Windows 11 x64\Windows 11 x64.vmx'  nogui
 
 上述脚本分别存储到一个bat文件，使用计划任务启动事件运行脚本即可完成，定时关机前使用关闭虚拟机脚本关闭后再执行关机脚本
 。</description><guid isPermaLink="true">https://bk.kaihe.work/post/kai-ji-zi-dong-qi-dong-cun-zai-jia-mi-de-%28TPM2.0%29-xu-ni-ji-de-jiao-ben.html</guid><pubDate>Mon, 24 Mar 2025 02:59:28 +0000</pubDate></item><item><title>马扎克640M系统联网传程序的一个坑的记录</title><link>https://bk.kaihe.work/post/ma-zha-ke-640M-xi-tong-lian-wang-chuan-cheng-xu-de-yi-ge-keng-de-ji-lu.html</link><description>####今日收到科室报告，说有一台马扎克机床的联网功能有问题，之前能正常进入机床端的共享文件夹，今天无法进入 ，提示密码错误。</description><guid isPermaLink="true">https://bk.kaihe.work/post/ma-zha-ke-640M-xi-tong-lian-wang-chuan-cheng-xu-de-yi-ge-keng-de-ji-lu.html</guid><pubDate>Wed, 19 Mar 2025 08:44:04 +0000</pubDate></item><item><title>本科生面试遴选测试</title><link>https://bk.kaihe.work/post/ben-ke-sheng-mian-shi-lin-xuan-ce-shi.html</link><description>机械制造助理面试测验卷:
