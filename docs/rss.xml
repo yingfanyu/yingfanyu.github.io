@@ -1,5 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.kaihe.work</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.kaihe.work</link></image><lastBuildDate>Mon, 24 Mar 2025 06:37:01 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>开机自动启动存在加密的(TPM2.0)虚拟机的脚本</title><link>https://bk.kaihe.work/post/kai-ji-zi-dong-qi-dong-cun-zai-jia-mi-de-%28TPM2.0%29-xu-ni-ji-de-jiao-ben.html</link><description>运行加密虚拟机的脚本
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.kaihe.work</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.kaihe.work</link></image><lastBuildDate>Tue, 25 Mar 2025 01:12:19 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>win10 win11停止自动更新注册表脚本</title><link>https://bk.kaihe.work/post/win10%20win11-ting-zhi-zi-dong-geng-xin-zhu-ce-biao-jiao-ben.html</link><description>Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings]
+'FlightSettingsMaxPauseDays'=dword:00001b58
+'PauseFeatureUpdatesStartTime'='2023-10-11T10:00:52Z'
+'PauseFeatureUpdatesEndTime'='2042-10-11T09:59:52Z'
+'PauseQualityUpdatesStartTime'='2023-10-11T10:00:52Z'
+'PauseQualityUpdatesEndTime'='2042-10-11T09:59:52Z'
+'PauseUpdatesStartTime'='2023-10-11T09:59:52Z'
+'PauseUpdatesExpiryTime'='2042-10-11T09:59:52Z'
+
+把以上代码另存为*.reg，双击导入到注册表即可。</description><guid isPermaLink="true">https://bk.kaihe.work/post/win10%20win11-ting-zhi-zi-dong-geng-xin-zhu-ce-biao-jiao-ben.html</guid><pubDate>Tue, 25 Mar 2025 01:11:51 +0000</pubDate></item><item><title>开机自动启动存在加密的(TPM2.0)虚拟机的脚本</title><link>https://bk.kaihe.work/post/kai-ji-zi-dong-qi-dong-cun-zai-jia-mi-de-%28TPM2.0%29-xu-ni-ji-de-jiao-ben.html</link><description>运行加密虚拟机的脚本
 @echo off
 chcp 65001 &gt;nul
 'C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe'  -vp 'y********6' start 'D:\Virtual Machines\Windows 11 x64\Windows 11 x64.vmx'  nogui
