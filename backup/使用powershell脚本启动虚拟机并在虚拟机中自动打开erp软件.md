@@ -5,5 +5,16 @@
 5.出现powershell界面，依次静默开启虚拟机，自动远程连接到虚拟机，进入虚拟机并运行erp软件
 6.需要关机的时候在虚拟机内部桌面上有关机.bat脚本，双击3秒后关闭虚拟机
 7.在远程桌面连接上10秒后自动退出posershell命令行
+8.以下内容另存为bat后缀文件，可解决直接用powershell运行时开头的红色警告文件
+@echo off
+:: 隐藏命令窗口（可选）
+:: @echo off >nul 2>&1
+
+:: 以绕过执行策略方式启动PowerShell脚本
+powershell.exe -ExecutionPolicy Bypass -File "C:\Users\启动ERP.ps1"
+
+:: 保持窗口打开（可选）
+
+
 
 [启动ERP.zip](https://github.com/user-attachments/files/21752533/ERP.zip)
