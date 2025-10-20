@@ -1,5 +1,43 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Thu, 14 Aug 2025 23:38:58 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>使用powershell脚本启动虚拟机并在虚拟机中自动打开erp软件</title><link>https://bk.929295.xyz/post/shi-yong-powershell-jiao-ben-qi-dong-xu-ni-ji-bing-zai-xu-ni-ji-zhong-zi-dong-da-kai-erp-ruan-jian.html</link><description>1.安装了erp软件的虚拟机内系统中开启远程桌面功能，并允许远程连接，如果3389被阻拦需要放行
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Mon, 20 Oct 2025 09:43:37 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>大工岗前培训知识准备</title><link>https://bk.929295.xyz/post/da-gong-gang-qian-pei-xun-zhi-shi-zhun-bei.html</link><description>1.刀片参数讲解
+	CNMG120408PG GC1105
+	刀片盒子标识和刀片实物对比
+2.刀片装夹注意事项
+	刀片必须与工序文件一致(涂层代号也必须一致，否则能装上，寿命有问题)
+	清理刀片槽和刀片贴合面，螺栓，扳手
+	单手拧紧，不能双手锁，也不能用加力杆
+	锁紧手感，应有预紧1/4圈以上(一拧就紧，再拧不动是错误的)
+	多刀片刀具对刀时长度和直径取最大值
+3.钻头，倒角刀和立铣刀注意事项
+	柄径，刃径，悬伸长度，夹持长度，槽长
+	悬伸长度与工序文件一致
+	夹持长度必须大于筒夹夹持内壁长度(不然容易损坏筒夹，夹持效果恶性循环)
+	标准扳手预紧1/4圈以上，不能使用加力杆
+	发现筒夹有伤，悬伸长度不够立即报告
+	钻头在机上复核跳动小于0.01(打跳动要反向旋转)
+	倒角刀在对刀仪上指定直径对长度的操作方法
+4.丝锥
+	先测量丝锥夹持直径选择相应筒夹
+	使用单向浮动刀柄
+	丝锥选用注意导向长度(1P 2.5P讲解)
+5.精镗刀
+	一般精镗刀在主轴上时刀尖朝内(不绝对，看机床设置)
+	调整尺寸时要排除间隙
+	调整完后侧面锁紧
+6.测头
+	不能随便动，有问题找主管
+7.工装
+	注意螺栓过长顶到底面导致无法锁紧(一拧就紧，再拧不动是错误的)
+
+辅助：
+	复制程序
+	设置坐标
+	输入和修改变量
+	
+
+	
+
+。</description><guid isPermaLink="true">https://bk.929295.xyz/post/da-gong-gang-qian-pei-xun-zhi-shi-zhun-bei.html</guid><pubDate>Mon, 20 Oct 2025 09:43:03 +0000</pubDate></item><item><title>使用powershell脚本启动虚拟机并在虚拟机中自动打开erp软件</title><link>https://bk.929295.xyz/post/shi-yong-powershell-jiao-ben-qi-dong-xu-ni-ji-bing-zai-xu-ni-ji-zhong-zi-dong-da-kai-erp-ruan-jian.html</link><description>1.安装了erp软件的虚拟机内系统中开启远程桌面功能，并允许远程连接，如果3389被阻拦需要放行
 2.在虚拟机内系统添加计划任务，在登录时开启erp软件，输入erp执行文件的目录
 3.按 Win+R，输入 gpedit.msc  计算机配置 → 管理模板 → Windows 组件 → Windows PowerShell 启用'允许脚本执行'策略
 4.解压文末erp.zip文件，右键选择使用powershell运行即可
