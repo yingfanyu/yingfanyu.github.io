@@ -10,9 +10,11 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="  在五轴数控加工中的3+2定位加工经常用会用到坐标系旋转。">
+<meta name="description" content="
+  在五轴数控加工中的3+2定位加工经常用会用到坐标系旋转。">
 <meta property="og:title" content="坐标系以ZXZ欧拉角顺序旋转后，点在新坐标系的计算">
-<meta property="og:description" content="  在五轴数控加工中的3+2定位加工经常用会用到坐标系旋转。">
+<meta property="og:description" content="
+  在五轴数控加工中的3+2定位加工经常用会用到坐标系旋转。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://bk.929295.xyz/post/zuo-biao-xi-yi-ZXZ-ou-la-jiao-shun-xu-xuan-zhuan-hou-%EF%BC%8C-dian-zai-xin-zuo-biao-xi-de-ji-suan.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
@@ -93,7 +95,8 @@ ZXZ顺序的欧拉角根据特征坐标系的Z轴矢量和机床结构后处理�
 ⑤矩阵αβ的行乘矩阵γ的列形成矩阵αβγ<br>
 ⑥手动把矩阵αβγ的行列互换形成转置矩阵αβγ（此即为坐标变换矩阵，但是还是要注意输入的角度都取反向），在excel可以用transpos函数<br>
 ⑦点坐标(3，4，5)乘最终矩阵γβα得出新坐标点。x‘=矩阵γβα首行第一个元素<em>3+第二个元素</em>4+第三个元素*5 ，y'，z’按行以此类推即可得出正确结果，最终如图所示：<br>
-<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/10d46808-f8d7-4746-a50c-fef60dd747c6"><img width="1526" height="470" alt="Image" src="https://github.com/user-attachments/assets/10d46808-f8d7-4746-a50c-fef60dd747c6" style="max-width: 100%; height: auto; max-height: 470px;"></a></p></div>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/10d46808-f8d7-4746-a50c-fef60dd747c6"><img width="1526" height="470" alt="Image" src="https://github.com/user-attachments/assets/10d46808-f8d7-4746-a50c-fef60dd747c6" style="max-width: 100%; height: auto; max-height: 470px;"></a></p>
+<p><a href="https://github.com/user-attachments/files/23695468/ZXZ.xlsx">坐标系ZXZ欧拉角旋转坐标转换计算.xlsx</a></p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
