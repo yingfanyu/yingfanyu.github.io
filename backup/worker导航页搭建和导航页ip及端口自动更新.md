@@ -15,6 +15,8 @@
       重试3次，重试间隔500ms
   10.在lucky计划任务新建一个计划：每5分钟执行一个穿透规则，规则就是webhook所在规则。操作设置为开关切换。这样每5分钟切换一次webhook所在穿透规则就能同步一次，当ip和端口变化最多不超过10分钟就能同步到worker所在的导航页。
 
-[worker主动检查测试宝塔侦测错误解决版202512042028.txt](https://github.com/user-attachments/files/23946120/worker.202512042028.txt)
+[worker主动检查测试宝塔侦测错误解决版202512060834.txt](https://github.com/user-attachments/files/23972901/worker.202512060834.txt)
 
 [webhook测试ok202512041834.txt](https://github.com/user-attachments/files/23949085/webhook.ok202512041834.txt)
+
+[Lucky_backup_1.929295.xyz_2.15.7_20251206083254.zip](https://github.com/user-attachments/files/23972922/Lucky_backup_1.929295.xyz_2.15.7_20251206083254.zip)
