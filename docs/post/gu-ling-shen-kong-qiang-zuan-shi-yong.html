@@ -83,9 +83,10 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 底孔加工：有效深度14mm（1.5D） 直径8.02 (D+0.03/+0.01)<br>
 加工程序：<br>
 ~<br>
-M03 S100 主轴低速旋转<br>
+M04 S100 主轴低速反向旋转<br>
 G01 Z-12. F100 低速进入至离底孔2mm位置<br>
 M131 开启高压中心出水<br>
+M05<br>
 M03 S2000 主轴提速（Vc：50m/min）<br>
 G01 Z-100. F44 进刀至指定深度（F:0.022mm/r）遇交叉孔降速50%。<br>
 加工过程中如要调整进给需先暂停进给，调整完成后再继续加工<br>
