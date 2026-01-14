@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Wed, 14 Jan 2026 06:04:23 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>点和坐标系旋转后的坐标值计算</title><link>https://bk.929295.xyz/post/dian-he-zuo-biao-xi-xuan-zhuan-hou-de-zuo-biao-zhi-ji-suan.html</link><description>&lt;img width='1396' height='378' alt='Image' src='https://github.com/user-attachments/assets/44597ef9-5e11-40ef-836f-5cda165bb71c' /&gt;
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Wed, 14 Jan 2026 16:26:22 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>点和坐标系旋转后的坐标值计算</title><link>https://bk.929295.xyz/post/dian-he-zuo-biao-xi-xuan-zhuan-hou-de-zuo-biao-zhi-ji-suan.html</link><description>&lt;img width='1396' height='378' alt='Image' src='https://github.com/user-attachments/assets/44597ef9-5e11-40ef-836f-5cda165bb71c' /&gt;
 
 &lt;img width='1418' height='164' alt='Image' src='https://github.com/user-attachments/assets/12096f3a-681f-445b-8a10-c515854ce473' /&gt;
 
@@ -10,25 +10,7 @@
 &lt;img width='1086' height='786' alt='Image' src='https://github.com/user-attachments/assets/6d15308c-c5ca-46fa-afce-7a8595feab4a' /&gt;
 
 总结：
-  1.绕空间固定轴旋转应用右乘，自右向左依次右行\*左列得出总矩阵，总矩阵各行\*坐标并求和分别得出X'Y'Z',此即为点绕空间固定轴旋转后原坐标系下的新作标值。</description><guid isPermaLink="true">https://bk.929295.xyz/post/dian-he-zuo-biao-xi-xuan-zhuan-hou-de-zuo-biao-zhi-ji-suan.html</guid><pubDate>Wed, 14 Jan 2026 06:03:48 +0000</pubDate></item><item><title>矩阵旋转总结</title><link>https://bk.929295.xyz/post/ju-zhen-xuan-zhuan-zong-jie.html</link><description>  不管是欧拉角还是空间角等任意旋转坐标系或点的计算公共部分：
-   ①α=135    sinα=   cosα=
-   ①β=54.7356    sinβ=   cosβ=
-   ①γ=-90    sinγ=   cosγ=
-1.每次绕新坐标轴旋转，三个角度分别为αβγ，求点在新坐标系下的坐标(应用右乘)：
-     ①写出α的旋转矩阵，β的旋转矩阵，γ的旋转矩阵
-     ②γβ矩阵=γ矩阵*β矩阵，γβα矩阵=γβ矩阵*α矩阵 （前面的行*后面的列）
-     ③点坐标xyz分别与γβα矩阵的每一行的元素相乘并求和，第一行得出x',依次得出y'z'
-2.每次绕初始坐标轴旋转，三个角度分别为αβγ，求点在原坐标系下的坐标(应用左乘)：
-     ①写出α的旋转矩阵，β的旋转矩阵，γ的旋转矩阵
-     ②αβ矩阵=α矩阵*β矩阵，αβγ矩阵=αβ矩阵*γ矩阵 （前面的行*后面的列）
-     ③点坐标xyz分别与αβγ矩阵的每一行的元素相乘并求和，第一行得出x',依次得出y'z'
-3.点绕初始坐标轴旋转，三个角度分别为αβγ，求旋转后点坐标(应用左乘并转置)：
-     ①写出α的旋转矩阵，β的旋转矩阵，γ的旋转矩阵
-     ②αβ矩阵=α矩阵*β矩阵，αβγ矩阵=αβ矩阵*γ矩阵 （前面的行*后面的列）
-     ③转置αβγ矩阵=矩阵的行列互换
-     ④点坐标xyz分别与转置αβγ矩阵的每一行的元素相乘并求和，第一行得出x',依次得出y'z'
-4.点绕新坐标轴旋转，相当于点与坐标轴一起旋转，旋转后的点在旋转后的坐标系的值并不会改变 ，所以没有必要计算。</description><guid isPermaLink="true">https://bk.929295.xyz/post/ju-zhen-xuan-zhuan-zong-jie.html</guid><pubDate>Mon, 24 Nov 2025 02:00:17 +0000</pubDate></item><item><title>坐标系以ZXZ欧拉角顺序旋转后，点在新坐标系的计算</title><link>https://bk.929295.xyz/post/zuo-biao-xi-yi-ZXZ-ou-la-jiao-shun-xu-xuan-zhuan-hou-%EF%BC%8C-dian-zai-xin-zuo-biao-xi-de-ji-suan.html</link><description>
-  在五轴数控加工中的3+2定位加工经常用会用到坐标系旋转。</description><guid isPermaLink="true">https://bk.929295.xyz/post/zuo-biao-xi-yi-ZXZ-ou-la-jiao-shun-xu-xuan-zhuan-hou-%EF%BC%8C-dian-zai-xin-zuo-biao-xi-de-ji-suan.html</guid><pubDate>Sun, 23 Nov 2025 11:27:35 +0000</pubDate></item><item><title>大工岗前培训知识准备</title><link>https://bk.929295.xyz/post/da-gong-gang-qian-pei-xun-zhi-shi-zhun-bei.html</link><description>1.刀片参数讲解
+  1.绕空间固定轴旋转应用右乘，自右向左依次右行\*左列得出总矩阵，总矩阵各行\*坐标并求和分别得出X'Y'Z',此即为点绕空间固定轴旋转后原坐标系下的新作标值。</description><guid isPermaLink="true">https://bk.929295.xyz/post/dian-he-zuo-biao-xi-xuan-zhuan-hou-de-zuo-biao-zhi-ji-suan.html</guid><pubDate>Wed, 14 Jan 2026 06:03:48 +0000</pubDate></item><item><title>大工岗前培训知识准备</title><link>https://bk.929295.xyz/post/da-gong-gang-qian-pei-xun-zhi-shi-zhun-bei.html</link><description>1.刀片参数讲解
 	CNMG120408PG GC1105
 	刀片盒子标识和刀片实物对比
 2.刀片装夹注意事项
