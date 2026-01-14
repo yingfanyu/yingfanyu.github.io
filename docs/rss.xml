@@ -1,5 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Wed, 17 Dec 2025 16:23:41 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>矩阵旋转总结</title><link>https://bk.929295.xyz/post/ju-zhen-xuan-zhuan-zong-jie.html</link><description>  不管是欧拉角还是空间角等任意旋转坐标系或点的计算公共部分：
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Wed, 14 Jan 2026 06:04:23 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>点和坐标系旋转后的坐标值计算</title><link>https://bk.929295.xyz/post/dian-he-zuo-biao-xi-xuan-zhuan-hou-de-zuo-biao-zhi-ji-suan.html</link><description>&lt;img width='1396' height='378' alt='Image' src='https://github.com/user-attachments/assets/44597ef9-5e11-40ef-836f-5cda165bb71c' /&gt;
+
+&lt;img width='1418' height='164' alt='Image' src='https://github.com/user-attachments/assets/12096f3a-681f-445b-8a10-c515854ce473' /&gt;
+
+&lt;img width='1068' height='788' alt='Image' src='https://github.com/user-attachments/assets/4aeb0528-4096-4d56-974d-b2a5e0b52902' /&gt;
+
+&lt;img width='1062' height='789' alt='Image' src='https://github.com/user-attachments/assets/da4fdf27-de45-4c27-a68b-b0685f0f81fd' /&gt;
+
+&lt;img width='1086' height='786' alt='Image' src='https://github.com/user-attachments/assets/6d15308c-c5ca-46fa-afce-7a8595feab4a' /&gt;
+
+总结：
+  1.绕空间固定轴旋转应用右乘，自右向左依次右行\*左列得出总矩阵，总矩阵各行\*坐标并求和分别得出X'Y'Z',此即为点绕空间固定轴旋转后原坐标系下的新作标值。</description><guid isPermaLink="true">https://bk.929295.xyz/post/dian-he-zuo-biao-xi-xuan-zhuan-hou-de-zuo-biao-zhi-ji-suan.html</guid><pubDate>Wed, 14 Jan 2026 06:03:48 +0000</pubDate></item><item><title>矩阵旋转总结</title><link>https://bk.929295.xyz/post/ju-zhen-xuan-zhuan-zong-jie.html</link><description>  不管是欧拉角还是空间角等任意旋转坐标系或点的计算公共部分：
    ①α=135    sinα=   cosα=
    ①β=54.7356    sinβ=   cosβ=
    ①γ=-90    sinγ=   cosγ=
