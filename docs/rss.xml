@@ -1,5 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Wed, 14 Jan 2026 16:26:22 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>点和坐标系旋转后的坐标值计算</title><link>https://bk.929295.xyz/post/dian-he-zuo-biao-xi-xuan-zhuan-hou-de-zuo-biao-zhi-ji-suan.html</link><description>&lt;img width='1396' height='378' alt='Image' src='https://github.com/user-attachments/assets/44597ef9-5e11-40ef-836f-5cda165bb71c' /&gt;
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Fri, 16 Jan 2026 03:21:07 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>公法线误差换算为进刀距离原理</title><link>https://bk.929295.xyz/post/gong-fa-xian-wu-cha-huan-suan-wei-jin-dao-ju-li-yuan-li.html</link><description>&lt;img width='679' height='636' alt='Image' src='https://github.com/user-attachments/assets/c638270b-67b5-45e1-a788-d9667003e1a6' /&gt;
+
+1.测量出公法线误差(即图中公法线)
+
+2.公法线为两个齿面法向测量得出，换算到图中单侧齿面，(即图中公法线/2)
+
+3.由于压力角为20度，所以得出单侧切向误差，(即图中(公法线/2)/COS20)
+
+4.由于 压力角为20度，所以计算得出进刀量，(即图中((公法线/2)/COS20)/(TAN20))
+
+5.进刀量=((公法线/2)/COS20)/(TAN20))=((公法线/2)/COS20)/(SIN20/COS20)),简化公式化得出
+   进刀量=公法线*(1/(2*SIN20))=公法线\*1.462。</description><guid isPermaLink="true">https://bk.929295.xyz/post/gong-fa-xian-wu-cha-huan-suan-wei-jin-dao-ju-li-yuan-li.html</guid><pubDate>Fri, 16 Jan 2026 03:20:40 +0000</pubDate></item><item><title>点和坐标系旋转后的坐标值计算</title><link>https://bk.929295.xyz/post/dian-he-zuo-biao-xi-xuan-zhuan-hou-de-zuo-biao-zhi-ji-suan.html</link><description>&lt;img width='1396' height='378' alt='Image' src='https://github.com/user-attachments/assets/44597ef9-5e11-40ef-836f-5cda165bb71c' /&gt;
 
 &lt;img width='1418' height='164' alt='Image' src='https://github.com/user-attachments/assets/12096f3a-681f-445b-8a10-c515854ce473' /&gt;
 
