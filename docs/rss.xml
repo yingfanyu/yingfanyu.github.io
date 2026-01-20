@@ -1,5 +1,22 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Fri, 16 Jan 2026 09:32:21 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>四元数插补Slerp &amp; Lerp 计算表</title><link>https://bk.929295.xyz/post/si-yuan-shu-cha-bu-Slerp%20%26%20Lerp%20-ji-suan-biao.html</link><description>  1.这是一个非常专业且典型的插值算法验证表，主要用于计算机图形学、机器人运动控制或数控加工（CNC）领域。</description><guid isPermaLink="true">https://bk.929295.xyz/post/si-yuan-shu-cha-bu-Slerp%20%26%20Lerp%20-ji-suan-biao.html</guid><pubDate>Fri, 16 Jan 2026 09:31:54 +0000</pubDate></item><item><title>公法线误差换算为进刀距离原理</title><link>https://bk.929295.xyz/post/gong-fa-xian-wu-cha-huan-suan-wei-jin-dao-ju-li-yuan-li.html</link><description>&lt;img width='679' height='636' alt='Image' src='https://github.com/user-attachments/assets/c638270b-67b5-45e1-a788-d9667003e1a6' /&gt;
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Tue, 20 Jan 2026 05:39:51 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>Siemens NX 后处理工具Post Configurator学习记录</title><link>https://bk.929295.xyz/post/Siemens%20NX%20-hou-chu-li-gong-ju-Post%20Configurator-xue-xi-ji-lu.html</link><description>1.如何去除fanuc程序开头和结尾的%?
+答：打开对应的后处理文件，点击右下角扳手图案，编辑后处理配置器的配置文件，在文件的最后添加
+LIB_GE_command_buffer_edit_remove OOTB_program_header OOTB_OEM_program_header @rewind_output
+LIB_GE_command_buffer_edit_remove OOTB_program_footer OOTB_OEM_program_footer @rewind_output
+
+2.如何修改输出的程序后缀名？
+答：打开后处理，依次常规设置-&gt;文件输出处理-&gt;输出后缀：改成EIA
+
+3.如何关闭输出序列号？
+答：打开后处理，依次控制器功能-&gt;输出设置-&gt;序列号-&gt;选择关闭
+
+4.如何只在换刀的时候输出序列号？
+答：打开后处理，依次常规设置-&gt;换刀-&gt;自动换刀-&gt;切换换刀模板为定制过程-&gt;输入以下代码:
+global mom_tool_number mom_next_tool_number
+MOM_output_literal 'G0 G28 G91 Z0'
+MOM_set_seq_on
+MOM_output_literal 'T$::mom_tool_number T$::mom_next_tool_number M06'   #增加了马扎克格式的备刀格式
+MOM_set_seq_off。</description><guid isPermaLink="true">https://bk.929295.xyz/post/Siemens%20NX%20-hou-chu-li-gong-ju-Post%20Configurator-xue-xi-ji-lu.html</guid><pubDate>Tue, 20 Jan 2026 02:31:25 +0000</pubDate></item><item><title>四元数插补Slerp &amp; Lerp 计算表</title><link>https://bk.929295.xyz/post/si-yuan-shu-cha-bu-Slerp%20%26%20Lerp%20-ji-suan-biao.html</link><description>  1.这是一个非常专业且典型的插值算法验证表，主要用于计算机图形学、机器人运动控制或数控加工（CNC）领域。</description><guid isPermaLink="true">https://bk.929295.xyz/post/si-yuan-shu-cha-bu-Slerp%20%26%20Lerp%20-ji-suan-biao.html</guid><pubDate>Fri, 16 Jan 2026 09:31:54 +0000</pubDate></item><item><title>公法线误差换算为进刀距离原理</title><link>https://bk.929295.xyz/post/gong-fa-xian-wu-cha-huan-suan-wei-jin-dao-ju-li-yuan-li.html</link><description>&lt;img width='679' height='636' alt='Image' src='https://github.com/user-attachments/assets/c638270b-67b5-45e1-a788-d9667003e1a6' /&gt;
 
 1.测量出公法线误差(即图中公法线)
 
