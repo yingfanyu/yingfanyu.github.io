@@ -31,3 +31,4 @@
 17.机床插入CF卡，pmcmainte下IO菜单从存储卡READ到pmc，再写入到flash，pmcconf操作运行当前导入PMC程序，解除急停
 18.MDI状态下输入M11时，Y10.1变为1，气动按钮正常熄灭，熄灭后Y10.1仍为1，按复位Y10.1变回0，运行M12也可变为0
 
+PMC程序(删除后缀即可，是记忆卡格式直接导入即可)：![Image](https://github.com/user-attachments/assets/6b91441c-3cdf-4372-8ee8-d70357f6ac9b)
