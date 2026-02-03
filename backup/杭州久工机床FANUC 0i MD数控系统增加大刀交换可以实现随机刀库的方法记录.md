@@ -79,4 +79,4 @@ G11  (参数修改结束)
 M99
 %
 
-[V-27PMC大刀随机刀库.zip](https://github.com/user-attachments/files/25041267/V-27PMC.zip)
+[V-27PMC大刀随机刀库（含M11,M12控制信号Y10.1）.zip](https://github.com/user-attachments/files/25041267/V-27PMC.zip)
