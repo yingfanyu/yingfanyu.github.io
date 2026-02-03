@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="  一.杭州久工机床FANUC 0i MD数控系统默认在不设置大刀的情况下可以实现随机刀库的功能，但是当设置了大刀之后比如7，那1-7的刀套就必须是与刀号一一对应了，剩下的还是随机刀库。">
+<meta property="og:title" content="杭州久工机床FANUC 0i MD数控系统增加大刀交换可以实现随机刀库的方法记录">
+<meta property="og:description" content="  一.杭州久工机床FANUC 0i MD数控系统默认在不设置大刀的情况下可以实现随机刀库的功能，但是当设置了大刀之后比如7，那1-7的刀套就必须是与刀号一一对应了，剩下的还是随机刀库。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://bk.929295.xyz/post/hang-zhou-jiu-gong-ji-chuang-FANUC%200i%20MD-shu-kong-xi-tong-zeng-jia-da-dao-jiao-huan-ke-yi-shi-xian-sui-ji-dao-ku-de-fang-fa-ji-lu.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>杭州久工机床FANUC 0i MD数控系统增加大刀交换可以实现随机刀库的方法记录</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">杭州久工机床FANUC 0i MD数控系统增加大刀交换可以实现随机刀库的方法记录</h1>
+<div class="title-right">
+    <a href="https://bk.929295.xyz" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/yingfanyu/yingfanyu.github.io/issues/54" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p>一.杭州久工机床FANUC 0i MD数控系统默认在不设置大刀的情况下可以实现随机刀库的功能，但是当设置了大刀之后比如7，那1-7的刀套就必须是与刀号一一对应了，剩下的还是随机刀库。但是在换刀的时候，T2,T4,T6是大刀，它们之间交换也必须每次都回到原来的位置才行，所以效率很低。把主轴刀具号写到参数8811的目的是为了提高这个换刀效率必须走的第一步。<br>
+1.以系统1秒循环信号作为触发信号R9091.6，使用SUB43把D0(主轴刀具号码)的数据写入到D710（注意写入数据的D数据型设为1，这样能输入4位数）<br>
+2.以系统1秒循环信号作为触发信号R9091.6，SUB52输入参数D700,写入后输出一个R0.1输出信号<br>
+3.在D700输入18，D702输入0，D704输入4，D706输入8811，D708输入0，D710会根据周期信号，每秒把主轴刀具号输入进去<br>
+4.重新启动PLC之后，会先把D0写入到D710，然后根据之前设置的D数据，把D710的数字填入到参数8811<br>
+5.这样参数8811就获得了当前主轴的刀具号码，在宏程序可以用PRM[8811]读取，供后续使用。</p>
+<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/87e95950-7b35-47a3-a838-4d22485fedaa"><img width="673" height="351" alt="Image" src="https://github.com/user-attachments/assets/87e95950-7b35-47a3-a838-4d22485fedaa" style="max-width: 100%; height: auto; max-height: 351px;"></a></p>
+<p>二.大刀实现随机刀库的原理，首先在#999设置想设置为大刀刀位的数量，比如7 （则能使用的大刀刀号为T2,T4,T6,中间不能安装任何其它刀具）。<br>
+通过比对想要更换的刀具和主轴刀具的刀号判断它们是否属于同一类刀具，同一类刀具则可以以随机刀库的方式进行交换，不然就必须先更换T25，再更换目标刀具，这样就能把主轴上的刀具放回自己的随机刀库里面，防止大刀安装位和小刀安装位发生错乱。判断方式如下：<br>
+如果想要更换的刀具和主轴刀具都满足≤7或者都满足＞7，则是同类刀。否则就是异类刀。新建一个O9020的程序<br>
+%<br>
+O9020<br>
+#1=PRM[8811](读取主轴刀具号)<br>
+#2=#20(想更换的刀具)<br>
+#3=#999(大刀数量)<br>
+#4=0(标记)<br>
+#4=1(异刀标记)<br>
+IF[#1GT#3]GOTO1(跳过都小)<br>
+IF[#2GT#3]GOTO1(跳过都小)<br>
+#4=0(同刀标记)<br>
+GOTO99<br>
+N1<br>
+IF[#1LE#3]GOTO99(跳过都大)<br>
+IF[#2LE#3]GOTO99(跳过都大)<br>
+#4=0(同刀标记)<br>
+N99<br>
+IF[#4EQ0]GOTO10 (同刀标记的处理跳转)<br>
+IF[#4EQ1]GOTO15 (异刀标记的处理跳转)<br>
+N10 (开始同刀标记的处理)<br>
+#101=#4003<br>
+#102=#4006<br>
+IF[#1009EQ1]GOTO11<br>
+G91G30Z0<br>
+IF[#1008EQ1]GOTO12<br>
+G91G0G30Z0<br>
+G30G91X0Y0<br>
+T#20<br>
+N12M6<br>
+N11<br>
+G#102<br>
+G#101<br>
+GOTO98 (同刀标记的处理结束)<br>
+N15 (开始异刀标记的处理)<br>
+#101=#4003<br>
+#102=#4006<br>
+IF[#1009EQ1]GOTO11<br>
+G91G30Z0<br>
+IF[#1008EQ1]GOTO12<br>
+G91G0G30Z0<br>
+G30G91X0Y0<br>
+T25<br>
+M6<br>
+T#2<br>
+M6 (异刀标记的处理结束)<br>
+N98<br>
+M99<br>
+%</p>
+<p>三.换刀程序的使用：1.把O9020放入机床，修改参数6080为6,6071为0，此时就可以用M6T*的方式进行换刀了。注意：1️⃣不能用T*M6的格式。2️⃣原换刀程序O9001在换刀初始化的时候还是会用到的，不能删除。</p>
+<p>四.刀库乱了的时候如何处理：编写以下程序，传入机床。把刀库刀套号旋转到换刀臂的位置，然后运行M70，运行过程,面板右上方刀库刀套号会变成1，刀库会旋转一下，再回到原来的位置。<br>
+%<br>
+O9005<br>
+M70 (原厂初始化)<br>
+G10L52 (临时修改参数)<br>
+N6071R6 (6071参数改为6，M6调用原厂O9019)<br>
+N6080R0 (6080参数改为0)<br>
+G11 (参数修改结束)<br>
+G4X1.<br>
+T2 (转动刀盘，不转动无法用M6T<em>方式换刀)<br>
+T1 (刀盘回原位，不转动无法用M6T</em>方式换刀)<br>
+G4X1.<br>
+G10L52 (临时修改参数)<br>
+N6071R0 (6071参数改为0)<br>
+N6080R6 (6080参数改为6,M6宏程序方式调用O9005)<br>
+G11  (参数修改结束)<br>
+M99<br>
+%</p>
+<p><a href="https://github.com/user-attachments/files/25041267/V-27PMC.zip">V-27PMC大刀随机刀库.zip</a></p></div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://bk.929295.xyz">数控技术博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("08/09/2024"!=""){
+    var startSite=new Date("08/09/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","yingfanyu/yingfanyu.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+
+
+</script>
+
+
+</html>
