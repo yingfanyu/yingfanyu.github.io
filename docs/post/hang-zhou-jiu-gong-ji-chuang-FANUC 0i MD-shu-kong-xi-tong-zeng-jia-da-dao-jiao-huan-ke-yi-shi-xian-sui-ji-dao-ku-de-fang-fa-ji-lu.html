@@ -81,27 +81,27 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 5.这样参数8811就获得了当前主轴的刀具号码，在宏程序可以用PRM[8811]读取，供后续使用。</p>
 <p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/87e95950-7b35-47a3-a838-4d22485fedaa"><img width="673" height="351" alt="Image" src="https://github.com/user-attachments/assets/87e95950-7b35-47a3-a838-4d22485fedaa" style="max-width: 100%; height: auto; max-height: 351px;"></a></p>
 <p>二.大刀实现随机刀库的原理，首先在#999设置想设置为大刀刀位的数量，比如7 （则能使用的大刀刀号为T2,T4,T6,中间不能安装任何其它刀具）。<br>
-通过比对想要更换的刀具和主轴刀具的刀号判断它们是否属于同一类刀具，同一类刀具则可以以随机刀库的方式进行交换，不然就必须先更换T25，再更换目标刀具，这样就能把主轴上的刀具放回自己的随机刀库里面，防止大刀安装位和小刀安装位发生错乱。判断方式如下：<br>
-如果想要更换的刀具和主轴刀具都满足≤7或者都满足＞7，则是同类刀。否则就是异类刀。新建一个O9020的程序<br>
+通过比对想要更换的刀具和主轴刀具的刀号判断它们是否属于同一类刀具，同一类刀具则可以以随机刀库的方式进行交换。如果主轴上是小刀，要换的是大刀的情况也可以直接交换，但是要把刀号记录到参数8812，以供后续主轴是大刀，想要更换小刀的时候，必须先把插入大刀刀位的小刀先换出来，再小刀互相交换属于同类换刀。最后一种情况，主轴上是大刀，想要换的是小刀，这种情况就必须先更换T25（空刀）大刀放回大刀位置，再更换目标刀具，这样就能把主轴上的大刀放回自己的属于大刀随机刀库里面，防止大刀安装位和小刀安装位发生错乱。判断方式如下：<br>
+如果想要更换的刀具和主轴刀具都满足≤7或者都满足＞7，则是同类刀。更换刀具≤7，主轴刀具＞7可以直接更换，但是要在参数8811记录放入大刀刀位的小刀刀号。更换刀具＞7，主轴刀具≤7，则先更换空刀把大刀放回去，再更换小刀。新建一个O9020的程序<br>
 %<br>
 O9020<br>
-#1=PRM[8811](读取主轴刀具号)<br>
-#2=#20(想更换的刀具)<br>
-#3=#999(大刀数量)<br>
-#4=0(标记)<br>
-#4=1(异刀标记)<br>
-IF[#1GT#3]GOTO1(跳过都小)<br>
-IF[#2GT#3]GOTO1(跳过都小)<br>
-#4=0(同刀标记)<br>
-GOTO99<br>
-N1<br>
-IF[#1LE#3]GOTO99(跳过都大)<br>
-IF[#2LE#3]GOTO99(跳过都大)<br>
-#4=0(同刀标记)<br>
-N99<br>
-IF[#4EQ0]GOTO10 (同刀标记的处理跳转)<br>
-IF[#4EQ1]GOTO15 (异刀标记的处理跳转)<br>
-N10 (开始同刀标记的处理)<br>
+#1=PRM<a href="%E4%B8%BB%E8%BD%B4%E5%88%80%E5%85%B7%E5%8F%B7">8811</a><br>
+#2=#20(更换刀具号)<br>
+#3=#999(设置的大刀数量)<br>
+#5=PRM<a href="%E5%A4%A7%E6%8D%A2%E5%B0%8F%E5%89%8D%EF%BC%8C%E4%B8%BB%E8%BD%B4%E5%B0%8F%E5%88%80%E5%88%80%E5%8F%B7%E5%86%99%E5%85%A5%E7%9A%84%E5%8F%82%E6%95%B08812">8812</a><br>
+#4=0(预设同类刀具标记)<br>
+IF[#1GT#3]GOTO10 (如果主轴刀具号是小刀，跳转到N10)<br>
+IF [#2 GT #999] THEN #4 = 2 (如果更换刀具号是小刀，上一条不成立所以主轴刀具号是大刀，所以是小换大，T25中间过渡)<br>
+GOTO 100<br>
+N10<br>
+IF [#2 LE #999] THEN #4 = 1 (更换刀具号是大刀，大换小，设置大换小标记)<br>
+N11<br>
+N100<br>
+IF[#4EQ0]GOTO15 (如果是同类换刀，跳转N15)<br>
+IF[#4EQ1]GOTO20 (如果大换小，跳转N20)<br>
+IF[#4EQ2]GOTO25 (如果小换大，跳转N25)<br>
+GOTO98<br>
+N15 (同类换刀开始)<br>
 #101=#4003<br>
 #102=#4006<br>
 IF[#1009EQ1]GOTO11<br>
@@ -109,24 +109,47 @@ G91G30Z0<br>
 IF[#1008EQ1]GOTO12<br>
 G91G0G30Z0<br>
 G30G91X0Y0<br>
-T#20<br>
+T#2      (直接换刀)<br>
 N12M6<br>
 N11<br>
 G#102<br>
 G#101<br>
-GOTO98 (同刀标记的处理结束)<br>
-N15 (开始异刀标记的处理)<br>
+GOTO98   (同类换刀结束)<br>
+N20          (大换小开始)<br>
 #101=#4003<br>
 #102=#4006<br>
-IF[#1009EQ1]GOTO11<br>
+IF[#1009EQ1]GOTO111<br>
 G91G30Z0<br>
-IF[#1008EQ1]GOTO12<br>
+IF[#1008EQ1]GOTO112<br>
 G91G0G30Z0<br>
 G30G91X0Y0<br>
-T25<br>
+N112<br>
+T#2           (先直接换刀)<br>
 M6<br>
-T#2<br>
-M6 (异刀标记的处理结束)<br>
+G10L52<br>
+N8812R#1 (记录换刀前主轴上小刀刀号到参数8811)<br>
+G11<br>
+N111<br>
+G#102<br>
+G#101<br>
+GOTO98     (大换小结束)<br>
+N25            (小换大开始)<br>
+#101=#4003<br>
+#102=#4006<br>
+IF[#1009EQ1]GOTO1111<br>
+G91G30Z0<br>
+IF[#1008EQ1]GOTO1112<br>
+G91G0G30Z0<br>
+G30G91X0Y0<br>
+N1112<br>
+T#5            (先把之前大换小记录的参数8811的小刀先换出来，大刀回大刀刀库)<br>
+M6<br>
+T#2            (此时主轴和更换的刀具都是小刀，直接更换即可)<br>
+M6<br>
+N1111<br>
+G#102<br>
+G#101<br>
+GOTO98      (小换大结束)<br>
 N98<br>
 M99<br>
 %</p>
@@ -149,7 +172,7 @@ N6080R6 (6080参数改为6,M6宏程序方式调用O9005)<br>
 G11  (参数修改结束)<br>
 M99<br>
 %</p>
-<p><a href="https://github.com/user-attachments/files/25041267/V-27PMC.zip">V-27PMC大刀随机刀库（含M11,M12控制信号Y10.1）.zip</a></p></div>
+<p><a href="https://github.com/user-attachments/files/25065093/V-27PMC.zip">V-27PMC大刀随机刀库（含M11,M12控制信号Y10.1）.zip</a></p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
