@@ -87,3 +87,6 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+- name: Keepalive Workflow
+  uses: gautamkrishnar/keepalive-workflow@v1
+  if: github.event_name == 'schedule' # 仅在定时触发时运行
