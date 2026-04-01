@@ -1,0 +1,16 @@
+name: Keepalive Workflow
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # 每天 UTC 时间 0 点运行一次
+  workflow_dispatch: # 允许手动运行测试
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Keepalive Workflow
+        uses: gautamkrishnar/keepalive-workflow@v1
