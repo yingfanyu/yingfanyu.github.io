@@ -2,20 +2,25 @@ name: Native Keepalive
 
 on:
   schedule:
-    - cron: "0 0 * * 1" # 每周一运行一次即可，不需要每天运行
-  workflow_dispatch: # 方便你现在手动测试
+    - cron: "0 0 * * 1" 
+  workflow_dispatch: 
+
+# 添加这一段来消除 Node.js 20 的警告
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   keepalive:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # 必须给写入权限
+      contents: write 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Update keepalive file
         run: |
+          # 确保仓库里有一个名为 keepalive.txt 的文件
           date > keepalive.txt
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
