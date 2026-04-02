@@ -2,17 +2,21 @@ name: Keepalive Workflow
 
 on:
   schedule:
-    - cron: "0 0 * * *" # 每天 UTC 0 点运行
-  workflow_dispatch: # 允许你手动点击按钮测试
+    - cron: "0 0 * * *" # 每天 UTC 0点自动运行
+  workflow_dispatch: # 允许手动点击按钮测试
 
 jobs:
   keepalive:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    # 强制开启最高权限
+    permissions: write-all
+    
     steps:
-      - uses: actions/checkout@v4
-      - name: Keepalive Workflow
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Keepalive Action
         uses: gautamkrishnar/keepalive-workflow@v1
         with:
+          # 使用你之前在 Secrets 中设置的那个 Personal Access Token
           gh_token: ${{ secrets.KEEPALIVE_TOKEN }}
