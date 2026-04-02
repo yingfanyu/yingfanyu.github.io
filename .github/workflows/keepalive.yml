@@ -2,7 +2,7 @@ name: Native Keepalive
 
 on:
   schedule:
-    - cron: "0 0 * * 1" 
+    - cron: "0 0 1,15 * *"  # 每月 1 号和 15 号凌晨 0:00 运行
   workflow_dispatch: 
 
 # 添加这一段来消除 Node.js 20 的警告
