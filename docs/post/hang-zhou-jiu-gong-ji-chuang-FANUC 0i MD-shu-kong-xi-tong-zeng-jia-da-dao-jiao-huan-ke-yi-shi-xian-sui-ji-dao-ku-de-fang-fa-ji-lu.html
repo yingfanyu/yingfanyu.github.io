@@ -80,7 +80,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 3.在D700输入18，D702输入0，D704输入4，D706输入8811，D708输入0，D710会根据周期信号，每秒把主轴刀具号输入进去<br>
 4.重新启动PLC之后，会先把D0写入到D710，然后根据之前设置的D数据，把D710的数字填入到参数8811<br>
 5.这样参数8811就获得了当前主轴的刀具号码，在宏程序可以用PRM[8811]读取，供后续使用。</p>
-<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/87e95950-7b35-47a3-a838-4d22485fedaa"><img width="673" height="351" alt="Image" src="https://github.com/user-attachments/assets/87e95950-7b35-47a3-a838-4d22485fedaa" style="max-width: 100%; height: auto; max-height: 351px;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/87e95950-7b35-47a3-a838-4d22485fedaa"><img width="673" height="351" alt="Image" src="https://github.com/user-attachments/assets/87e95950-7b35-47a3-a838-4d22485fedaa" style="max-width: 100%; height: auto; max-height: 351px;; aspect-ratio: 673 / 351; background-color: var(--bgColor-muted); border-radius: 6px; display: block" class="js-gh-image-fallback"></a></p>
 <p>二.大刀实现随机刀库的原理，首先在#999设置想设置为大刀刀位的数量，比如7 （则能使用的大刀刀号为T2,T4,T6,中间不能安装任何其它刀具）。<br>
 通过比对想要更换的刀具和主轴刀具的刀号判断它们是否属于同一类刀具，同一类刀具则可以以随机刀库的方式进行交换。如果主轴上是小刀，要换的是大刀的情况也可以直接交换，但是要把刀号记录到参数8812，以供后续主轴是大刀，想要更换小刀的时候，必须先把插入大刀刀位的小刀先换出来，再小刀互相交换属于同类换刀。最后一种情况，主轴上是大刀，想要换的是小刀，这种情况就必须先更换T25（空刀）大刀放回大刀位置，再更换目标刀具，这样就能把主轴上的大刀放回自己的属于大刀随机刀库里面，防止大刀安装位和小刀安装位发生错乱。判断方式如下：<br>
 如果想要更换的刀具和主轴刀具都满足≤7或者都满足＞7，则是同类刀。更换刀具≤7，主轴刀具＞7可以直接更换，但是要在参数8811记录放入大刀刀位的小刀刀号。更换刀具＞7，主轴刀具≤7，则先更换空刀把大刀放回去，再更换小刀。新建一个O9020的程序<br>
