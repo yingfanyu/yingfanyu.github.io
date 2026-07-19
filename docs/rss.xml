@@ -1,5 +1,29 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Fri, 10 Jul 2026 01:18:16 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>MAZAK马扎克INTEGREX 200上下刀塔同步加工注意事项</title><link>https://bk.929295.xyz/post/MAZAK-ma-zha-ke-INTEGREX%20200-shang-xia-dao-ta-tong-bu-jia-gong-zhu-yi-shi-xiang.html</link><description>一.关于下刀塔同一把刀在第一主轴和第二主轴加工时的分度定位方法和刀补补偿方法：
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Sun, 19 Jul 2026 02:10:37 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>安装飞牛到smart am40的emmc过程</title><link>https://bk.929295.xyz/post/an-zhuang-fei-niu-dao-smart%20am40-de-emmc-guo-cheng.html</link><description>1.浏览器下载fnos刷机包 https://github.com/ophub/fnnas/releases下的fnnas_rockchip_smart-am40_k6.12.41_2026.06.25.img.gz文件
+2.解压为fnnas_rockchip_smart-am40_k6.12.41_2026.06.25.img
+3.使用rufus把镜像写入tf卡
+4.插入TF卡，拨码到非normal service，开机
+5.浏览器打开192.168.0.15:5666，设置用户名，密码等
+6.进入系统设置，SSH，打开SSH功能
+7.putty输入192.168.0.15，输入刚设置的用户名，密码，sudo -s 再次输入密码
+8.在浏览器里fnos设置存储空间管理，安装应用（lucky，飞牛影音等）
+9.在putty按如下提示操作：
+停止 eMMC 上的卷：
+umount /vol2
+vgchange -an
+mdadm --stop /dev/md1
+复制 TF：
+dd if=/dev/mmcblk1 of=/dev/mmcblk0 bs=4M status=progress conv=fsync
+写 RK3399 bootloader：
+dd if=/usr/lib/u-boot/idbloader.bin of=/dev/mmcblk0 seek=64 conv=fsync
+
+dd if=/usr/lib/u-boot/uboot.img of=/dev/mmcblk0 seek=16384 conv=fsync
+
+dd if=/usr/lib/u-boot/trust.bin of=/dev/mmcblk0 seek=24576 conv=fsync
+4.：
+sync
+poweroff
+拔 TF 启动。</description><guid isPermaLink="true">https://bk.929295.xyz/post/an-zhuang-fei-niu-dao-smart%20am40-de-emmc-guo-cheng.html</guid><pubDate>Sun, 19 Jul 2026 02:10:10 +0000</pubDate></item><item><title>MAZAK马扎克INTEGREX 200上下刀塔同步加工注意事项</title><link>https://bk.929295.xyz/post/MAZAK-ma-zha-ke-INTEGREX%20200-shang-xia-dao-ta-tong-bu-jia-gong-zhu-yi-shi-xiang.html</link><description>一.关于下刀塔同一把刀在第一主轴和第二主轴加工时的分度定位方法和刀补补偿方法：
   1.下刀塔用MDI运行T001001，或者手动模式选择下刀塔正转反转的时候所有的定位都是朝向第一主轴的，想用T001的刀在第二主轴加工时T001刀位 
      上的刀需要旋转180°才能在第二主轴加工，简单的用错误刀号使T001001旋转到第二主轴侧是做不到的，因为下刀塔刀位数（9）是奇数。</description><guid isPermaLink="true">https://bk.929295.xyz/post/MAZAK-ma-zha-ke-INTEGREX%20200-shang-xia-dao-ta-tong-bu-jia-gong-zhu-yi-shi-xiang.html</guid><pubDate>Fri, 10 Jul 2026 01:17:50 +0000</pubDate></item><item><title>用gemini和本地ollama模型写小说</title><link>https://bk.929295.xyz/post/yong-gemini-he-ben-di-ollama-mo-xing-xie-xiao-shuo.html</link><description>一.用gemini写小说：
 1.进入宝塔面板的终端页面
