@@ -131,4 +131,4 @@ docker restart onlyoffice-nginx       # 更新 nginx.conf 或 .htpasswd
 | 编辑器 Loading | DS 地址是否正确 + `DOC_SERVER_PATH` 是否填完整 https |
 | 更新代码不生效 | bind mount 必须 `docker restart`，不是 `docker compose up -d` |
 
-[飞牛 ARM OnlyOffice 在线编辑 — 完整部署指南.zip](https://github.com/user-attachments/files/30529403/ARM.OnlyOffice.zip)
+[ARM.OnlyOffice.zip](https://github.com/user-attachments/files/30531380/ARM.OnlyOffice.zip)
