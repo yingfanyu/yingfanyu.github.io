@@ -47,6 +47,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libxml2-dev libxslt1-dev
 
+      # ========== 修复 feedgen 库的兼容性问题 ==========
+      - name: Fix feedgen compatibility
+        run: |
+          # 删除 Gmeek.py 中 guid() 调用多余的 ,permalink=True 参数
+          sed -i 's/,permalink=True//' /opt/Gmeek/Gmeek.py
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
@@ -71,7 +77,7 @@ jobs:
           sleep 3
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4    # 从 v3 升级到 v4
+        uses: actions/upload-pages-artifact@v4
         with:
           path: 'docs/.'
 
@@ -92,4 +98,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5    # 从 v6 改回 v5
+        uses: actions/deploy-pages@v5
