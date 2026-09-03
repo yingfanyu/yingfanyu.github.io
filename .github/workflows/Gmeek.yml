@@ -50,8 +50,10 @@ jobs:
       # ========== 修复 feedgen 库的兼容性问题 ==========
       - name: Fix feedgen compatibility
         run: |
-          # 删除 Gmeek.py 中 guid() 调用多余的 ,permalink=True 参数
+          # 删除 guid() 调用中多余的 ,permalink=True 参数
           sed -i 's/,permalink=True//' /opt/Gmeek/Gmeek.py
+          # 将 pubDate 改为 pubdate（feedgen 新版本使用小写）
+          sed -i 's/\.pubDate(/.pubdate(/' /opt/Gmeek/Gmeek.py
 
       - name: Install dependencies
         run: |
