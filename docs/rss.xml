@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Thu, 03 Sep 2026 00:15:57 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>神盾Sutton丝锥用着还可以</title><link>https://bk.929295.xyz/post/shen-dun-Sutton-si-zhui-yong-zhao-huan-ke-yi.html</link><description>-中兵之星切削液供应商提供了两支1/4UNC的丝锥测试不锈钢切削性能（1/4-20UNC P3 R45-VA HSSE-V3）。</description><guid isPermaLink="false">https://bk.929295.xyz/post/shen-dun-Sutton-si-zhui-yong-zhao-huan-ke-yi.html</guid><pubDate>Fri, 09 Aug 2024 08:26:39 +0000</pubDate></item><item><title>mazak640t 反向间隙补偿参数</title><link>https://bk.929295.xyz/post/mazak640t%20-fan-xiang-jian-xi-bu-chang-can-shu.html</link><description>bs14：g0时的反向间隙
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>数控技术博客</title><link>https://bk.929295.xyz</link><description>Good Luck To You!</description><copyright>数控技术博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://bk.929295.xyz</link></image><lastBuildDate>Sat, 26 Sep 2026 05:35:38 +0000</lastBuildDate><managingEditor>数控技术博客</managingEditor><ttl>60</ttl><webMaster>数控技术博客</webMaster><item><title>神盾Sutton丝锥用着还可以</title><link>https://bk.929295.xyz/post/shen-dun-Sutton-si-zhui-yong-zhao-huan-ke-yi.html</link><description>-中兵之星切削液供应商提供了两支1/4UNC的丝锥测试不锈钢切削性能（1/4-20UNC P3 R45-VA HSSE-V3）。</description><guid isPermaLink="false">https://bk.929295.xyz/post/shen-dun-Sutton-si-zhui-yong-zhao-huan-ke-yi.html</guid><pubDate>Fri, 09 Aug 2024 08:26:39 +0000</pubDate></item><item><title>mazak640t 反向间隙补偿参数</title><link>https://bk.929295.xyz/post/mazak640t%20-fan-xiang-jian-xi-bu-chang-can-shu.html</link><description>bs14：g0时的反向间隙
 bs15：g1时的反向间隙
 bs14≤bs15。</description><guid isPermaLink="false">https://bk.929295.xyz/post/mazak640t%20-fan-xiang-jian-xi-bu-chang-can-shu.html</guid><pubDate>Fri, 09 Aug 2024 09:29:42 +0000</pubDate></item><item><title>动作行为调理内脏</title><link>https://bk.929295.xyz/post/dong-zuo-xing-wei-diao-li-nei-zang.html</link><description>1. 强肝，怎么做最好？当然是——徒步！&#13;
 &#13;
@@ -399,4 +399,73 @@ MOM_set_seq_off。</description><guid isPermaLink="false">https://bk.929295.xyz/
 socat TCP-LISTEN:5666,fork,reuseaddr TCP:100.65.232.26:5666 &amp;
 socat TCP-LISTEN:5445,fork,reuseaddr TCP:100.65.232.26:445 &amp;</title><link>https://bk.929295.xyz/post/termux-wake-lock-socat%20TCP-LISTEN-5666%2Cfork%2Creuseaddr%20TCP-100.65.232.26-5666%20%26-socat%20TCP-LISTEN-5445%2Cfork%2Creuseaddr%20TCP-100.65.232.26-445%20%26.html</link><description>tmux new-session -d -s port-forward 'termux-wake-lock; socat TCP-LISTEN:5666,fork,reuseaddr TCP:100.65.232.26:5666 &amp; socat TCP-LISTEN:5445,fork,reuseaddr - [ ] TCP:100.65.232.26:445 &amp; wait'
 。</description><guid isPermaLink="false">https://bk.929295.xyz/post/termux-wake-lock-socat%20TCP-LISTEN-5666%2Cfork%2Creuseaddr%20TCP-100.65.232.26-5666%20%26-socat%20TCP-LISTEN-5445%2Cfork%2Creuseaddr%20TCP-100.65.232.26-445%20%26.html</guid><pubDate>Sun, 09 Aug 2026 12:06:53 +0000</pubDate></item><item><title>SIEMENS NX UG枪钻编程方法</title><link>https://bk.929295.xyz/post/SIEMENS%20NX%20UG-qiang-zuan-bian-cheng-fang-fa.html</link><description>SIEMENS NX UG枪钻钻编程：
-1.引导钻编程：新建工序-》hole making-》钻孔（第二个图标，一个钻头）-》指定特征几何体-》修改特征几何体深度（钻孔深度）-》选择盲孔（最后一刀无效。</description><guid isPermaLink="false">https://bk.929295.xyz/post/SIEMENS%20NX%20UG-qiang-zuan-bian-cheng-fang-fa.html</guid><pubDate>Wed, 02 Sep 2026 09:59:18 +0000</pubDate></item></channel></rss>
+1.引导钻编程：新建工序-》hole making-》钻孔（第二个图标，一个钻头）-》指定特征几何体-》修改特征几何体深度（钻孔深度）-》选择盲孔（最后一刀无效。</description><guid isPermaLink="false">https://bk.929295.xyz/post/SIEMENS%20NX%20UG-qiang-zuan-bian-cheng-fang-fa.html</guid><pubDate>Wed, 02 Sep 2026 09:59:18 +0000</pubDate></item><item><title>德马吉机床heidenhain系统C轴角度测量摆正程序示例</title><link>https://bk.929295.xyz/post/de-ma-ji-ji-chuang-heidenhain-xi-tong-C-zhou-jiao-du-ce-liang-bai-zheng-cheng-xu-shi-li.html</link><description>0  BEGIN PGM probe1 MM 
+1  BLK FORM 0.1 Z  X+0  Y+0  Z+0
+2  BLK FORM 0.2  X+0  Y+0  Z+0
+3  M140 MB MAX
+4  TOOL CALL 11 Z
+5  CYCL DEF 247 DATUM SETTING ~
+    Q339=+15   ;DATUM NUMBER
+6  PLANE VECTOR BX+0 BY+0 BZ+1 NX-1 NY+0 NZ+0 TURN FMAX SEQ- TABLE ROT
+7  L  X-5  Y-45  Z+60 R0 FMAX
+8  TCH PROBE 0.0 REF. PLANE Q1991 Z- ;第一点测量写入Q1991
+9  TCH PROBE 0.1  X-5  Y-45  Z+0
+10 L  X-5  Y+45  Z+60 R0 FMAX
+11 TCH PROBE 0.0 REF. PLANE Q1992 Z-;第二点测量写入Q1992
+12 TCH PROBE 0.1  X-5  Y+45  Z+0
+13 M140 MB MAX
+14 PLANE RESET STAY
+15 L  Z+0 R0 FMAX M91
+16 L  B+0  X+0 R0 FMAX M91
+17 Q1993 = Q1992 - Q1991 ;第二点减去第一点的差值写入Q1993 (测量点位顺序从负往正)
+18 Q1994 = ATAN ( Q1993 / 90 ) ;计算旋转角度写入到Q1994
+19 L  C+Q1994 R0 FMAX
+20 FN 18: SYSREAD Q1995 = ID503 NR15 IDX6 ;读取预设表第15号第六列（C轴）的数据到Q1995
+21 Q1996 = Q1995 - Q1994 ;计算要写入到预设表的值
+22 Q1997 = Q1995 - Q1994 - 90
+23 Q1998 = Q1995 - Q1994 - 270
+24 FN 17: SYSWRITE ID 503 NR15 IDX6 =+Q1996 ;把Q1996写入预设表第15号第六列格子
+25 FN 17: SYSWRITE ID 503 NR16 IDX6 =+Q1997
+26 FN 17: SYSWRITE ID 503 NR17 IDX6 =+Q1998
+27 CYCL DEF 247 DATUM SETTING ~
+    Q339=+15   ;DATUM NUMBER  ;生效15号预设表
+28 M126
+29 L  X+0  Y+0  C+0 R0 FMAX
+30 CYCL DEF 247 DATUM SETTING ~
+    Q339=+16   ;DATUM NUMBER
+31 L  X+0  Y+0  C+0 R0 FMAX
+32 CYCL DEF 247 DATUM SETTING ~
+    Q339=+17   ;DATUM NUMBER
+33 L  X+0  Y+0  C+0 R0 FMAX
+34 M0
+35 L  Z-5 R0 FMAX
+36 TCH PROBE 412 DATUM INSIDE CIRCLE ~
+    Q321=+0    ;CENTER IN 1ST AXIS ~
+    Q322=+0    ;CENTER IN 2ND AXIS ~
+    Q262=+54   ;NOMINAL DIAMETER ~
+    Q325=+0    ;STARTING ANGLE ~
+    Q247=+90   ;STEPPING ANGLE ~
+    Q261=-5    ;MEASURING HEIGHT ~
+    Q320=+0    ;SET-UP CLEARANCE ~
+    Q260=+100  ;CLEARANCE HEIGHT ~
+    Q301=+1    ;MOVE TO CLEARANCE ~
+    Q305=+1    ;NUMBER IN TABLE ~
+    Q331=+0    ;DATUM ~
+    Q332=+0    ;DATUM ~
+    Q303=+1    ;MEAS. VALUE TRANSFER ~
+    Q381=+0    ;PROBE IN TS AXIS ~
+    Q382=+0    ;1ST CO. FOR TS AXIS ~
+    Q383=+0    ;2ND CO. FOR TS AXIS ~
+    Q384=+0    ;3RD CO. FOR TS AXIS ~
+    Q333=+0    ;DATUM ~
+    Q423=+4    ;NO. OF MEAS. POINTS ~
+    Q365=+0    ;TYPE OF TRAVERSE
+37 M140 MB MAX
+38 L  X+0  Y+0 R0 FMAX M91
+39 END PGM probe1 MM 
+
+
+
+
+[probe1.zip](https://github.com/user-attachments/files/32589850/probe1.zip)
+。</description><guid isPermaLink="false">https://bk.929295.xyz/post/de-ma-ji-ji-chuang-heidenhain-xi-tong-C-zhou-jiao-du-ce-liang-bai-zheng-cheng-xu-shi-li.html</guid><pubDate>Thu, 24 Sep 2026 02:35:10 +0000</pubDate></item></channel></rss>
