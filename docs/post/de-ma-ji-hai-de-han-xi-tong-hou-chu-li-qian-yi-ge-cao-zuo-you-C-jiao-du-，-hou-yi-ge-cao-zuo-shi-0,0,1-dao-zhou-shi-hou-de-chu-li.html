@@ -112,8 +112,8 @@ MOM_reload_variable mom_rotation_angle</p>
 <p>MOM_reload_kinematics<br>
 把相关的XYZ坐标和旋转轴都清零，并且告诉后处理内核这些变量我都更新了，用新变量值，用这种方法也可以清理当前操作结束后的所有状态，也能达到相应的要求。</p>
 <p>问题二：<br>
-在打枪钻的时候，会设置进刀条件为主轴s100，进给100，到开钻深度后提转速和开中心出水，钻到底之后停主轴和中心出水，再抬刀出来，在默认后处理里输出了M5和M9之后，后处理内核并不认为已经关闭主轴了，所以在又两个以上的深孔钻的时候，移到下一个位置的时候会再次输出一个M3旋转主轴，此时的模态转速还是较高转速，很容易出现甩出枪钻的事故，所以需要在控制事件M5之后再加一行custom command命令，命令如下global mom_spindle_direction<br>
-set mom_spindle_direction OFF  告知内核主轴已经停了，这样钻完一个空移动到另一个位置的时候就不会再次输出M3，可以避免此类事故。</p></div>
+在打枪钻的时候，会设置进刀条件为主轴s100，进给100，到开钻深度后提转速和开中心出水，钻到底之后停主轴和中心出水，再抬刀出来，在默认后处理里输出了M5和M9之后，后处理内核并不认为已经关闭主轴了，所以在有两个以上的深孔钻的时候，移到下一个位置的时候会再次输出一个M3旋转主轴，此时的模态转速还是较高转速，很容易出现甩出枪钻的事故，所以需要在控制事件M5之后再加一行custom command命令，命令如下global mom_spindle_direction<br>
+set mom_spindle_direction OFF  告知内核主轴已经停了，这样钻完一个孔移动到另一个位置的时候就不会再次输出M3，可以避免此类事故。</p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
