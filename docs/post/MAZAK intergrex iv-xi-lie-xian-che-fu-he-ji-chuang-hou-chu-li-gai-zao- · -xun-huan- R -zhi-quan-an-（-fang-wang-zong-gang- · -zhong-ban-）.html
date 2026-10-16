@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# 后处理改造 · 循环 R 值全案（防忘总纲 · 终版）
+
+> **对象**：`mill_intergrex_300_2022`（`.tcl` / `.def` / `.cdl` / `.pui`）
+> **机床**：Mazak INTEGREX 300（车铣复合，5 轴，MSYS 带旋转）
+> **定稿**：2026-10-16 · **修订 12（终版）** —— 合并「修订10 的方案」+「修订11 的逐行注释」+「19:27 版复核记录」，并按 19:38 的最终文件校正
+> **本文用途**：防忘。">
+<meta property="og:title" content="MAZAK intergrex iv系列铣车复合机床后处理改造 · 循环 R 值全案（防忘总纲 · 终版）">
+<meta property="og:description" content="# 后处理改造 · 循环 R 值全案（防忘总纲 · 终版）
+
+> **对象**：`mill_intergrex_300_2022`（`.tcl` / `.def` / `.cdl` / `.pui`）
+> **机床**：Mazak INTEGREX 300（车铣复合，5 轴，MSYS 带旋转）
+> **定稿**：2026-10-16 · **修订 12（终版）** —— 合并「修订10 的方案」+「修订11 的逐行注释」+「19:27 版复核记录」，并按 19:38 的最终文件校正
+> **本文用途**：防忘。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://bk.929295.xyz/post/MAZAK%20intergrex%20iv-xi-lie-xian-che-fu-he-ji-chuang-hou-chu-li-gai-zao-%20%C2%B7%20-xun-huan-%20R%20-zhi-quan-an-%EF%BC%88-fang-wang-zong-gang-%20%C2%B7%20-zhong-ban-%EF%BC%89.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>MAZAK intergrex iv系列铣车复合机床后处理改造 · 循环 R 值全案（防忘总纲 · 终版）</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">MAZAK intergrex iv系列铣车复合机床后处理改造 · 循环 R 值全案（防忘总纲 · 终版）</h1>
+<div class="title-right">
+    <a href="https://bk.929295.xyz" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/yingfanyu/yingfanyu.github.io/issues/65" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>后处理改造 · 循环 R 值全案（防忘总纲 · 终版）</h1>
+<blockquote>
+<p><strong>对象</strong>：<code class="notranslate">mill_intergrex_300_2022</code>（<code class="notranslate">.tcl</code> / <code class="notranslate">.def</code> / <code class="notranslate">.cdl</code> / <code class="notranslate">.pui</code>）<br>
+<strong>机床</strong>：Mazak INTEGREX 300（车铣复合，5 轴，MSYS 带旋转）<br>
+<strong>定稿</strong>：2026-10-16 · <strong>修订 12（终版）</strong> —— 合并「修订10 的方案」+「修订11 的逐行注释」+「19:27 版复核记录」，并按 19:38 的最终文件校正<br>
+<strong>本文用途</strong>：防忘。忘了就从头看第 0 章，够用；要改代码看第 4 章。</p>
+</blockquote>
+<hr>
+<h2>目录</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>章</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>结论速查（忘了只看这章）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>前因：<code class="notranslate">R0.0</code> 是怎么冒出来的</td>
+</tr>
+<tr>
+<td>2</td>
+<td>三条公式的对错（含一条会撞刀的）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>正解的架构：值在 TCL 算，格式在 <code class="notranslate">.def</code> 算</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code class="notranslate">PB_CMD_before_output</code> <strong>逐行注释</strong>（全文）</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code class="notranslate">.def</code> 的 21 处改动清单</td>
+</tr>
+<tr>
+<td>6</td>
+<td>初始化与兜底（<code class="notranslate">PB_CMD_custom_command_11</code>）</td>
+</tr>
+<tr>
+<td>7</td>
+<td>真 TCL 8.6 实测数据</td>
+</tr>
+<tr>
+<td>8</td>
+<td>操作步骤（在 Post Builder 里怎么改）</td>
+</tr>
+<tr>
+<td>9</td>
+<td>维护与跨机注意事项</td>
+</tr>
+<tr>
+<td>10</td>
+<td>附录：变量与术语速查</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h1>第 0 章 · 结论速查</h1>
+<h2>0.1 机床对 R 的定义（一切的地基）</h2>
+<p>Mazak INTEGREX 这一台，程序里 <code class="notranslate">G8x ... R&lt;数&gt;</code> 的 <code class="notranslate">&lt;数&gt;</code> 含义是：</p>
+<blockquote>
+<p><strong>R = 执行这条 <code class="notranslate">G8x</code> 那一刻刀具实际所在的 Z − 该循环 R 点的 Z</strong></p>
+</blockquote>
+<p>不是"R 点的绝对坐标"，也不是"NX 给的某个距离量"。<strong>是"刀站在哪"与"R 面在哪"的差。</strong></p>
+<h2>0.2 目标输出（就是你验收时看到的）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>转移方式</th>
+<th>第 1 孔</th>
+<th>第 2 孔</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>安全距离-最短距离</td>
+<td><code class="notranslate">R15.5</code></td>
+<td><code class="notranslate">R31.5152</code></td>
+</tr>
+<tr>
+<td>直接</td>
+<td><code class="notranslate">R15.5</code></td>
+<td><code class="notranslate">R0.0</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><code class="notranslate">R0.0</code> 不是错误，是<strong>正确</strong>的 —— 直接模式下第 2 孔开始前，刀已经站在 R 面本身（<code class="notranslate">Z30.4848</code>）上了，差就是 0。</p>
+<h2>0.3 三处改动位置（全部已在 19:38 版落地）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>#</th>
+<th>文件</th>
+<th>位置</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code class="notranslate">.tcl</code></td>
+<td><code class="notranslate">PB_CMD_before_output</code>（行 5931–6010），<strong>A 段</strong></td>
+<td>跟踪刀位 + 算出 <code class="notranslate">::nc_cycR</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code class="notranslate">.def</code></td>
+<td>21 个循环块的 R 单元</td>
+<td>一律改成 <code class="notranslate">R[$nc_cycR]</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code class="notranslate">.tcl</code></td>
+<td><code class="notranslate">PB_CMD_custom_command_11</code>（行 6873–6874）</td>
+<td>每程序开头把 R 账本归零</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><code class="notranslate">.tcl</code> 里<strong>原有的 B 段（坐标宏，需求③）一字未动</strong>。</p>
+<h2>0.4 验收判据（每次改完必查）</h2>
+<pre class="notranslate"><code class="notranslate">① Z(G8x 前一个带 Z 的移动) − R(该 G8x) = 该循环 R 点的绝对 Z
+   —— 若为负，说明刀位跟踪被污染，立刻停。
+② R 字个数 = 21（改前改后相等）
+③ 文件行数不变
+④ 安全距离那版必须与你现在跑通的逐字一致（零回归）
+</code></pre>
+<hr>
+<h1>第 1 章 · 前因：<code class="notranslate">R0.0</code> 是怎么冒出来的</h1>
+<h2>1.1 你当时看到的现象</h2>
+<p><strong>安全距离-最短距离</strong>（看着没问题）：</p>
+<pre class="notranslate"><code class="notranslate">G68.5 X0.0 Y0.0 Z0.0 I0.0 J1. K0.0 R90.
+X111.5 Y0.0 Z62. C0.0 S3537 M203
+G000 X111.5 Y0.0
+G083 X111.5 Y0.0 Z31.7357 F141.48 R15.5   Q1.9607
+G080
+G000 Z62.
+      X84.9138 Y0.0
+G083 X84.9138 Y0.0 Z15.7205 F141.48 R31.5152 Q1.9607
+G080
+G000 Z62.
+G080
+</code></pre>
+<p><strong>直接</strong>（看着不对）：</p>
+<pre class="notranslate"><code class="notranslate">G68.5 X0.0 Y0.0 Z0.0 I0.0 J1. K0.0 R90.
+X111.5 Y0.0 Z62. C0.0 S3537 M203
+G000 X111.5 Y0.0
+G083 X111.5 Y0.0 Z31.7357 F141.48 R0.0    Q1.9607   &lt;-- 第 1 孔：应为 15.5
+G080
+G000 Z46.5                                            &lt;-- 只抬到 R 面
+G080
+G000 X84.9138 Z30.4848                                &lt;-- 中间定位（关键行）
+G000 X84.9138 Y0.0
+G083 X84.9138 Y0.0 Z15.7205 R31.5152 Q1.9607          &lt;-- 第 2 孔
+G080
+G000 Z62.
+</code></pre>
+<p>两者差在<strong>抬刀高度</strong>和<strong>有没有中间定位行</strong>。</p>
+<h2>1.2 为什么"安全距离"看着对</h2>
+<p>安全距离模式下，NX 每个孔后都把刀抬回<strong>退刀平面 62</strong>，下一孔再下来。所以每个 <code class="notranslate">G8x</code> 执行时，刀都恰好从<strong>同一个高度 62</strong> 出发：</p>
+<pre class="notranslate"><code class="notranslate">R(孔1) = 62 − 46.5    = 15.5   ✓
+R(孔2) = 62 − 30.4848 = 31.5152 ✓
+</code></pre>
+<p>于是任何一种"看起来合理"的公式都能算对 —— <strong>这是巧合</strong>，它把 bug 藏住了。</p>
+<h2>1.3 为什么"直接"会 <code class="notranslate">R0.0</code></h2>
+<p>直接模式 NX 不再抬满，它<strong>只把刀抬到 R 面本身</strong>（<code class="notranslate">G000 Z46.5</code>），然后走一段<strong>中间定位</strong>（<code class="notranslate">G000 X84.9138 Z30.4848</code>）直接横移到第 2 孔。</p>
+<p>第 1 孔出 <code class="notranslate">R0.0</code> 的原因：<strong>如果刀位跟踪把 <code class="notranslate">G8x</code> 那一行自己的 Z 当成了刀位</strong>，就会拿孔底深度去减 R 点：</p>
+<pre class="notranslate"><code class="notranslate">R = 31.7357（孔底深度，不是刀位！） − 46.5 = −14.7643
+    → 负数被夹零 → R0.0   ✗
+</code></pre>
+<p>第 2 孔：刀实际站在 <code class="notranslate">Z30.4848</code>，R 点也在 <code class="notranslate">30.4848</code>：</p>
+<pre class="notranslate"><code class="notranslate">R = 30.4848 − 30.4848 = 0.0   ✓（这才是对的）
+</code></pre>
+<p><strong>同一个 <code class="notranslate">R0.0</code>，第 1 孔是错的、第 2 孔是对的</strong> —— 这就是为什么必须"跟踪真实刀位"，不能拿格式凑。</p>
+<h2>1.4 🔴 顺便拆掉的一颗雷（务必记住）</h2>
+<p>你当时那份程序里，<strong>直接模式第 2 孔曾输出 <code class="notranslate">R31.5152</code></strong>（用"退刀平面 − R 点"算的）。但执行时刀在 <code class="notranslate">Z30.4848</code>：</p>
+<pre class="notranslate"><code class="notranslate">机床算出的 R 面 = 30.4848 − 31.5152 = Z−1.03
+孔底 Z15.7205  →  R 面比孔底还低 16.75 mm
+</code></pre>
+<p><strong>刀会先扎到 R 面以下的空气里再"钻"上去 —— 直接撞刀。</strong></p>
+<blockquote>
+<p><strong>结论</strong>：任何"用固定参考面（退刀平面 / 初始平面）去减"的公式，在<strong>直接模式</strong>下都可能给出<strong>偏大的 R</strong>，R 面被推到孔底下。必须用真实刀位。</p>
+</blockquote>
+<hr>
+<h1>第 2 章 · 三条公式的对错</h1>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>#</th>
+<th>公式</th>
+<th>安全距离</th>
+<th>直接</th>
+<th>判定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td><code class="notranslate">R[$mom_cycle_rapid_to_pos(轴)]</code>（出厂）</td>
+<td><code class="notranslate">R46.5</code> / <code class="notranslate">R30.4848</code>（绝对坐标）</td>
+<td>同</td>
+<td>❌ 机床不认，等于把 R 点绝对 Z 当距离</td>
+</tr>
+<tr>
+<td>B</td>
+<td><code class="notranslate">$mom_cycle_retract_to_pos(轴) − $mom_cycle_rapid_to_pos(轴)</code></td>
+<td>62−46.5=<code class="notranslate">15.5</code> ✓ / 62−30.4848=<code class="notranslate">31.5152</code> ✓</td>
+<td>62−46.5=<code class="notranslate">15.5</code> ✓ / 62−30.4848=<code class="notranslate">31.5152</code> ✗</td>
+<td><g-emoji class="g-emoji" alias="warning">⚠️</g-emoji> 直接模式偏大 → <strong>撞刀</strong></td>
+</tr>
+<tr>
+<td>C</td>
+<td><strong><code class="notranslate">刀位Z − $mom_cycle_rapid_to_pos(轴)</code>，下限 0</strong></td>
+<td><code class="notranslate">15.5</code> / <code class="notranslate">31.5152</code> ✓</td>
+<td><code class="notranslate">15.5</code> / <code class="notranslate">0.0</code> ✓</td>
+<td>✅ <strong>采用</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>公式 B 之所以在"直接"下错，是因为它假设"刀在退刀平面 62 上"。直接模式下 NX 只抬到 46.5，这个假设塌了。</p>
+<p>公式 C 唯一依赖的是"<strong>刀此刻在哪</strong>" —— 而这是 NX 一定会告诉我们的（就是那条 <code class="notranslate">G000 X84.9138 Z30.4848</code>）。</p>
+<hr>
+<h1>第 3 章 · 正解的架构</h1>
+<h2>3.1 分工：值在 TCL 算，格式在 <code class="notranslate">.def</code> 算</h2>
+<pre class="notranslate"><code class="notranslate">      ┌──────────────────────────── .tcl ────────────────────────────┐
+      │  PB_CMD_before_output                                        │
+      │   ① 从当前 NC 块里读出真实刀位 Z      -&gt; ::nc_cycR_z          │
+      │   ② ::nc_cycR = ::nc_cycR_z − R点Z   （负数夹 0）             │
+      └───────────────────────────────┬──────────────────────────────┘
+                                      │  全局变量
+                                      ▼
+      ┌──────────────────────────── .def ────────────────────────────┐
+      │  21 个循环块：R[$nc_cycR]                                    │
+      │  格式仍走原有的  ADDRESS R { FORMAT Coordinate ... }          │
+      │    ⇒ 自动出 15.5 / 31.5152 / 0.0                             │
+      └──────────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>为什么坚持这个分工？</strong></p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>方案</th>
+<th>问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全塞进 <code class="notranslate">.def</code> 表达式（<code class="notranslate">R[$nc_cycR_z - $mom_cycle_rapid_to_pos(...)]</code>）</td>
+<td>21 处各写一段加减+夹零，改一处漏一处；<code class="notranslate">.def</code> 表达式里做"小于 0 则取 0"很别扭</td>
+</tr>
+<tr>
+<td>在 TCL 里<strong>重写整行文本</strong>（自己拼 <code class="notranslate">R15.5</code>）</td>
+<td>要手工复刻 <code class="notranslate">15.5</code> / <code class="notranslate">31.5152</code> / <code class="notranslate">0.0</code> 三种写法，还得自己处理坐标宏、字头 —— 格式一错就撞刀（<strong>这是我们走了一圈后否掉的路</strong>）</td>
+</tr>
+<tr>
+<td>✅ <strong>值在 TCL、格式在 <code class="notranslate">.def</code></strong></td>
+<td>21 处表达式只要<strong>一行一改</strong>；输出形态完全由现有的 <code class="notranslate">FORMAT Coordinate</code> 保证，与跑通的那版逐字一致</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><code class="notranslate">.def</code> 的 <code class="notranslate">ADDRESS R</code> 定义（行 458，<strong>未改动</strong>）：</p>
+<pre class="notranslate"><code class="notranslate">  ADDRESS R
+  {
+      FORMAT      Coordinate
+      FORCE       off
+      MAX         99999.999 Truncate
+      MIN         -99999.999 Truncate
+      LEADER      "R"
+      ZERO_FORMAT Zero_real
+  }
+</code></pre>
+<blockquote>
+<p><g-emoji class="g-emoji" alias="warning">⚠️</g-emoji> <code class="notranslate">MIN -99999.999 Truncate</code> 只做<strong>截断</strong>，<strong>不会把负数归零</strong>。所以负 R 必须由 TCL 侧夹掉 —— 这也是第 4 章里那句夹零必须存在的原因。</p>
+</blockquote>
+<h2>3.2 ★ 运行次序（"隔一块"）—— 理解全案的关键</h2>
+<p>NX 对<strong>每一个</strong> NC 块的处理顺序是：</p>
+<pre class="notranslate"><code class="notranslate">     块 N 要输出了
+        │
+        ├─(a) 用 .def 模板把块 N 的文本填好   ←── 此刻读 $nc_cycR
+        │
+        └─(b) 调 PB_CMD_before_output        ←── 此刻写 $nc_cycR
+</code></pre>
+<p><strong>所以：某个 <code class="notranslate">G8x</code> 行印出来的 R，用的是"它前面那个块处理时算出的" <code class="notranslate">$nc_cycR</code>。</strong></p>
+<p>这够用 —— 因为定位移动（<code class="notranslate">G000 X84.9138 Z30.4848</code>）永远排在 <code class="notranslate">G8x</code> 前面，它先把刀位改掉，R 自然跟着走到正确值。</p>
+<h3>逐块追踪（安全距离，孔 2）</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>步</th>
+<th>块</th>
+<th>(a) 印出的 R</th>
+<th>(b) 之后的 <code class="notranslate">::nc_cycR_z</code></th>
+<th>(b) 之后的 <code class="notranslate">::nc_cycR</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code class="notranslate">X111.5 Y0.0 Z62. C0.0 S3537 M203</code></td>
+<td>—</td>
+<td><strong>62.</strong></td>
+<td>（R 点还没进循环，不算）</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code class="notranslate">G000 X111.5 Y0.0</code></td>
+<td>—</td>
+<td>62.</td>
+<td>62−46.5 = <strong>15.5</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code class="notranslate">G083 … R[15.5]</code></td>
+<td><strong>15.5</strong> ✓</td>
+<td>62.（G8x 不跟踪）</td>
+<td>15.5</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code class="notranslate">G080</code></td>
+<td>—</td>
+<td>62.（G8x 不跟踪）</td>
+<td>15.5</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code class="notranslate">G000 Z62.</code></td>
+<td>—</td>
+<td>62.</td>
+<td>62−<strong>30.4848</strong> = <strong>31.5152</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code class="notranslate">G000 X84.9138 Y0.0</code></td>
+<td>—</td>
+<td>62.（无 Z）</td>
+<td>31.5152</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code class="notranslate">G083 … R[31.5152]</code></td>
+<td><strong>31.5152</strong> ✓</td>
+<td>62.</td>
+<td>31.5152</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>逐块追踪（直接，孔 2）</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>步</th>
+<th>块</th>
+<th>(a) 印出的 R</th>
+<th>(b) 之后 <code class="notranslate">::nc_cycR_z</code></th>
+<th>(b) 之后 <code class="notranslate">::nc_cycR</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>…</td>
+<td>（孔 1 同上，出 <code class="notranslate">15.5</code>）</td>
+<td>15.5 ✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code class="notranslate">G000 Z46.5</code></td>
+<td>—</td>
+<td>46.5</td>
+<td>46.5−46.5 = 0.0</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code class="notranslate">G080</code></td>
+<td>—</td>
+<td>46.5</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong><code class="notranslate">G000 X84.9138 Z30.4848</code></strong></td>
+<td>—</td>
+<td><strong>30.4848</strong></td>
+<td><strong>0.0</strong></td>
+</tr>
+<tr>
+<td>8</td>
+<td><code class="notranslate">G000 X84.9138 Y0.0</code></td>
+<td>—</td>
+<td>30.4848（无 Z）</td>
+<td><strong>0.0</strong></td>
+</tr>
+<tr>
+<td>9</td>
+<td><code class="notranslate">G083 … R[0.0]</code></td>
+<td><strong>0.0</strong> ✓</td>
+<td>30.4848</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>第 7 步那条中间定位行把刀位更新成 <code class="notranslate">30.4848</code>，是"直接模式第 2 孔得 <code class="notranslate">0.0</code>"的全部原因。</strong> 这条线不跟踪，就会退回到错误的 <code class="notranslate">31.5152</code>。</p>
+<hr>
+<h1>第 4 章 · <code class="notranslate">PB_CMD_before_output</code> 逐行注释</h1>
+<p>文件 <code class="notranslate">mill_intergrex_300_2022.tcl</code>，<strong>行 5931 – 6010</strong>。下面按"先原文、后逐行解释"两块给出。</p>
+<h2>4.1 原文（你机器上的当前版本）</h2>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-k">proc</span> <span class="pl-en">PB_CMD_before_output</span> { } {
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+   <span class="pl-k">global</span> mom_o_buffer
+   <span class="pl-k">global</span> mom_sys_leader
+   <span class="pl-k">global</span> mom_sys_control_out
+   <span class="pl-k">global</span> mom_tool_number
+   <span class="pl-k">global</span> mom_cycle_rapid_to_pos
+   <span class="pl-k">global</span> mom_cycle_spindle_axis
+
+   <span class="pl-c"><span class="pl-c">#</span> ============ A. CYCLE R : value + tool-Z tracker ============</span>
+   <span class="pl-c"><span class="pl-c">#</span>  (1) update "current tool Z" from this block</span>
+   <span class="pl-c"><span class="pl-c">#</span>      -&gt; ::nc_cycR_z</span>
+   <span class="pl-c"><span class="pl-c">#</span>  (2) recompute  ::nc_cycR = tool Z - R point Z   (the value .def reads)</span>
+   <span class="pl-c"><span class="pl-c">#</span>  Order matters: track FIRST, then compute.</span>
+   <span class="pl-c"><span class="pl-c">#</span>  Runs for every NC block (MOM_before_output -&gt; PB_CMD_kin_before_output).</span>
+   <span class="pl-c"><span class="pl-c">#</span>  Only reads mom_o_buffer; never calls any MOM_ output command.</span>
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_cycR] } { <span class="pl-k">set</span> ::nc_cycR 0.0 }
+
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_o_buffer] &amp;&amp; [<span class="pl-k">string</span> length <span class="pl-smi">$mom_o_buffer</span>] &gt; 0 } {
+
+      <span class="pl-c"><span class="pl-c">#</span> ---- (1) track tool Z ----</span>
+      <span class="pl-k">set</span> nc_tb <span class="pl-smi">$mom_o_buffer</span>
+      <span class="pl-k">set</span> nc_tk 1
+      <span class="pl-k">if</span> { [<span class="pl-k">string</span> first <span class="pl-smi">$mom_sys_control_out</span> <span class="pl-smi">$nc_tb</span>] &gt;= 0 } { <span class="pl-k">set</span> nc_tk 0 }
+      <span class="pl-k">if</span> { [<span class="pl-k">string</span> first <span class="pl-s"><span class="pl-pds">"</span>)<span class="pl-pds">"</span></span> <span class="pl-smi">$nc_tb</span>] &gt;= 0 } { <span class="pl-k">set</span> nc_tk 0 }
+      <span class="pl-k">if</span> { [<span class="pl-k">regexp</span> <span class="pl-sr">{G0*8[0-9]\M}</span> <span class="pl-smi">$nc_tb</span>] } { <span class="pl-k">set</span> nc_tk 0 }
+      <span class="pl-k">if</span> { [<span class="pl-k">regexp</span> <span class="pl-sr">{G0*(53|28|30|52|92|10|04|4|68|91)(\.[0-9]+)?\M}</span> <span class="pl-smi">$nc_tb</span>] } { <span class="pl-k">set</span> nc_tk 0 }
+      <span class="pl-k">set</span> nc_lz <span class="pl-smi">$mom_sys_leader(Z)</span>
+      <span class="pl-k">if</span> { <span class="pl-smi">$nc_tk</span> &amp;&amp; [<span class="pl-k">string</span> length <span class="pl-smi">$nc_lz</span>] &gt; 0 } {
+         <span class="pl-k">set</span> nc_hits [<span class="pl-k">regexp</span> -all -inline -- <span class="pl-sr">[format</span> {%s(-?[0-9.]+)} <span class="pl-smi">$nc_lz</span>] <span class="pl-smi">$nc_tb</span>]
+         <span class="pl-k">if</span> { [<span class="pl-k">llength</span> <span class="pl-smi">$nc_hits</span>] &gt; 0 } { <span class="pl-k">set</span> ::nc_cycR_z [<span class="pl-k">lindex</span> <span class="pl-smi">$nc_hits</span> end] }
+      }
+
+      <span class="pl-c"><span class="pl-c">#</span> ---- (2) recompute R for the next block to read ----</span>
+      <span class="pl-k">set</span> nc_ax 2
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_cycle_spindle_axis] } { <span class="pl-k">set</span> nc_ax <span class="pl-smi">$mom_cycle_spindle_axis</span> }
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_cycle_rapid_to_pos(<span class="pl-smi">$nc_ax</span>)] &amp;&amp; [<span class="pl-k">info</span> exists ::nc_cycR_z] } {
+         <span class="pl-k">set</span> ::nc_cycR [<span class="pl-k">expr</span> {double(<span class="pl-smi">$::nc_cycR_z</span>) - double(<span class="pl-smi">$mom_cycle_rapid_to_pos($nc_ax)</span>)}]
+         <span class="pl-k">if</span> { <span class="pl-smi">$::nc_cycR</span> &lt; 0.0 } { <span class="pl-k">set</span> ::nc_cycR 0.0 }
+      }
+   }
+
+   <span class="pl-c"><span class="pl-c">#</span> ============ B. coord macro (UNCHANGED - rev6) ============</span>
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_addvar_on] || <span class="pl-smi">$::nc_addvar_on</span> != 1 } { <span class="pl-k">return</span> }
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists mom_o_buffer] || [<span class="pl-k">string</span> length <span class="pl-smi">$mom_o_buffer</span>] == 0 } { <span class="pl-k">return</span> }
+
+   <span class="pl-k">set</span> buf <span class="pl-smi">$mom_o_buffer</span>
+
+   <span class="pl-k">if</span> { [<span class="pl-k">string</span> first <span class="pl-smi">$mom_sys_control_out</span> <span class="pl-smi">$buf</span>] &gt;= 0 } { <span class="pl-k">return</span> }
+   <span class="pl-k">if</span> { [<span class="pl-k">string</span> first <span class="pl-s"><span class="pl-pds">"</span>)<span class="pl-pds">"</span></span> <span class="pl-smi">$buf</span>] &gt;= 0 } { <span class="pl-k">return</span> }
+   <span class="pl-k">if</span> { [<span class="pl-k">regexp</span> <span class="pl-sr">{G(53|28|30|52|92|10|04|4|68)\M}</span> <span class="pl-smi">$buf</span>] } { <span class="pl-k">return</span> }
+
+   <span class="pl-k">set</span> tn 0
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_tool_number] } {
+      <span class="pl-k">set</span> tn <span class="pl-smi">$mom_tool_number</span>
+      <span class="pl-k">if</span> { <span class="pl-smi">$tn</span> &gt; 100 } { <span class="pl-k">set</span> tn [<span class="pl-k">expr</span> {int(double(<span class="pl-smi">$tn</span>) / 100.0 + 0.5)}] }
+   }
+   <span class="pl-k">set</span> xn [<span class="pl-k">expr</span> {600 + <span class="pl-smi">$tn</span> * 5 - 4}]
+   <span class="pl-k">set</span> yn [<span class="pl-k">expr</span> {600 + <span class="pl-smi">$tn</span> * 5 - 3}]
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_x_var] &amp;&amp; <span class="pl-smi">$::nc_x_var</span> &gt; 0 } { <span class="pl-k">set</span> xn <span class="pl-smi">$::nc_x_var</span> }
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_y_var] &amp;&amp; <span class="pl-smi">$::nc_y_var</span> &gt; 0 } { <span class="pl-k">set</span> yn <span class="pl-smi">$::nc_y_var</span> }
+
+   <span class="pl-k">set</span> lx <span class="pl-smi">$mom_sys_leader(X)</span>
+   <span class="pl-k">set</span> ly <span class="pl-smi">$mom_sys_leader(Y)</span>
+   <span class="pl-k">set</span> n 0
+
+   <span class="pl-k">if</span> { [<span class="pl-k">string</span> length <span class="pl-smi">$lx</span>] &gt; 0 } {
+      <span class="pl-k">set</span> pat [<span class="pl-k">format</span> {%s(-?[0-9.]+)} <span class="pl-smi">$lx</span>]
+      <span class="pl-k">set</span> rep [<span class="pl-k">format</span> {%s[%s+#%s]} <span class="pl-smi">$lx</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\\</span>1<span class="pl-pds">"</span></span> <span class="pl-smi">$xn</span>]
+      <span class="pl-k">incr</span> n [<span class="pl-k">regsub</span> -all <span class="pl-sr"><span class="pl-smi">$pat</span></span> <span class="pl-smi">$buf</span> <span class="pl-smi">$rep</span> buf]
+   }
+   <span class="pl-k">if</span> { [<span class="pl-k">string</span> length <span class="pl-smi">$ly</span>] &gt; 0 } {
+      <span class="pl-k">set</span> pat [<span class="pl-k">format</span> {%s(-?[0-9.]+)} <span class="pl-smi">$ly</span>]
+      <span class="pl-k">set</span> rep [<span class="pl-k">format</span> {%s[%s+#%s]} <span class="pl-smi">$ly</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\\</span>1<span class="pl-pds">"</span></span> <span class="pl-smi">$yn</span>]
+      <span class="pl-k">incr</span> n [<span class="pl-k">regsub</span> -all <span class="pl-sr"><span class="pl-smi">$pat</span></span> <span class="pl-smi">$buf</span> <span class="pl-smi">$rep</span> buf]
+   }
+
+   <span class="pl-k">if</span> { <span class="pl-smi">$n</span> &gt; 0 } { <span class="pl-k">set</span> mom_o_buffer <span class="pl-smi">$buf</span> }
+
+}</pre></div>
+<h2>4.2 逐行解释</h2>
+<h3>（0）<code class="notranslate">global</code> 声明 —— 为什么必须写</h3>
+<div class="highlight highlight-source-tcl"><pre class="notranslate">   <span class="pl-k">global</span> mom_o_buffer
+   <span class="pl-k">global</span> mom_sys_leader
+   <span class="pl-k">global</span> mom_sys_control_out
+   <span class="pl-k">global</span> mom_tool_number
+   <span class="pl-k">global</span> mom_cycle_rapid_to_pos
+   <span class="pl-k">global</span> mom_cycle_spindle_axis</pre></div>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>变量</th>
+<th>是什么</th>
+<th>用在哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">mom_o_buffer</code></td>
+<td><strong>即将输出的这一整块 NC 文本</strong>（<code class="notranslate">.def</code> 已经填好）</td>
+<td>A 段读它的 Z；B 段改写它</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_sys_leader</code></td>
+<td>字头数组，<code class="notranslate">mom_sys_leader(Z)</code> = <code class="notranslate">"Z"</code>、<code class="notranslate">(X)</code> = <code class="notranslate">"X"</code>…（tcl:295 定义）</td>
+<td>用<strong>字头</strong>而不是硬编码 <code class="notranslate">Z</code> 去找 Z 字，换后处理配置也不会失效</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_sys_control_out</code></td>
+<td>注释起始符（本机 <code class="notranslate">"("</code>）</td>
+<td>用来跳过注释行，别把注释里的数字当刀位</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_tool_number</code></td>
+<td>当前刀号</td>
+<td>B 段算坐标宏的刀补变量号</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_cycle_rapid_to_pos</code></td>
+<td><strong>R 点绝对坐标数组</strong>（<code class="notranslate">(0)</code>=X, <code class="notranslate">(1)</code>=Y, <code class="notranslate">(2)</code>=Z）</td>
+<td>A 段算 R 的被减数</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_cycle_spindle_axis</code></td>
+<td>当前循环沿哪个轴钻（本机 <code class="notranslate">2</code> = Z）</td>
+<td>决定取 <code class="notranslate">_pos</code> 的哪一分量</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p><strong>TCL 规则</strong>：过程内不 <code class="notranslate">global</code>，读到的就是自己的局部（不存在 → 报 <code class="notranslate">no such variable</code>）。<code class="notranslate">.tcl</code> 顶层的 <code class="notranslate">set mom_xxx</code> 都是全局，所以这里必须逐一 <code class="notranslate">global</code> 才能看见。</p>
+</blockquote>
+<h3>（1）兜底初始化 —— 一行保险，防止后处理被中断</h3>
+<div class="highlight highlight-source-tcl"><pre class="notranslate">   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_cycR] } { <span class="pl-k">set</span> ::nc_cycR 0.0 }</pre></div>
+<p><code class="notranslate">.def</code> 里已经是 <code class="notranslate">R[$nc_cycR]</code>。如果 <code class="notranslate">::nc_cycR</code> 从来没被赋过值，<code class="notranslate">.def</code> 求值时会抛 <code class="notranslate">can't read "::nc_cycR": no such variable</code>，<strong>整个后处理中断</strong>。</p>
+<p>正常流程走不到（第 7 章实测的第一个块就会赋值），但这行是<strong>白捡的保险</strong>。写 <code class="notranslate">0.0</code> 而不是 <code class="notranslate">0</code> 是为了让格式输出 <code class="notranslate">R0.0</code>（<code class="notranslate">ZERO_FORMAT Zero_real</code>）。</p>
+<blockquote>
+<p>用 <code class="notranslate">::</code> 前缀 = 显式指全局，在过程里不需要 <code class="notranslate">global</code> 声明（<code class="notranslate">::</code> 是全局命名空间的绝对路径）。</p>
+</blockquote>
+<h3>（2）外层 <code class="notranslate">if</code> —— 空块直接跳过</h3>
+<div class="highlight highlight-source-tcl"><pre class="notranslate">   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_o_buffer] &amp;&amp; [<span class="pl-k">string</span> length <span class="pl-smi">$mom_o_buffer</span>] &gt; 0 } {</pre></div>
+<p>两块保险：变量存在 <strong>且</strong> 非空串。空块（比如纯换行）里没有 Z 可读，跳过能省掉不必要的正则开销，也避免 <code class="notranslate">regexp -all -inline</code> 拿到空列表。</p>
+<h3>（3）跟踪刀位：三个"不跟踪"的开关</h3>
+<div class="highlight highlight-source-tcl"><pre class="notranslate">      <span class="pl-k">set</span> nc_tb <span class="pl-smi">$mom_o_buffer</span>
+      <span class="pl-k">set</span> nc_tk 1
+      <span class="pl-k">if</span> { [<span class="pl-k">string</span> first <span class="pl-smi">$mom_sys_control_out</span> <span class="pl-smi">$nc_tb</span>] &gt;= 0 } { <span class="pl-k">set</span> nc_tk 0 }
+      <span class="pl-k">if</span> { [<span class="pl-k">string</span> first <span class="pl-s"><span class="pl-pds">"</span>)<span class="pl-pds">"</span></span> <span class="pl-smi">$nc_tb</span>] &gt;= 0 } { <span class="pl-k">set</span> nc_tk 0 }
+      <span class="pl-k">if</span> { [<span class="pl-k">regexp</span> <span class="pl-sr">{G0*8[0-9]\M}</span> <span class="pl-smi">$nc_tb</span>] } { <span class="pl-k">set</span> nc_tk 0 }
+      <span class="pl-k">if</span> { [<span class="pl-k">regexp</span> <span class="pl-sr">{G0*(53|28|30|52|92|10|04|4|68|91)(\.[0-9]+)?\M}</span> <span class="pl-smi">$nc_tb</span>] } { <span class="pl-k">set</span> nc_tk 0 }</pre></div>
+<p><code class="notranslate">nc_tk = 1</code> 表示"这一块的 Z 可以当刀位"，任何一条命中就置 0。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>排除项</th>
+<th>挡的是</th>
+<th>不挡会怎样</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>含 <code class="notranslate">$mom_sys_control_out</code>（<code class="notranslate">(</code>）</td>
+<td>注释块，如 <code class="notranslate">(DBGNEW …)</code></td>
+<td>注释里的数字被当刀位</td>
+</tr>
+<tr>
+<td>含 <code class="notranslate">)</code></td>
+<td>同上（另一侧）</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><strong><code class="notranslate">G0*8[0-9]</code></strong></td>
+<td><strong>本行就是循环行</strong>（<code class="notranslate">G080</code>~<code class="notranslate">G089</code>，含 <code class="notranslate">G080</code> 取消行）</td>
+<td><g-emoji class="g-emoji" alias="warning">⚠️</g-emoji> <strong>致命</strong>：<code class="notranslate">G083 … Z31.7357</code> 的 <code class="notranslate">Z31.7357</code> 是<strong>孔底深度</strong>不是刀位；跟踪它 → R 全错</td>
+</tr>
+<tr>
+<td><code class="notranslate">G0*(53|28|30|52|92|10|04|4|68|91)</code></td>
+<td>机床坐标 / 回零 / 局部坐标 / 绝对模式 / 暂停 / 第四轴（<code class="notranslate">G68</code> 坐标旋转）/ 增量模式</td>
+<td><code class="notranslate">G68.5 X0 Y0 Z0 …</code> 里的 <code class="notranslate">Z0.0</code> 是<strong>旋转中心</strong>，跟踪它 → R 从 0 起算，全错</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p><code class="notranslate">\M</code> 是 TCL 正则的<strong>词尾锚</strong>，防止 <code class="notranslate">G04</code> 在 <code class="notranslate">G040</code> 里被误配。<br>
+<code class="notranslate">G91</code>/<code class="notranslate">G90</code> 一并排除：<code class="notranslate">G91</code> 之后行内坐标可能变成增量值，不是刀位。</p>
+</blockquote>
+<h3>（4）抓 Z 字（关键的一句话）</h3>
+<div class="highlight highlight-source-tcl"><pre class="notranslate">      <span class="pl-k">set</span> nc_lz <span class="pl-smi">$mom_sys_leader(Z)</span>
+      <span class="pl-k">if</span> { <span class="pl-smi">$nc_tk</span> &amp;&amp; [<span class="pl-k">string</span> length <span class="pl-smi">$nc_lz</span>] &gt; 0 } {
+         <span class="pl-k">set</span> nc_hits [<span class="pl-k">regexp</span> -all -inline -- <span class="pl-sr">[format</span> {%s(-?[0-9.]+)} <span class="pl-smi">$nc_lz</span>] <span class="pl-smi">$nc_tb</span>]
+         <span class="pl-k">if</span> { [<span class="pl-k">llength</span> <span class="pl-smi">$nc_hits</span>] &gt; 0 } { <span class="pl-k">set</span> ::nc_cycR_z [<span class="pl-k">lindex</span> <span class="pl-smi">$nc_hits</span> end] }
+      }</pre></div>
+<ul>
+<li>用 <code class="notranslate">$mom_sys_leader(Z)</code> 取值 = <strong>不硬编码 <code class="notranslate">Z</code></strong>。</li>
+<li><code class="notranslate">-all -inline</code> 把匹配项<strong>连同捕获组</strong>一起返回，所以 <code class="notranslate">nc_hits</code> 形如 <code class="notranslate">{Z62. 62.}</code>。</li>
+<li>取 <code class="notranslate">[lindex … end]</code> = <strong>这一个捕获组</strong>（最后一项）。若一行里有两个 Z，取最后一个更接近"该行结束时刀的位置"。</li>
+<li><code class="notranslate">nc_tk</code> 为假时<strong>整段跳过</strong> —— 即便行里有 <code class="notranslate">Z31.7357</code>，也绝不动 <code class="notranslate">::nc_cycR_z</code>。</li>
+</ul>
+<blockquote>
+<p>变量名带 <code class="notranslate">::</code> 前缀（<code class="notranslate">::nc_cycR_z</code>）= <strong>全局</strong>，这样 <code class="notranslate">.def</code> 和 <code class="notranslate">custom_command_11</code> 都能看见/清理。</p>
+</blockquote>
+<h3>（5）算 R（顺序：先跟踪，后计算）</h3>
+<div class="highlight highlight-source-tcl"><pre class="notranslate">      <span class="pl-k">set</span> nc_ax 2
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_cycle_spindle_axis] } { <span class="pl-k">set</span> nc_ax <span class="pl-smi">$mom_cycle_spindle_axis</span> }
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_cycle_rapid_to_pos(<span class="pl-smi">$nc_ax</span>)] &amp;&amp; [<span class="pl-k">info</span> exists ::nc_cycR_z] } {
+         <span class="pl-k">set</span> ::nc_cycR [<span class="pl-k">expr</span> {double(<span class="pl-smi">$::nc_cycR_z</span>) - double(<span class="pl-smi">$mom_cycle_rapid_to_pos($nc_ax)</span>)}]
+         <span class="pl-k">if</span> { <span class="pl-smi">$::nc_cycR</span> &lt; 0.0 } { <span class="pl-k">set</span> ::nc_cycR 0.0 }
+      }</pre></div>
+<ul>
+<li><code class="notranslate">nc_ax</code> 默认 <code class="notranslate">2</code>（Z），有 <code class="notranslate">mom_cycle_spindle_axis</code> 就用它的值 —— 车铣复合换主轴方向时不会算错轴。</li>
+<li>两个 <code class="notranslate">info exists</code> 同时成立才算：<strong>R 点存在</strong> 且 <strong>刀位已跟踪到</strong>。少任何一个就保持上一次的值（不动，比乱算安全）。</li>
+<li><code class="notranslate">double(...)</code>：<strong>必须显式转</strong>。原因见下。</li>
+<li><code class="notranslate">expr</code> 的结果赋给 <code class="notranslate">::nc_cycR</code>，TCL 会把结果<strong>规范化成最短字符串</strong> —— 实测 <code class="notranslate">15.5</code> / <code class="notranslate">31.5152</code> / <code class="notranslate">0.0</code>，<strong>没有浮点尾巴</strong>。</li>
+<li><code class="notranslate">if { $::nc_cycR &lt; 0.0 }</code> 夹零：因为 <code class="notranslate">ADDRESS R</code> 的 <code class="notranslate">MIN</code> 只截断不归零（见 3.1）。</li>
+</ul>
+<blockquote>
+<p><strong>为什么一定要 <code class="notranslate">double()</code></strong>：TCL 的 <code class="notranslate">expr</code> 会把前导 0 的数字当<strong>八进制</strong>。<code class="notranslate">expr {08 - 1}</code> 直接报 <code class="notranslate">invalid octal number</code>。NC 里的数虽然少见 <code class="notranslate">08.0</code>，但 <code class="notranslate">double()</code> 一劳永逸，值得养成习惯。</p>
+</blockquote>
+<blockquote>
+<p><strong>为什么"跟踪在前、计算在后"</strong>：同一块里，要先让 <code class="notranslate">::nc_cycR_z</code> 更新成这一块的真实刀位，再拿新刀位算 R。反过来的话，算出来的 R 永远慢一块。<strong>这一条在攻丝场景下尤其致命</strong> —— 攻丝前会先 <code class="notranslate">G000 Z46.5</code> 快移到 R 面，那次快移必须被计入。</p>
+</blockquote>
+<h3>（6）B 段（坐标宏）—— 与 R 完全解耦</h3>
+<div class="highlight highlight-source-tcl"><pre class="notranslate">   <span class="pl-c"><span class="pl-c">#</span> ============ B. coord macro (UNCHANGED - rev6) ============</span>
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_addvar_on] || <span class="pl-smi">$::nc_addvar_on</span> != 1 } { <span class="pl-k">return</span> }</pre></div>
+<p><strong>B 段一字未动</strong>，只强调两点：</p>
+<ol>
+<li><strong>A 段必须在 B 段的 <code class="notranslate">return</code> 之前。</strong> 因为 B 段一开头的 <code class="notranslate">return</code> 会在"本工序没开坐标宏"时直接退出。若把 A 段放到它后面，"没开坐标宏的工序"就<strong>不跟踪刀位</strong>，R 必错。</li>
+<li>A 段<strong>只读 <code class="notranslate">mom_o_buffer</code>，从不调用任何 <code class="notranslate">MOM_</code> 输出命令</strong>。所以它与 B 段互不干扰，也不会有"重复输出"的风险。</li>
+</ol>
+<hr>
+<h1>第 5 章 · <code class="notranslate">.def</code> 的 21 处改动清单</h1>
+<p>改法统一：把 <code class="notranslate">R[&lt;原来的东西&gt;]</code> 换成 <code class="notranslate">R[$nc_cycR]</code>，<code class="notranslate">\opt</code> 后缀<strong>原样保留</strong>。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>#</th>
+<th>行号</th>
+<th>块名</th>
+<th>界面归属（<code class="notranslate">.pui</code> 事件名）</th>
+<th>尾缀</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>997</td>
+<td><code class="notranslate">cycle_bore</code></td>
+<td>Bore</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>1036</td>
+<td><code class="notranslate">cycle_bore_back</code></td>
+<td>Bore Back</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>1076</td>
+<td><code class="notranslate">cycle_bore_drag</code></td>
+<td>Bore Drag</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>1115</td>
+<td><code class="notranslate">cycle_bore_dwell</code></td>
+<td>Bore Dwell</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>1155</td>
+<td><code class="notranslate">cycle_bore_manual</code></td>
+<td>Bore Manual</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>1194</td>
+<td><code class="notranslate">cycle_bore_manual_dwell</code></td>
+<td>Bore Manual Dwell</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>1234</td>
+<td><code class="notranslate">cycle_bore_no_drag</code></td>
+<td>Bore No Drag</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>1274</td>
+<td><code class="notranslate">cycle_drill</code></td>
+<td>Drill</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td>1313</td>
+<td><code class="notranslate">cycle_drill_break_chip</code></td>
+<td>Drill Break Chip</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>1353</strong></td>
+<td><strong><code class="notranslate">cycle_drill_deep</code></strong></td>
+<td><strong>Drill Deep（你实际在用的）</strong></td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>11</td>
+<td>1393</td>
+<td><code class="notranslate">cycle_drill_dwell</code></td>
+<td>Drill Dwell</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>12</td>
+<td>1535</td>
+<td><code class="notranslate">cycle_tap</code></td>
+<td>Tap</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>13</td>
+<td>1558</td>
+<td><code class="notranslate">cycle_tap_4</code></td>
+<td>—— <strong>孤儿块</strong>（<code class="notranslate">.pui</code> 无引用）</td>
+<td>无</td>
+</tr>
+<tr>
+<td>14</td>
+<td>1575</td>
+<td><code class="notranslate">cycle_tap_5</code></td>
+<td>—— 孤儿块</td>
+<td>无</td>
+</tr>
+<tr>
+<td>15</td>
+<td>1614</td>
+<td><code class="notranslate">cycle_tap_break_chip</code></td>
+<td>Tap Break Chip</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>16</td>
+<td>1659</td>
+<td><code class="notranslate">cycle_tap_deep</code></td>
+<td>Tap Deep</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>17</td>
+<td>1704</td>
+<td><code class="notranslate">cycle_tap_float</code></td>
+<td>Tap Float</td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+<tr>
+<td>18</td>
+<td>2426</td>
+<td><code class="notranslate">tap_3</code></td>
+<td>—— 孤儿块</td>
+<td>无</td>
+</tr>
+<tr>
+<td>19</td>
+<td>2443</td>
+<td><code class="notranslate">tap_deep</code></td>
+<td>—— 孤儿块</td>
+<td>无</td>
+</tr>
+<tr>
+<td>20</td>
+<td>2461</td>
+<td><code class="notranslate">tap_deep_break_chip_move</code></td>
+<td>—— 孤儿块</td>
+<td>无</td>
+</tr>
+<tr>
+<td>21</td>
+<td>2559</td>
+<td><code class="notranslate">post_cycle_set</code></td>
+<td><strong>Cycle Parameters（循环参数）</strong></td>
+<td><code class="notranslate">\opt</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>几点说明</strong></p>
+<ul>
+<li>第 13/14/18/19/20 这 5 个"孤儿块"在 <code class="notranslate">.pui</code> 里<strong>没有被任何事件引用</strong>，界面上根本找不到 —— 这是正常的，一并改掉是为了将来万一被启用时不带旧毛病。</li>
+<li>第 21 处 <code class="notranslate">post_cycle_set</code> <strong>不在任何具体循环底下</strong>，它是 <strong><code class="notranslate">Cycle Parameters</code>（循环参数）事件</strong>的第 4 个块（<code class="notranslate">.pui</code> 第 795 行的铁证）。在"钻孔 / 深孔钻 / 攻丝"底下翻是<strong>永远找不到</strong>的。</li>
+<li>改动为什么安全：<code class="notranslate">.pui</code> 里<strong>没有一处 <code class="notranslate">BLOCK_TEMPLATE</code></strong>，也<strong>不存任何 TCL 代码正文</strong>（第 17–18 行只是文件名引用）⇒ <strong>直接改 <code class="notranslate">.def</code> 不会被 Post Builder 保存时覆盖</strong>。</li>
+</ul>
+<hr>
+<h1>第 6 章 · 初始化与兜底</h1>
+<h2>6.1 每程序开头把 R 账本归零</h2>
+<p>文件 <code class="notranslate">mill_intergrex_300_2022.tcl</code> 行 <strong>6865–6874</strong>，<code class="notranslate">PB_CMD_custom_command_11</code> 内：</p>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-k">proc</span> <span class="pl-en">PB_CMD_custom_command_11</span> { } {
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-k">global</span> block_number mom_tool_number
+
+<span class="pl-k">set</span> block_number 1
+<span class="pl-k">set</span> new_flag 0
+
+   <span class="pl-k">set</span> ::nc_cycR 0.0
+   <span class="pl-k">unset</span> -nocomplain ::nc_cycR_z</pre></div>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">set ::nc_cycR 0.0</code></td>
+<td>R 账本清零（保证 <code class="notranslate">.def</code> 读到的是个数，不是未定义）</td>
+</tr>
+<tr>
+<td><code class="notranslate">unset -nocomplain ::nc_cycR_z</code></td>
+<td>刀位跟踪清零 —— <strong>换程序必须清</strong>，否则新程序第一孔会沿用上个程序最后一次的 Z</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>挂钩点：<code class="notranslate">.pui</code> 第 <strong>740</strong> 行，<strong><code class="notranslate">Start of Program</code></strong> 事件 —— 每个程序开头跑一次。</p>
+<blockquote>
+<p><code class="notranslate">unset -nocomplain</code> 而不是 <code class="notranslate">unset</code>：变量本来就不存在时也不会报错（第一个程序开头必然不存在）。</p>
+</blockquote>
+<h2>6.2 挂钩链条（三处，缺一不可）</h2>
+<pre class="notranslate"><code class="notranslate">MOM_before_output            (tcl:123，注释明写"每个 NC 块输出前执行")
+      └─ PB_CMD_kin_before_output   (tcl:8285)
+              └─ PB_CMD_before_output  (tcl:5931)   ← A 段 + B 段
+</code></pre>
+<p><code class="notranslate">.pui</code> 侧则把 <code class="notranslate">PB_CMD_custom_command_15</code> 挂在 <strong>16 个循环事件的首位</strong>（Drill / Drill Dwell / Drill Deep / Drill Break Chip / Tap / Tap Float / Tap Deep / Tap Break Chip / Bore / Bore Drag / Bore No Drag / Bore Manual / Bore Dwell / Bore Back / Bore Manual Dwell），把 <code class="notranslate">PB_CMD_custom_command_11</code> 挂在 <code class="notranslate">Start of Program</code>。</p>
+<blockquote>
+<p><code class="notranslate">PB_CMD_custom_command_15</code> 目前是<strong>空 proc</strong>（只剩注释）。留着它是因为它是挂钩位，将来要加"循环前干预"直接往里写就行，不用再动 <code class="notranslate">.pui</code>。</p>
+</blockquote>
+<hr>
+<h1>第 7 章 · 真 TCL 8.6 实测数据</h1>
+<p>用本机 <strong>NX 自带解释器</strong>跑你机器上这段 proc 的<strong>真实原文</strong>：</p>
+<pre class="notranslate"><code class="notranslate">解释器 = C:\Program Files\Siemens\Designcenter2606\NXBIN\python\tcl86t.dll
+patchlevel = 8.6.15
+全文语法：info complete = 1   （括号 / 引号 / 方括号 全配平）
+proc 体内是否还有 "proc" 关键字：无   ✓（"proc 头写两遍"已修掉）
+</code></pre>
+<h2>7.1 你给的两种模式</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>场景</th>
+<th>第 1 孔</th>
+<th>第 2 孔</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>安全距离-最短距离</td>
+<td><strong>R15.5</strong> ✓</td>
+<td><strong>R31.5152</strong> ✓（与跑通那版一致，<strong>零回归</strong>）</td>
+</tr>
+<tr>
+<td>直接</td>
+<td><strong>R15.5</strong> ✓（原来错成 <code class="notranslate">0.0</code>）</td>
+<td><strong>R0.0</strong> ✓</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>7.2 边界场景（8 项全过）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>场景</th>
+<th>构造</th>
+<th>结果</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A 安全距离</td>
+<td><code class="notranslate">Z62.</code> → <code class="notranslate">G083 R46.5</code> → <code class="notranslate">Z62.</code> → <code class="notranslate">G083 R30.4848</code></td>
+<td><code class="notranslate">15.5</code> / <code class="notranslate">31.5152</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>B 直接</td>
+<td>…<code class="notranslate">G000 Z46.5</code>…<code class="notranslate">G000 X84.9138 Z30.4848</code> → <code class="notranslate">G083 R30.4848</code></td>
+<td><code class="notranslate">15.5</code> / <code class="notranslate">0.0</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>C 攻丝（先快移到 R 面）</td>
+<td><code class="notranslate">G000 Z46.5</code> → <code class="notranslate">G084 R46.5</code></td>
+<td><code class="notranslate">0.0</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>D 干扰行</td>
+<td>混入 <code class="notranslate">G053</code>/<code class="notranslate">G091</code>/<code class="notranslate">G030</code>/<code class="notranslate">G004</code>/<code class="notranslate">G68.5</code></td>
+<td><code class="notranslate">15.5</code></td>
+<td>✓ 不污染</td>
+</tr>
+<tr>
+<td>E 起始 Z 在 R 点之下</td>
+<td><code class="notranslate">G000 Z20.0</code> → <code class="notranslate">G083 R46.5</code></td>
+<td><code class="notranslate">0.0</code></td>
+<td>✓ 夹零</td>
+</tr>
+<tr>
+<td>F 完全没有跟踪</td>
+<td>直接 <code class="notranslate">G083 R46.5</code></td>
+<td>不崩，<code class="notranslate">0.0</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>G 坐标宏 ON + R</td>
+<td>开 <code class="notranslate">::nc_addvar_on</code></td>
+<td>X/Y 包上 <code class="notranslate">[..+#..]</code>，R 仍 <code class="notranslate">15.5</code></td>
+<td>✓ 共存</td>
+</tr>
+<tr>
+<td>H 连续三孔</td>
+<td>每孔 R 点不同</td>
+<td>逐孔刷新 <code class="notranslate">12.0</code> / <code class="notranslate">22.0</code></td>
+<td>✓</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>7.3 首次调用（历史上真会崩的那个场景）</h2>
+<pre class="notranslate"><code class="notranslate">第一次调用后 ::nc_cycR_z = 62.
+R = 15.5   （62 − 46.5）
+</code></pre>
+<p>最初 <code class="notranslate">.tcl</code> 曾被粘成 <strong>"proc 套 proc"</strong>（旧 proc 头没删，第二个 <code class="notranslate">proc</code> 成了第一个的正文）：<br>
+TCL 只在<strong>外层 body 执行时</strong>才真正重定义自己，于是<strong>第一次调用整段正文一行不跑</strong> → <code class="notranslate">::nc_cycR</code> 未定义 → <code class="notranslate">.def</code> 抛 <code class="notranslate">no such variable</code>。<br>
+<strong>现在 proc 头只剩 1 处（tcl:5931），此隐患已消除。</strong></p>
+<h2>7.4 <code class="notranslate">expr</code> 的输出形态</h2>
+<pre class="notranslate"><code class="notranslate">expr {double(62.0) - double(46.5)}    =&gt;  15.5
+expr {double(62.0) - double(30.4848)} =&gt;  31.5152
+expr {double(30.4848) - double(30.4848)} =&gt; 0.0
+</code></pre>
+<p><strong>没有浮点尾巴</strong>，NC 写法与你现在跑通的逐字一致。</p>
+<hr>
+<h1>第 8 章 · 操作步骤</h1>
+<h2>8.1 改（若将来重建后处理）</h2>
+<ol>
+<li><strong><code class="notranslate">.tcl</code></strong>：在 Post Builder 里打开 <strong><code class="notranslate">PB_CMD_before_output</code></strong> 定制命令，用 4.1 的原文整体替换。
+<ul>
+<li><strong>自检</strong>：正文第一行应是 <code class="notranslate">global mom_o_buffer</code>；框里<strong>不能再出现 <code class="notranslate">proc </code> 字样</strong>。</li>
+</ul>
+</li>
+<li><strong><code class="notranslate">.tcl</code></strong>：<code class="notranslate">PB_CMD_custom_command_11</code> 里加第 6.1 的两行。</li>
+<li><strong><code class="notranslate">.def</code></strong>：21 处 R 单元改成 <code class="notranslate">R[$nc_cycR]</code>（保留 <code class="notranslate">\opt</code>）。</li>
+<li><strong>最后</strong>跑一次 <code class="notranslate">Apply-CycleR2.ps1</code>（纯文本替换、幂等、自动备份、带自检）。</li>
+<li><strong>Save</strong>。</li>
+</ol>
+<blockquote>
+<p><strong>顺序要点</strong>：<code class="notranslate">.pui</code> 只是母本，PB 的 Save <strong>不会</strong>重生成 <code class="notranslate">.def</code>（<code class="notranslate">.pui</code> 里没有 <code class="notranslate">BLOCK_TEMPLATE</code>），所以先改 <code class="notranslate">.tcl</code> / <code class="notranslate">.def</code> 再 Save 都行；但<strong>脚本始终放在最后跑</strong>，避免 PB 的编辑动作把 <code class="notranslate">.def</code> 拉回出厂。</p>
+</blockquote>
+<h2>8.2 验收（必做）</h2>
+<pre class="notranslate"><code class="notranslate">① 出一个"安全距离"程序  → 应仍是 R15.5 / R31.5152（零回归）
+② 出一个"直接"程序      → 应为 R15.5 / R0.0
+③ 随手挑一个 G8x：
+   Z(G8x 前最后一个带 Z 的移动) − R(该 G8x)  =  该循环 R 点的绝对 Z
+   若算出负数 → 刀位跟踪被污染 → 停，回第 4 章 (3)(4) 排查
+</code></pre>
+<hr>
+<h1>第 9 章 · 维护与跨机注意事项</h1>
+<h2>9.1 换电脑最容易漏的一条 🔴</h2>
+<p><code class="notranslate">.def</code> 第 4 行：</p>
+<pre class="notranslate"><code class="notranslate">INCLUDE { $UGII_CAM_USER_DEF_EVENT_DIR/ude.cdl }
+</code></pre>
+<p>它读的是 <strong>NX 全局</strong>那份 <code class="notranslate">ude.cdl</code>，<strong>不是</strong>后处理目录里那份（你桌面上的 <code class="notranslate">mill_intergrex_300_2022.cdl</code> 是另外一回事）。</p>
+<p><strong>需求③ 的 <code class="notranslate">add_variable</code> 事件必须在目标机器的全局 <code class="notranslate">ude.cdl</code> 里也存在</strong>，否则 UDE 根本选不到、坐标宏静默失效。</p>
+<p><strong>核查法</strong>：在目标机执行 <code class="notranslate">后处理 → 输出 UDE</code>，看自定义事件是否出现在列表里。</p>
+<h2>9.2 四个文件 + <code class="notranslate">ude.cdl</code> 必须同步</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>文件</th>
+<th>承载什么</th>
+<th>不同步的后果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">.tcl</code></td>
+<td>A 段 R 逻辑 + B 段坐标宏 + 兜底</td>
+<td>R 全错 / 坐标宏失效</td>
+</tr>
+<tr>
+<td><code class="notranslate">.def</code></td>
+<td>21 处 <code class="notranslate">R[$nc_cycR]</code> + <code class="notranslate">ADDRESS R</code> 格式</td>
+<td>R 出绝对值或负值</td>
+</tr>
+<tr>
+<td><code class="notranslate">.cdl</code></td>
+<td>事件定义（含需求③ 的 <code class="notranslate">add_variable</code>）</td>
+<td>UDE 选不到</td>
+</tr>
+<tr>
+<td><code class="notranslate">.pui</code></td>
+<td>事件顺序 / 地址表 / MOM 变量</td>
+<td>挂钩丢失</td>
+</tr>
+<tr>
+<td><code class="notranslate">ude.cdl</code>（NX 全局）</td>
+<td>自定义事件注册</td>
+<td>同上（且最难发现）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>9.3 三处可选加固（状态：第 1 条已落地）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>#</th>
+<th>内容</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A 段开头兜底 <code class="notranslate">if { ![info exists ::nc_cycR] } { set ::nc_cycR 0.0 }</code></td>
+<td>✅ <strong>已在 tcl:5947</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>把"循环前没有任何带 Z 的块"从<strong>静默输出 R0.0</strong> 改成 <code class="notranslate">MOM_abort</code> 报错</td>
+<td>⬜ 未做（与第 1 条二选一，<strong>建议保持现状</strong>：静默出 <code class="notranslate">0.0</code>，机床上表现为"刀已站在 R 面"，不会撞）</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code class="notranslate">PB_CMD_custom_command_15</code> 留作循环前干预的挂钩位</td>
+<td>✅ 空 proc 保留</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>9.4 记住这几条"不要再踩"</h2>
+<ol>
+<li><strong>不要</strong>在 TCL 里重写整行 R 文本 —— 格式得手工复刻，一错就撞刀。<strong>值走 TCL、格式走 <code class="notranslate">.def</code></strong>。</li>
+<li><strong>不要</strong>用 <code class="notranslate">mom_cycle_retract_to_pos − mom_cycle_rapid_to_pos</code> —— 直接模式下偏大，R 面会被推到孔底以下（<strong>撞刀</strong>）。</li>
+<li><strong>不要</strong>让跟踪吞下 <code class="notranslate">G8x</code> 行的 Z（那是孔底深度）和 <code class="notranslate">G68.x</code> 的 Z（那是旋转中心）。</li>
+<li><strong>不要</strong>把 A 段放到 B 段的 <code class="notranslate">return</code> 之后 —— 没开坐标宏的工序就不跟踪刀位了。</li>
+<li><strong>不要</strong>忘记 <code class="notranslate">double()</code> —— TCL <code class="notranslate">expr</code> 会把 <code class="notranslate">08</code> 当八进制报错。</li>
+<li><strong>不要</strong>在 PB 里粘代码时留下第二行 <code class="notranslate">proc</code> 头 —— 第一次调用会整段失效。</li>
+<li><strong>不要</strong>忘记 <code class="notranslate">MIN</code> 不归零 —— 负 R 必须 TCL 夹。</li>
+</ol>
+<hr>
+<h1>第 10 章 · 附录</h1>
+<h2>10.1 变量速查</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>变量</th>
+<th>含义</th>
+<th>本机实测值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">mom_cycle_rapid_to_pos(2)</code></td>
+<td><strong>R 点绝对 Z</strong></td>
+<td>孔1 <code class="notranslate">46.5</code>；孔2 <code class="notranslate">30.4848</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_cycle_retract_to_pos(2)</code></td>
+<td>退刀平面绝对 Z</td>
+<td><code class="notranslate">62.</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_cycle_rapid_to</code></td>
+<td>孔顶到 R 点的<strong>距离</strong>（NX 语义，不是我们要的）</td>
+<td>变量本身</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_cycle_spindle_axis</code></td>
+<td>循环沿哪个轴</td>
+<td><code class="notranslate">2</code>（Z）</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_pos</code> / <code class="notranslate">mom_prev_pos</code></td>
+<td>当前 / 上一刀位</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_o_buffer</code></td>
+<td>即将输出的块文本</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_sys_leader(Z/X/Y)</code></td>
+<td>字头</td>
+<td><code class="notranslate">"Z"</code> / <code class="notranslate">"X"</code> / <code class="notranslate">"Y"</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_sys_control_out</code></td>
+<td>注释起始符</td>
+<td><code class="notranslate">"("</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_cycR</code></td>
+<td><strong>本方案新增</strong>：给 <code class="notranslate">.def</code> 读的 R 值</td>
+<td><code class="notranslate">15.5</code> / <code class="notranslate">31.5152</code> / <code class="notranslate">0.0</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_cycR_z</code></td>
+<td><strong>本方案新增</strong>：跟踪到的刀位 Z</td>
+<td><code class="notranslate">62.</code> / <code class="notranslate">46.5</code> / <code class="notranslate">30.4848</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_addvar_on</code></td>
+<td>B 段坐标宏总开关</td>
+<td>需求③ 控制</td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_x_var</code> / <code class="notranslate">::nc_y_var</code></td>
+<td>坐标宏目标变量号（覆盖刀号推算）</td>
+<td>默认 <code class="notranslate">600+n*5-4/-3</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>10.2 <code class="notranslate">.def</code> 表达式为什么能读 TCL 全局（本方案的唯一前提，已证实）</h2>
+<p>同一个 <code class="notranslate">.def</code> 里早就这么干了：</p>
+<pre class="notranslate"><code class="notranslate">def:1849   rotate_r[$dpp_ge(coord_rot_angle,1)]
+</code></pre>
+<p><code class="notranslate">dpp_ge</code> 是 <strong><code class="notranslate">.tcl</code> 里赋值的全局数组</strong>（<code class="notranslate">set dpp_ge(coord_rot_angle,0/1)</code>），而它出现在 <code class="notranslate">.def</code> 的表达式里，并且<strong>你 NC 里 <code class="notranslate">G68.5 … R90.</code> 的 <code class="notranslate">90</code> 就是它</strong>。</p>
+<p>⇒ <code class="notranslate">.def</code> 的表达式求值器<strong>能读 <code class="notranslate">.tcl</code> 设的全局变量</strong>。所以 <code class="notranslate">R[$nc_cycR]</code> 这条路是通的。</p>
+<h2>10.3 相关交付物索引（都在桌面）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>文件</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">后处理改造_修订12_循环R值_防忘总纲.md</code></td>
+<td><strong>本文</strong>（终版总纲）</td>
+</tr>
+<tr>
+<td><code class="notranslate">后处理改造_修订11_循环R值_原理与逐行注释.md</code></td>
+<td>上一版逐行注释（本文的前身）</td>
+</tr>
+<tr>
+<td><code class="notranslate">后处理改造_修订11_复核记录_19时27分版.md</code></td>
+<td>19:27 版的复核记录（含 3 处加固的精确代码）</td>
+</tr>
+<tr>
+<td><code class="notranslate">后处理改造_修订10_循环R值_起始位置版.md</code></td>
+<td>方案定案（含撞刀警告）</td>
+</tr>
+<tr>
+<td><code class="notranslate">后处理改造_修订8_钻孔R值_实测定值.md</code></td>
+<td>早期公式（<strong>已被修订 12 否掉，仅存档</strong>）</td>
+</tr>
+<tr>
+<td><code class="notranslate">后处理改造_修订9_循环R值_PB原生改法.md</code></td>
+<td>早期 PB 原生改法（同上，仅存档）</td>
+</tr>
+<tr>
+<td><code class="notranslate">Apply-CycleR2.ps1</code></td>
+<td><code class="notranslate">.def</code> 21 处 R 单元的幂等替换脚本</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h2>一页纸总结（打印贴在工位上）</h2>
+<pre class="notranslate"><code class="notranslate">┌──────────────────────────────────────────────────────────────┐
+│  机床规则： R = 执行 G8x 时刀所在的 Z − 该循环 R 点 Z          │
+│                                                              │
+│  实现：  值在 .tcl 算（PB_CMD_before_output 的 A 段）          │
+│          格式在 .def 算（R[$nc_cycR] + FORMAT Coordinate）     │
+│                                                              │
+│  跟踪要点：                                                    │
+│    跟踪 —— 所有带 Z 的移动块                                   │
+│    不跟踪 —— G8x 行（Z 是孔底深度）、G68/G53/G28/G30/G91…      │
+│    先跟踪、后算 R；负数夹 0                                    │
+│                                                              │
+│  验收： 安全距离 → 15.5 / 31.5152                             │
+│        直接     → 15.5 / 0.0                                  │
+│        Z(前一个带 Z 的移动) − R 必须 = R 点绝对 Z，不得为负     │
+└──────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://bk.929295.xyz">数控技术博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("08/09/2024"!=""){
+    var startSite=new Date("08/09/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","yingfanyu/yingfanyu.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
