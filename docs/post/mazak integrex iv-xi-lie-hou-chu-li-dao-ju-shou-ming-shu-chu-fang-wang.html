@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# 后处理改造 · 修订 15 —— 刀具寿命输出（程序尾自动判断 + 到期报警）防忘文章
+
+| 项 | 内容 |
+|---|---|
+| 适用后处理 | `mill_intergrex_300_2022`（Mazak Integrex 300，FANUC 30i 底子，NX 2606 / Tcl 8.6.15） |
+| 文件 | `mill_intergrex_300_2022.tcl`（明文母本 = `mill_intergrex_300_2022_bf.tcl`，559,160 字节） |
+| 本文代码依据 | 从**真实源文件逐行抽取**，行号即明文母本行号 |
+| 实测依据 | 用 NX 自带的真 Tcl 8.6.15（`NXBIN\python\tcl86t.dll`）把四个 proc **原文抽出来跑**，见第 6 章 |
+| 上游文档 | 修订 2（New/Old 按工序）、修订 3（缺数据即中断）、修订 14（坐标加变量号） |
+| 整理日期 | 2026-10-17 |
+
+> **一句话**：后处理在每道工序结束时把该道工序的切削时间记到'刀号账本'上，程序结尾按 `上限 = int(参考寿命 ÷ 单件切削时间)` 给**每一把刀**输出一组 FANUC 宏程序计数段；件数超限就 `#3006=1` 报警停机，叫你换刀片。">
+<meta property="og:title" content="mazak integrex iv系列后处理刀具寿命输出防忘">
+<meta property="og:description" content="# 后处理改造 · 修订 15 —— 刀具寿命输出（程序尾自动判断 + 到期报警）防忘文章
+
+| 项 | 内容 |
+|---|---|
+| 适用后处理 | `mill_intergrex_300_2022`（Mazak Integrex 300，FANUC 30i 底子，NX 2606 / Tcl 8.6.15） |
+| 文件 | `mill_intergrex_300_2022.tcl`（明文母本 = `mill_intergrex_300_2022_bf.tcl`，559,160 字节） |
+| 本文代码依据 | 从**真实源文件逐行抽取**，行号即明文母本行号 |
+| 实测依据 | 用 NX 自带的真 Tcl 8.6.15（`NXBIN\python\tcl86t.dll`）把四个 proc **原文抽出来跑**，见第 6 章 |
+| 上游文档 | 修订 2（New/Old 按工序）、修订 3（缺数据即中断）、修订 14（坐标加变量号） |
+| 整理日期 | 2026-10-17 |
+
+> **一句话**：后处理在每道工序结束时把该道工序的切削时间记到'刀号账本'上，程序结尾按 `上限 = int(参考寿命 ÷ 单件切削时间)` 给**每一把刀**输出一组 FANUC 宏程序计数段；件数超限就 `#3006=1` 报警停机，叫你换刀片。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://bk.929295.xyz/post/mazak%20integrex%20iv-xi-lie-hou-chu-li-dao-ju-shou-ming-shu-chu-fang-wang.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>mazak integrex iv系列后处理刀具寿命输出防忘</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">mazak integrex iv系列后处理刀具寿命输出防忘</h1>
+<div class="title-right">
+    <a href="https://bk.929295.xyz" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/yingfanyu/yingfanyu.github.io/issues/67" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>后处理改造 · 修订 15 —— 刀具寿命输出（程序尾自动判断 + 到期报警）防忘文章</h1>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>适用后处理</td>
+<td><code class="notranslate">mill_intergrex_300_2022</code>（Mazak Integrex 300，FANUC 30i 底子，NX 2606 / Tcl 8.6.15）</td>
+</tr>
+<tr>
+<td>文件</td>
+<td><code class="notranslate">mill_intergrex_300_2022.tcl</code>（明文母本 = <code class="notranslate">mill_intergrex_300_2022_bf.tcl</code>，559,160 字节）</td>
+</tr>
+<tr>
+<td>本文代码依据</td>
+<td>从<strong>真实源文件逐行抽取</strong>，行号即明文母本行号</td>
+</tr>
+<tr>
+<td>实测依据</td>
+<td>用 NX 自带的真 Tcl 8.6.15（<code class="notranslate">NXBIN\python\tcl86t.dll</code>）把四个 proc <strong>原文抽出来跑</strong>，见第 6 章</td>
+</tr>
+<tr>
+<td>上游文档</td>
+<td>修订 2（New/Old 按工序）、修订 3（缺数据即中断）、修订 14（坐标加变量号）</td>
+</tr>
+<tr>
+<td>整理日期</td>
+<td>2026-10-17</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p><strong>一句话</strong>：后处理在每道工序结束时把该道工序的切削时间记到"刀号账本"上，程序结尾按 <code class="notranslate">上限 = int(参考寿命 ÷ 单件切削时间)</code> 给<strong>每一把刀</strong>输出一组 FANUC 宏程序计数段；件数超限就 <code class="notranslate">#3006=1</code> 报警停机，叫你换刀片。<br>
+<strong>前提</strong>：每把刀必须在 <strong>NX 刀具 → 更多 → 机床控制 → 文本</strong> 里填一个数字（该刀的参考寿命，单位分钟）。</p>
+</blockquote>
+<hr>
+<h2>目录</h2>
+<ul>
+<li>第 0 章 · 结论速查</li>
+<li>第 1 章 · 为什么要在后处理里做刀具寿命</li>
+<li>第 2 章 · 实现方法是什么</li>
+<li>第 3 章 · 具体代码（5 段，原文）</li>
+<li>第 4 章 · 主要代码逐行解释</li>
+<li>第 5 章 · 这个实现的逻辑是什么</li>
+<li>第 6 章 · 真 Tcl 8.6 实测数据</li>
+<li>第 7 章 · 关键问题（坑）清单</li>
+<li>第 8 章 · 维护、排错、验收</li>
+<li>第 9 章 · 附录：变量 / 常量 / 文件速查</li>
+</ul>
+<hr>
+<h1>第 0 章 · 结论速查</h1>
+<p><strong>输出的 NC 长这样</strong>（T10 单件切削 20.09 min，参考寿命 60 min）：</p>
+<pre lang="text" class="notranslate"><code class="notranslate">(T10 Total_Cutting_Time:20.09min,Reference Life Time:60.00min)
+#650=#650+1
+IF [#650 GT 2] GOTO100
+GOTO101
+N100
+#3006=1(T10 @0400CAD9C3FCD6D5C1CBA3A1@)
+#650=0
+N101
+</code></pre>
+<p><strong>这 8 行在干什么</strong>（刀具寿命只在<strong>程序结尾</strong>输出一次，挂在 End of Program 序列里 <code class="notranslate">G10.9 X1</code> 之后、<code class="notranslate">M99</code> 之前）：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>#</th>
+<th>行</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code class="notranslate">(T10 Total_Cutting_Time:…)</code></td>
+<td>注释，给人看：这把刀这一件干了多久、参考寿命多少</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code class="notranslate">#650=#650+1</code></td>
+<td><strong>加工件数 +1</strong>（<code class="notranslate">#650</code> = <code class="notranslate">600 + 刀号×5</code>）</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code class="notranslate">IF [#650 GT 2] GOTO100</code></td>
+<td>件数超过上限 → 跳去报警段（上限 = <code class="notranslate">int(60 ÷ 20.09)</code> = 2）</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code class="notranslate">GOTO101</code></td>
+<td>没超 → 跳过报警段，正常结束</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code class="notranslate">N100</code></td>
+<td>报警段标号</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code class="notranslate">#3006=1(T10 …)</code></td>
+<td><strong>机床停机 + 弹窗</strong>（消息内容是 GB2312 编码的「寿命终了！」）</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code class="notranslate">#650=0</code></td>
+<td><strong>件数清零</strong>（换完刀片从 0 重新数）</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code class="notranslate">N101</code></td>
+<td>正常段标号</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>五个关键数字</strong>：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+<th>出处</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>寿命计数器变量号</td>
+<td><code class="notranslate">600 + 刀号 × 5</code>（T10 → <code class="notranslate">#650</code>、T11 → <code class="notranslate">#655</code>）</td>
+<td>源码 9271 行</td>
+</tr>
+<tr>
+<td>上限</td>
+<td><code class="notranslate">int(参考寿命 ÷ 该刀单件有效切削时间)</code>，<strong>截断取整</strong></td>
+<td>源码 9267 行</td>
+</tr>
+<tr>
+<td>GOTO 标号</td>
+<td>从 <code class="notranslate">N100</code> 起，<strong>每把刀 +2</strong>（<code class="notranslate">N100/N101</code>、<code class="notranslate">N102/N103</code>…）</td>
+<td>源码 9260、9269–9270 行</td>
+</tr>
+<tr>
+<td>参考寿命来源</td>
+<td>NX 里 <strong>刀具 → 更多 → 机床控制 → 文本</strong> 那一格里的数字</td>
+<td>源码 6370–6375 行</td>
+</tr>
+<tr>
+<td>切削时间来源</td>
+<td>NX 变量 <code class="notranslate">mom_cutting_time</code>（单位<strong>分钟</strong>，NX 自己算好的）</td>
+<td>源码 1358–1362 行</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>总开关</strong>：程序里<strong>任意一道工序</strong>加了 <code class="notranslate">set_tool_life</code> 这个 UDE 且状态 <code class="notranslate">Active</code> → 整段逻辑生效；<br>
+<strong>一道都没加</strong> → 零输出、不检查、不报错（保持原样）。</p>
+<hr>
+<h1>第 1 章 · 为什么要在后处理里做刀具寿命</h1>
+<h2>1.1 需求起点：刀片什么时候该换？</h2>
+<p>现场问题是：<strong>一批零件要连着做几十上百件，刀片不是每一件都换，但也撑不了一整批。</strong> 靠人记"这把刀做过几件了"必然出错，做少了浪费刀片、做多了报废工件甚至撞刀。</p>
+<p>要的是：<strong>程序自己知道"这件加工完，这把刀还能不能再干一件"</strong>，到点了就让机床停下来提示换刀。</p>
+<h2>1.2 为什么放在后处理里，而不是机床侧</h2>
+<ul>
+<li><strong>机床侧没有"件数"这个概念</strong>。机床只知道自己走了多少刀路、主轴转了多少圈，不知道"这一件是不是做完了"。</li>
+<li><strong>NX 已经算好了"每道工序的切削时间"</strong>（<code class="notranslate">mom_cutting_time</code>，单位分钟，NX 根据刀路长度和进给算的），后处理直接拿来用，不用自己估。</li>
+<li><strong>参考寿命是工艺数据</strong>，只可能写在刀具库里。NX 的"刀具 → 文本"格是唯一能跟着刀具一起走、又能被后处理读到的字段。</li>
+<li>所以正确分工是：<strong>NX 提供两个输入（切削时间、参考寿命）→ 后处理翻译成机床能懂的宏程序 → 机床执行计数与报警。</strong></li>
+</ul>
+<h2>1.3 为什么用 FANUC 宏变量 <code class="notranslate">#6xx</code></h2>
+<p>机床端要"记住跨程序、跨开机次数的计数"，只有 <strong>FANUC 的公共变量（<code class="notranslate">#100</code>~<code class="notranslate">#999</code>）</strong> 有这个性质：断电不丢（<code class="notranslate">#500</code>~<code class="notranslate">#999</code> 是保持型）。</p>
+<p>这台机床上 <code class="notranslate">#6xx</code> 区<strong>已经有一套既定分区——每把刀固定占 5 格</strong>：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>槽位</th>
+<th>变量（以 T10 为例）</th>
+<th>用途</th>
+<th>谁在用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">5N-4</code></td>
+<td><code class="notranslate">#646</code></td>
+<td><strong>X 坐标偏移</strong></td>
+<td>修订 14（坐标加变量号）</td>
+</tr>
+<tr>
+<td><code class="notranslate">5N-3</code></td>
+<td><code class="notranslate">#647</code></td>
+<td><strong>Y 坐标偏移</strong></td>
+<td>修订 14（坐标加变量号）</td>
+</tr>
+<tr>
+<td><code class="notranslate">5N-2</code></td>
+<td><code class="notranslate">#648</code></td>
+<td><strong>H 调正量</strong>（<code class="notranslate">(H TIAO ZHENG BIAN LIANG:#648)</code>）</td>
+<td>修订 2（New/Old）</td>
+</tr>
+<tr>
+<td><code class="notranslate">5N-1</code></td>
+<td><code class="notranslate">#649</code></td>
+<td><strong>D 调正量</strong></td>
+<td>修订 2（New/Old）</td>
+</tr>
+<tr>
+<td><strong><code class="notranslate">5N</code></strong></td>
+<td><strong><code class="notranslate">#650</code></strong></td>
+<td><strong>寿命计数（加工件数）</strong></td>
+<td><strong>本篇</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>为什么本篇用 <code class="notranslate">5N</code> 而不是别的号</strong>：这套 5 格分区是既定约定，<code class="notranslate">5N</code> 就是留给寿命的格子。新功能只能塞进"已经约好的空位"，否则会和换刀段/调正量互相踩。</p>
+<h2>1.4 为什么"只在程序结尾输出一次"</h2>
+<ul>
+<li>计数是"这件做完了 +1"，<strong>一件只加一次</strong>，所以写在程序尾（<code class="notranslate">End of Program</code>），而不是每道工序尾。</li>
+<li>放在 <code class="notranslate">M99</code> <strong>之前</strong>，是因为 <code class="notranslate">M99</code> 会跳回程序头（重复执行）。报警必须在 <code class="notranslate">M99</code> 前发生，否则程序会先循环回去再把机床停掉，中间多做一件。</li>
+<li>报警后 <code class="notranslate">#650=0</code>，是因为<strong>换刀片是人的动作</strong>：人看到报警 → 换刀片 → 重新跑，程序从 0 重新数。</li>
+</ul>
+<h2>1.5 与"修订 2（New/Old）"的关系</h2>
+<p>两者是<strong>同一批需求、同一套 <code class="notranslate">#6xx</code> 分区</strong>，但触发条件和生命周期完全不同，别混：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th></th>
+<th>修订 2：<code class="notranslate">set_new_tool</code></th>
+<th>本篇：<code class="notranslate">set_tool_life</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>干什么</td>
+<td>新刀装上去时，把该刀的<strong>调正量/各类计数器清零</strong>、并提示"这是新刀"</td>
+<td>程序尾按件数判断<strong>该不该报警换刀</strong></td>
+</tr>
+<tr>
+<td>开关语义</td>
+<td><strong>按工序一次性</strong>：只有加了事件的<strong>那一道工序</strong>输出 New 段，用完立刻清零</td>
+<td><strong>全局粘性</strong>：只要有一道工序加了，<strong>整个程序</strong>都输出寿命段</td>
+</tr>
+<tr>
+<td>输出位置</td>
+<td>换刀段（每道工序）</td>
+<td>程序结尾（一次）</td>
+</tr>
+<tr>
+<td>用到的槽位</td>
+<td><code class="notranslate">5N-2</code>、<code class="notranslate">5N-1</code>（+ 一批 <code class="notranslate">#10000+N</code>~<code class="notranslate">#18000+N</code> 清零）</td>
+<td><code class="notranslate">5N</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p>这个"生命周期不同"是本篇最容易做错的地方，详见 §7.2。</p>
+</blockquote>
+<hr>
+<h1>第 2 章 · 实现方法是什么</h1>
+<h2>2.1 整体手法：三件事</h2>
+<pre class="notranslate"><code class="notranslate">① 记账   每道工序结束 -&gt; 把 mom_cutting_time 累加到"刀号账本"，顺手记下刀具"文本"格
+② 判据   程序结束    -&gt; 上限 = int(参考寿命 ÷ 单件切削时间)，先预检有没有刀缺数据
+③ 输出   程序结束    -&gt; 逐把刀吐一组"计数 / 判断 / 报警 / 清零"的宏程序段
+</code></pre>
+<p><strong>贯穿始终的一个设计</strong>：所有状态都用 <strong><code class="notranslate">::</code> 全限定名的全局变量</strong>（<code class="notranslate">::nc_cut_time</code>、<code class="notranslate">::nc_tool_order</code>…）。<br>
+理由：这些变量要跨"每道工序"活到"程序结束"，而且在 <code class="notranslate">.tcl</code> 里跨 proc 共享，用真全局最省心。</p>
+<h2>2.2 数据流（一次程序的完整时序）</h2>
+<pre class="notranslate"><code class="notranslate">程序开始
+  └─ MOM_start_of_program
+       └─ PB_CMD_custom_command_11   ← 一次性初始化
+            · unset ::nc_cut_time / ::nc_tool_order / ::nc_ref_text   （清账本）
+            · unset ::nc_tool_life_on                                  （清总开关）
+            · set ::nc_dbg 0                                           （调试总开关）
+
+第 1 道工序
+  ├─ 开始事件：set_tool_life = Active
+  │    └─ MOM_set_tool_life -&gt; PB_CMD_set_tool_life_flag
+  │         └─ set ::nc_tool_life_on 1        ← 总开关置位（此后不再清）
+  ├─ 换刀段：T… T… M06（顺带处理 New/Old，见修订 2）
+  ├─ 刀轨 …
+  └─ End of Path
+       └─ PB_CMD_collect_cutting_time        ← 记账
+            · ::nc_cut_time(T10) += mom_cutting_time
+            · lappend ::nc_tool_order 10      （第一次出现才入队）
+            · ::nc_ref_text(10) ← 刀具"文本"格（取第一次读到的非空值）
+            · 顺带清 ::nc_new_tool_request 和 ::nc_addvar_on（修订 2 / 14 的保险）
+
+第 2..N 道工序  同上（T10 累加、T11 入队 …）
+
+程序结束
+  └─ MOM_end_of_program
+       ├─ MOM_do_template end_of_program_1     (G10.9 X1)
+       ├─ PB_CMD_output_tool_life             ← 本篇主角
+       │    ├─ 调试段（::nc_dbg=1 时把账本打进 NC）
+       │    ├─ 总开关没置位 -&gt; return（零输出）
+       │    ├─ 第一遍预检：缺数据/非法 -&gt; 打 ASCII 证据行 + MOM_abort
+       │    └─ 第二遍输出：逐把刀吐 8 行寿命段
+       └─ MOM_do_template rewind_code          (M99)
+</code></pre>
+<h2>2.3 要动哪些文件（清单）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>#</th>
+<th>文件</th>
+<th>位置</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code class="notranslate">.tcl</code> 1958–1962</td>
+<td>事件入口</td>
+<td><code class="notranslate">proc MOM_set_tool_life</code> → 转调开关函数</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code class="notranslate">.tcl</code> 10314–10327</td>
+<td>开关函数</td>
+<td><code class="notranslate">PB_CMD_set_tool_life_flag</code>：读状态 → 置 <code class="notranslate">::nc_tool_life_on</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code class="notranslate">.tcl</code> 6333–6385</td>
+<td>记账</td>
+<td><code class="notranslate">PB_CMD_collect_cutting_time</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code class="notranslate">.tcl</code> 9177–9282</td>
+<td>输出</td>
+<td><code class="notranslate">PB_CMD_output_tool_life</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code class="notranslate">.tcl</code> 6879–6890</td>
+<td>初始化</td>
+<td><code class="notranslate">PB_CMD_custom_command_11</code> 里两小段（清账本 + 调试开关）</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code class="notranslate">.pui</code> 790</td>
+<td>Control Functions</td>
+<td><code class="notranslate">{set_tool_life} {PB_CMD_set_tool_life_flag} {set_tool_life} {UDE}</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code class="notranslate">.pui</code> 740</td>
+<td>Start of Program</td>
+<td>成员表里含 <code class="notranslate">PB_CMD_custom_command_11</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td><code class="notranslate">.pui</code> 837</td>
+<td>End of Path</td>
+<td>成员表<strong>第一个</strong>就是 <code class="notranslate">PB_CMD_collect_cutting_time</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td><code class="notranslate">.pui</code> 841</td>
+<td>End of Program</td>
+<td><code class="notranslate">… end_of_program_1 PB_CMD_output_tool_life rewind_code …</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td><code class="notranslate">.cdl</code></td>
+<td>UDE 定义（后处理自带）</td>
+<td><code class="notranslate">EVENT set_tool_life { POST_EVENT "set_tool_life" … }</code></td>
+</tr>
+<tr>
+<td>11</td>
+<td>NX 全局 <code class="notranslate">ude.cdl</code></td>
+<td>UDE 定义（<strong>每台机器各一份</strong>）</td>
+<td>同上</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>2.4 在 NX / PB 里怎么用</h2>
+<p><strong>日常使用（工艺员）</strong>：</p>
+<ol>
+<li>刀具库/工序里逐把刀打开 <strong>刀具 → 更多 → 机床控制 → 文本</strong>，<strong>只填数字</strong>（例如 <code class="notranslate">60</code>）。</li>
+<li>在某一道工序上加 <strong>开始事件 → <code class="notranslate">set_tool_life</code> → Status = Active</strong>（一道就够，全程序生效）。</li>
+<li>后处理。程序尾自动出现各刀的寿命段；有刀没填数字 → <strong>后处理当场中断</strong>并告诉你缺哪几把。</li>
+</ol>
+<p><strong>改代码（维护者）</strong>：</p>
+<ul>
+<li>全部改动<strong>只在 Post Builder 界面里做</strong>（定制命令的"步骤"框 = 脚本体），别手改 <code class="notranslate">.tcl</code> —— 详见 §8.1。</li>
+</ul>
+<h2>2.5 为什么不用别的做法</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>想法</th>
+<th>为什么否掉</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>在<strong>机床侧</strong>做计数</td>
+<td>机床不知道"一件做完了"，没有件数信号</td>
+</tr>
+<tr>
+<td>在 <code class="notranslate">.def</code> 里加块输出寿命段</td>
+<td><code class="notranslate">.def</code> 是"格式定义"，做不了"累加 / 比较 / 分支出 8 行"这种逻辑；而且块模板加行 PB Save 后会丢</td>
+</tr>
+<tr>
+<td>用 <code class="notranslate">MOM_output_text</code> / 注释代替报警</td>
+<td>只有 <code class="notranslate">#3006=1(...)</code> 能让机床<strong>停下来</strong>，注释只是给人看的</td>
+</tr>
+<tr>
+<td>每道工序尾都输出寿命段</td>
+<td>一件会加好几次 <code class="notranslate">#650</code>，计数完全错</td>
+</tr>
+<tr>
+<td>缺数据时"写条警告、继续出程序"</td>
+<td><strong>试过，被现场否掉</strong>：产物是"看起来正常、实则少了一组寿命段"的 NC，到机床或事后才发现，比当场不出程序危险得多 —— 改成一刀切断（详见 §5.3、§7 说明）</td>
+</tr>
+<tr>
+<td>用 <code class="notranslate">#3000</code> 而不是 <code class="notranslate">#3006</code></td>
+<td><code class="notranslate">#3000</code> 通常要求按 RESET 才能恢复；本机用 <code class="notranslate">#3006</code>（提示 + 停机）。<strong>换机台前必须先确认该机床的宏报警约定</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h1>第 3 章 · 具体代码</h1>
+<blockquote>
+<p>以下 5 段全部从明文母本 <code class="notranslate">mill_intergrex_300_2022_bf.tcl</code> <strong>逐字抽取</strong>，行号即母本行号。<br>
+已用一个脚本与源文件做过<strong>逐字比对（差异 0）</strong>，见 §8.3。</p>
+</blockquote>
+<h2>3.1 事件入口（<code class="notranslate">.tcl</code> 第 1958–1962 行）</h2>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-k">proc</span> <span class="pl-en">MOM_set_tool_life</span> { } {
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+   PB_CMD_set_tool_life_flag
+}</pre></div>
+<h2>3.2 开关函数（<code class="notranslate">.tcl</code> 第 10314–10327 行，函数名 <code class="notranslate">PB_CMD_set_tool_life_flag</code>）</h2>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-k">proc</span> <span class="pl-en">PB_CMD_set_tool_life_flag</span> { } {
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span> 需求②：只要程序里【任意一道】工序把 UDE "set_tool_life" 设为 Active，</span>
+<span class="pl-c"><span class="pl-c">#</span>         就在程序结尾为程序里用到的【每一把刀】输出刀具寿命判断段。</span>
+<span class="pl-c"><span class="pl-c">#</span> 注意：只在 Active 时置 1，不置 0 —— 这是一个"一旦打开就保持"的全局开关。</span>
+<span class="pl-c"><span class="pl-c">#</span>       NX 送进来的状态文本是全大写 "ACTIVE"，所以必须用 -nocase 比较。</span>
+   <span class="pl-k">global</span> mom_command_status
+
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_command_status] &amp;&amp; <span class="pl-cce">\</span>
+        [<span class="pl-k">string</span> equal -nocase <span class="pl-s"><span class="pl-pds">"</span>Active<span class="pl-pds">"</span></span> [<span class="pl-k">string</span> trim <span class="pl-smi">$mom_command_status</span>]] } {
+      <span class="pl-k">set</span> ::nc_tool_life_on 1
+   }
+}</pre></div>
+<h2>3.3 记账（<code class="notranslate">.tcl</code> 第 6333–6385 行，函数名 <code class="notranslate">PB_CMD_collect_cutting_time</code>）</h2>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-k">proc</span> <span class="pl-en">PB_CMD_collect_cutting_time</span> { } {
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span> 【需求②】每道工序结尾：把该道工序的有效切削时间(mom_cutting_time，单位分钟)</span>
+<span class="pl-c"><span class="pl-c">#</span>           累加到对应刀号账上；记录刀号出现顺序；并记下刀具"文本"格的内容。</span>
+<span class="pl-c"><span class="pl-c">#</span> 挂在：程序与刀轨 -&gt; 程序 -&gt; 工序结束序列 -&gt; {End of Path}（该行命令列表的第一个）</span>
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+   <span class="pl-k">global</span> mom_tool_number mom_cutting_time mom_tool_text
+
+   <span class="pl-c"><span class="pl-c">#</span> 需求①保险：本道工序结束，把"本工序的 set_new_tool 标记"清掉，</span>
+   <span class="pl-c"><span class="pl-c">#</span>            防止没走到换刀段的工序把标记漏给下一道工序。</span>
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_new_tool_request] } { <span class="pl-k">set</span> ::nc_new_tool_request 0 }
+
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists mom_tool_number] } { <span class="pl-k">return</span> }
+
+   <span class="pl-c"><span class="pl-c">#</span> 刀号归整：&gt;100 视为 刀号*100+补偿号（与 PB_CMD_custom_command_10 的规则一致）</span>
+   <span class="pl-k">if</span> { <span class="pl-smi">$mom_tool_number</span> &gt; 100 } {
+      <span class="pl-k">set</span> t [<span class="pl-k">expr</span> {int(double(<span class="pl-smi">$mom_tool_number</span>) / 100)}]
+   } <span class="pl-k">else</span> {
+      <span class="pl-k">set</span> t [<span class="pl-k">expr</span> {int(double(<span class="pl-smi">$mom_tool_number</span>))}]
+   }
+
+   <span class="pl-c"><span class="pl-c">#</span> 切削时间：个别工序可能没有这个变量，用 0 兜底；</span>
+   <span class="pl-c"><span class="pl-c">#</span>           但刀号【一定要登记】，否则这把刀会在程序结尾整刀消失。</span>
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_cutting_time] } {
+      <span class="pl-k">set</span> _cut <span class="pl-smi">$mom_cutting_time</span>
+   } <span class="pl-k">else</span> {
+      <span class="pl-k">set</span> _cut 0.0
+   }
+
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_cut_time(<span class="pl-smi">$t</span>)] } {
+      <span class="pl-k">set</span> ::nc_cut_time(<span class="pl-smi">$t</span>) 0.0
+      <span class="pl-k">lappend</span> ::nc_tool_order <span class="pl-smi">$t</span>
+   }
+   <span class="pl-k">set</span> ::nc_cut_time(<span class="pl-smi">$t</span>) [<span class="pl-k">expr</span> {<span class="pl-smi">$::nc_cut_time($t)</span> + <span class="pl-smi">$_cut</span>}]
+
+   <span class="pl-c"><span class="pl-c">#</span> 参考寿命：刀具对话框 -&gt; 更多 -&gt; 机床控制 -&gt; 文本 格（同把刀取第一次读到的非空值）</span>
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_ref_text(<span class="pl-smi">$t</span>)] } {
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_tool_text] &amp;&amp; [<span class="pl-k">string</span> trim <span class="pl-smi">$mom_tool_text</span>] != <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> } {
+         <span class="pl-k">set</span> ::nc_ref_text(<span class="pl-smi">$t</span>) [<span class="pl-k">string</span> trim <span class="pl-smi">$mom_tool_text</span>]
+      }
+   }
+
+   <span class="pl-c"><span class="pl-c">#</span> ===== 调试：每道工序打一行，确认"刀号 / 时间 / 文本"三个值都读到了 =====</span>
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_dbg] &amp;&amp; <span class="pl-smi">$::nc_dbg</span> == 1 } {
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_ref_text(<span class="pl-smi">$t</span>)] } { <span class="pl-k">set</span> _r <span class="pl-smi">$::nc_ref_text($t)</span> } <span class="pl-k">else</span> { <span class="pl-k">set</span> _r <span class="pl-s"><span class="pl-pds">"</span>&lt;none&gt;<span class="pl-pds">"</span></span> }
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(DBGLIFE add tool=<span class="pl-smi">$t</span> cut=<span class="pl-smi">$_cut</span> ref=<span class="pl-smi">$_r</span>)<span class="pl-pds">"</span></span>
+   }
+<span class="pl-c"><span class="pl-c">#</span> 【需求③】本道工序结束，关闭坐标宏开关，</span>
+   <span class="pl-c"><span class="pl-c">#</span>            防止污染后面没加 add_variable 事件的工序。</span>
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_addvar_on] } { <span class="pl-k">set</span> ::nc_addvar_on 0 }
+}</pre></div>
+<h2>3.4 程序尾输出（<code class="notranslate">.tcl</code> 第 9177–9282 行，函数名 <code class="notranslate">PB_CMD_output_tool_life</code>）</h2>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-k">proc</span> <span class="pl-en">PB_CMD_output_tool_life</span> { } {
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span> 【需求②】程序结尾输出每一把刀的"刀具寿命判断段"。</span>
+<span class="pl-c"><span class="pl-c">#</span> 位置：End of Program 序列里 end_of_program_1(G10.9 X1) 之后、rewind_code(M99) 之前。</span>
+<span class="pl-c"><span class="pl-c">#</span></span>
+<span class="pl-c"><span class="pl-c">#</span> 输出样例（T10，有效切削 20.09min，参考寿命 60）：</span>
+<span class="pl-c"><span class="pl-c">#</span>   (T10 Total_Cutting_Time:20.09min,Reference Life Time:60.00min)</span>
+<span class="pl-c"><span class="pl-c">#</span>   #650=#650+1</span>
+<span class="pl-c"><span class="pl-c">#</span>   IF [#650 GT 2] GOTO100</span>
+<span class="pl-c"><span class="pl-c">#</span>   GOTO101</span>
+<span class="pl-c"><span class="pl-c">#</span>   N100</span>
+<span class="pl-c"><span class="pl-c">#</span>   #3006=1(T10 @0400CAD9C3FCD6D5C1CBA3A1@)</span>
+<span class="pl-c"><span class="pl-c">#</span>   #650=0</span>
+<span class="pl-c"><span class="pl-c">#</span>   N101</span>
+<span class="pl-c"><span class="pl-c">#</span></span>
+<span class="pl-c"><span class="pl-c">#</span>   寿命变量编号 = 600 + 刀号*5 ；每把刀一组 GOTO 标号，从 N100 起每刀 +2。</span>
+<span class="pl-c"><span class="pl-c">#</span>   上限 = int(参考寿命 / 该件有效切削时间)（截断取整）。</span>
+<span class="pl-c"><span class="pl-c">#</span></span>
+<span class="pl-c"><span class="pl-c">#</span> ⚠ 只要程序里有一道工序加了 set_tool_life=Active（结尾就要输出寿命段），</span>
+<span class="pl-c"><span class="pl-c">#</span>   则程序里用到的【每一把刀】都必须能在</span>
+<span class="pl-c"><span class="pl-c">#</span>   【刀具参数 -&gt; 更多 -&gt; 机床控制 -&gt; 文本】里读到数字。</span>
+<span class="pl-c"><span class="pl-c">#</span>   任何一把缺数据/非法：</span>
+<span class="pl-c"><span class="pl-c">#</span>      -&gt; NC 里留一行 (TOOL LIFE DATA MISSING : T11 T12 )</span>
+<span class="pl-c"><span class="pl-c">#</span>      -&gt; 再中断后处理，并把所有有问题的刀号一次性列出来</span>
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+
+   <span class="pl-c"><span class="pl-c">#</span> ===== 调试：把刀具账本打印进 NC（确认后把 custom_command_11 里的 ::nc_dbg 改成 0）=====</span>
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_dbg] &amp;&amp; <span class="pl-smi">$::nc_dbg</span> == 1 } {
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_tool_life_on] } { <span class="pl-k">set</span> _on <span class="pl-smi">$::nc_tool_life_on</span> } <span class="pl-k">else</span> { <span class="pl-k">set</span> _on <span class="pl-s"><span class="pl-pds">"</span>unset<span class="pl-pds">"</span></span> }
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(DBGLIFE life_on=<span class="pl-smi">$_on</span>)<span class="pl-pds">"</span></span>
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_tool_order] } {
+         MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(DBGLIFE order=<span class="pl-smi">$::nc_tool_order</span>)<span class="pl-pds">"</span></span>
+         <span class="pl-k">foreach</span> _t <span class="pl-smi">$::nc_tool_order</span> {
+            <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_cut_time(<span class="pl-smi">$_t</span>)] } { <span class="pl-k">set</span> _c <span class="pl-smi">$::nc_cut_time($_t)</span> } <span class="pl-k">else</span> { <span class="pl-k">set</span> _c <span class="pl-s"><span class="pl-pds">"</span>?<span class="pl-pds">"</span></span> }
+            <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_ref_text(<span class="pl-smi">$_t</span>)] } { <span class="pl-k">set</span> _r <span class="pl-smi">$::nc_ref_text($_t)</span> } <span class="pl-k">else</span> { <span class="pl-k">set</span> _r <span class="pl-s"><span class="pl-pds">"</span>&lt;none&gt;<span class="pl-pds">"</span></span> }
+            MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(DBGLIFE tool=<span class="pl-smi">$_t</span> cut=<span class="pl-smi">$_c</span> ref=<span class="pl-smi">$_r</span>)<span class="pl-pds">"</span></span>
+         }
+      } <span class="pl-k">else</span> {
+         MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(DBGLIFE order=&lt;none&gt;)<span class="pl-pds">"</span></span>
+      }
+   }
+
+   <span class="pl-c"><span class="pl-c">#</span> 全局开关：程序里没有任何一道工序加过 set_tool_life=Active -&gt; 什么都不输出（也不检查）</span>
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_tool_life_on] || <span class="pl-smi">$::nc_tool_life_on</span> != 1 } { <span class="pl-k">return</span> }
+   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_tool_order] } { <span class="pl-k">return</span> }
+
+   <span class="pl-c"><span class="pl-c">#</span> ---------- 第一遍：预检，把所有"缺数据/非法数据"的刀一次性收集起来 ----------</span>
+   <span class="pl-k">set</span> miss {}      ;<span class="pl-c"><span class="pl-c">#</span> 文本格是空的</span>
+   <span class="pl-k">set</span> bad {}       ;<span class="pl-c"><span class="pl-c">#</span> 文本格有内容但抠不出数字，或数字 &lt;= 0</span>
+   <span class="pl-k">set</span> ok_list {}   ;<span class="pl-c"><span class="pl-c">#</span> 通过检查的：{刀号 参考寿命 切削时间}</span>
+
+   <span class="pl-k">foreach</span> t <span class="pl-smi">$::nc_tool_order</span> {
+      <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_cut_time(<span class="pl-smi">$t</span>)] } { <span class="pl-k">continue</span> }
+      <span class="pl-k">set</span> cut [<span class="pl-k">expr</span> {double(<span class="pl-smi">$::nc_cut_time($t)</span>)}]
+      <span class="pl-c"><span class="pl-c">#</span> 该刀在本程序里没有真正切削（时间 0）-&gt; 不参与寿命计算（否则会除以 0），也不算"缺数据"</span>
+      <span class="pl-k">if</span> { <span class="pl-smi">$cut</span> &lt;= 0 } { <span class="pl-k">continue</span> }
+
+      <span class="pl-k">set</span> ref_txt <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>
+      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_ref_text(<span class="pl-smi">$t</span>)] } { <span class="pl-k">set</span> ref_txt [<span class="pl-k">string</span> trim <span class="pl-smi">$::nc_ref_text($t)</span>] }
+
+      <span class="pl-k">if</span> { <span class="pl-smi">$ref_txt</span> == <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> } { <span class="pl-k">lappend</span> miss <span class="pl-smi">$t</span> ; <span class="pl-k">continue</span> }
+
+      <span class="pl-k">set</span> ref <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>
+      <span class="pl-k">if</span> { ![<span class="pl-k">regexp</span> <span class="pl-sr">{[-+]?[0-9]*\.?[0-9]+}</span> <span class="pl-smi">$ref_txt</span> ref] } { <span class="pl-k">lappend</span> bad <span class="pl-smi">$t</span> ; <span class="pl-k">continue</span> }
+      <span class="pl-k">set</span> ref [<span class="pl-k">expr</span> {double(<span class="pl-smi">$ref</span>)}]
+      <span class="pl-k">if</span> { <span class="pl-smi">$ref</span> &lt;= 0 } { <span class="pl-k">lappend</span> bad <span class="pl-smi">$t</span> ; <span class="pl-k">continue</span> }
+
+      <span class="pl-k">lappend</span> ok_list [<span class="pl-k">list</span> <span class="pl-smi">$t</span> <span class="pl-smi">$ref</span> <span class="pl-smi">$cut</span>]
+   }
+
+   <span class="pl-k">if</span> { [<span class="pl-k">llength</span> <span class="pl-smi">$miss</span>] &gt; 0 || [<span class="pl-k">llength</span> <span class="pl-smi">$bad</span>] &gt; 0 } {
+      <span class="pl-k">set</span> allbad [<span class="pl-k">concat</span> <span class="pl-smi">$miss</span> <span class="pl-smi">$bad</span>]
+      <span class="pl-k">set</span> ascii <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>
+      <span class="pl-k">foreach</span> t <span class="pl-smi">$allbad</span> { <span class="pl-k">append</span> ascii <span class="pl-s"><span class="pl-pds">"</span>T<span class="pl-smi">$t</span> <span class="pl-pds">"</span></span> }
+      <span class="pl-c"><span class="pl-c">#</span> 先在 NC 里留一行纯 ASCII 证据（就算弹窗里中文乱码，也能一眼看出是哪几把刀）</span>
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(TOOL LIFE DATA MISSING : <span class="pl-smi">$ascii</span>)<span class="pl-pds">"</span></span>
+      MOM_abort <span class="pl-s"><span class="pl-pds">"</span>TOOL LIFE DATA MISSING :【刀具寿命数据缺失 = 后处理已中止】在刀具参数-&gt;更多-&gt;机床控制-&gt;文本输入数字（例如 60）<span class="pl-pds">"</span></span>
+   }
+
+   <span class="pl-c"><span class="pl-c">#</span> ---------- 第二遍：全部通过，逐把输出寿命判断段 ----------</span>
+   <span class="pl-k">set</span> flag_txt <span class="pl-s"><span class="pl-pds">"</span>@0400CAD9C3FCD6D5C1CBA3A1@<span class="pl-pds">"</span></span>   ;<span class="pl-c"><span class="pl-c">#</span> 含义：寿命终了！</span>
+   <span class="pl-k">set</span> n 100                                   ;<span class="pl-c"><span class="pl-c">#</span> GOTO 标号起点</span>
+
+   <span class="pl-k">foreach</span> item <span class="pl-smi">$ok_list</span> {
+      <span class="pl-k">set</span> t   [<span class="pl-k">lindex</span> <span class="pl-smi">$item</span> 0]
+      <span class="pl-k">set</span> ref [<span class="pl-k">lindex</span> <span class="pl-smi">$item</span> 1]
+      <span class="pl-k">set</span> cut [<span class="pl-k">lindex</span> <span class="pl-smi">$item</span> 2]
+
+      <span class="pl-k">set</span> limit [<span class="pl-k">expr</span> {int(<span class="pl-smi">$ref</span> / <span class="pl-smi">$cut</span>)}]
+      <span class="pl-k">set</span> n1 <span class="pl-smi">$n</span>
+      <span class="pl-k">set</span> n2 [<span class="pl-k">expr</span> {<span class="pl-smi">$n</span> + 1}]
+      <span class="pl-k">incr</span> n 2
+      <span class="pl-k">set</span> lifevar [<span class="pl-k">expr</span> {600 + <span class="pl-smi">$t</span> * 5}]
+
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(T<span class="pl-smi">$t</span> Total_Cutting_Time:<span class="pl-s1"><span class="pl-pse">[</span><span class="pl-k">format</span> <span class="pl-s"><span class="pl-pds">"</span>%.2f<span class="pl-pds">"</span></span> <span class="pl-smi">$cut</span><span class="pl-pse">]</span></span>min,Reference Life Time:<span class="pl-s1"><span class="pl-pse">[</span><span class="pl-k">format</span> <span class="pl-s"><span class="pl-pds">"</span>%.2f<span class="pl-pds">"</span></span> <span class="pl-smi">$ref</span><span class="pl-pse">]</span></span>min)<span class="pl-pds">"</span></span>
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>#<span class="pl-smi">$lifevar</span>=#<span class="pl-smi">$lifevar</span>+1<span class="pl-pds">"</span></span>
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>IF <span class="pl-cce">\[</span>#<span class="pl-smi">$lifevar</span> GT <span class="pl-smi">$limit</span><span class="pl-cce">\]</span> GOTO<span class="pl-smi">$n1</span><span class="pl-pds">"</span></span>
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>GOTO<span class="pl-smi">$n2</span><span class="pl-pds">"</span></span>
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>N<span class="pl-smi">$n1</span><span class="pl-pds">"</span></span>
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>#3006=1(T<span class="pl-smi">$t</span> <span class="pl-smi">$flag_txt</span>)<span class="pl-pds">"</span></span>
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>#<span class="pl-smi">$lifevar</span>=0<span class="pl-pds">"</span></span>
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>N<span class="pl-smi">$n2</span><span class="pl-pds">"</span></span>
+   }
+}</pre></div>
+<h2>3.5 初始化：账本清零 + 调试总开关（<code class="notranslate">.tcl</code> 第 6879–6890 行，在 <code class="notranslate">PB_CMD_custom_command_11</code> 里）</h2>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 调试总开关：1 = 在 NC 里打印 (DBGNEW …) / (DBGLIFE …) 诊断行；全部确认无误后改成 0</span>
+<span class="pl-k">set</span> ::nc_dbg 0
+<span class="pl-c"><span class="pl-c">#</span>-----------------------------------------------------------</span>
+
+<span class="pl-c"><span class="pl-c">#</span>--------- 需求②：清空切削时间账本 ------------------------</span>
+<span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_cut_time] }  { <span class="pl-k">unset</span> ::nc_cut_time }
+<span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_tool_order] } { <span class="pl-k">unset</span> ::nc_tool_order }
+<span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_ref_text] }  { <span class="pl-k">unset</span> ::nc_ref_text }
+<span class="pl-c"><span class="pl-c">#</span> 注意：::nc_tool_life_on 故意不在这里清零，</span>
+<span class="pl-c"><span class="pl-c">#</span>       它在 Start of Program 之后由工序里的 set_tool_life 事件置位。</span>
+<span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_tool_life_on] } { <span class="pl-k">unset</span> ::nc_tool_life_on }
+<span class="pl-c"><span class="pl-c">#</span>-----------------------------------------------------------</span></pre></div>
+<h2>3.6 对照：另一个开关（修订 2 的 <code class="notranslate">set_new_tool</code>），两者的生命周期不同</h2>
+<p><strong>入口</strong>（<code class="notranslate">.tcl</code> 第 1943–1947 行）：</p>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-k">proc</span> <span class="pl-en">MOM_set_new_tool</span> { } {
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+   PB_CMD_set_new_tool_flag
+}</pre></div>
+<p><strong>开关函数</strong>（<code class="notranslate">.tcl</code> 第 10171–10195 行）：</p>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-k">proc</span> <span class="pl-en">PB_CMD_set_new_tool_flag</span> { } {
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span> 【需求①】工序"开始事件"里加了 UDE "set_new_tool" 且状态为 Active 时，</span>
+<span class="pl-c"><span class="pl-c">#</span>           只对【本道工序】置一个标志；该标志被换刀段命令用完立刻清零。</span>
+<span class="pl-c"><span class="pl-c">#</span>   注意：NX 实际送进来的值是【全大写 ACTIVE】，所以这里做大小写无关判断。</span>
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+   <span class="pl-k">global</span> mom_command_status
+
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_command_status] } {
+      <span class="pl-k">set</span> st [<span class="pl-k">string</span> tolower [<span class="pl-k">string</span> trim <span class="pl-smi">$mom_command_status</span>]]
+   } <span class="pl-k">else</span> {
+      <span class="pl-k">set</span> st <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>
+   }
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_dbg] &amp;&amp; <span class="pl-smi">$::nc_dbg</span> == 1 } {
+      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(DBGNEW status=<span class="pl-smi">$st</span>)<span class="pl-pds">"</span></span>
+   }
+
+   <span class="pl-k">if</span> { [<span class="pl-k">lsearch</span> -exact {inactive off false disable disabled} <span class="pl-smi">$st</span>] &lt; 0 } {
+      <span class="pl-k">set</span> ::nc_new_tool_request 1
+   } <span class="pl-k">else</span> {
+      <span class="pl-k">set</span> ::nc_new_tool_request 0
+   }
+}</pre></div>
+<p><strong>消费点（New/Old 判定）</strong>（<code class="notranslate">.tcl</code> 第 6800–6812 行，在 <code class="notranslate">PB_CMD_custom_command_10</code> 里）：</p>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>--------- 【需求①】New / Old 判定 ---------------------------------</span>
+<span class="pl-c"><span class="pl-c">#</span>  new_tool : 只代表【本道工序】有没有加 set_new_tool 事件(Active)。</span>
+<span class="pl-c"><span class="pl-c">#</span>             用完立刻清零（本命令倒数第 4 行），所以没加事件的工序必然走 Old 段。</span>
+<span class="pl-c"><span class="pl-c">#</span>  first_time: 该刀号在本程序里是不是【第一次带着标记出现】。</span>
+<span class="pl-c"><span class="pl-c">#</span>             只有真正输出了 New 段才登记，以后再带标记也走 Old 段。</span>
+<span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_new_tool_request] } { <span class="pl-k">set</span> ::nc_new_tool_request 0 }
+<span class="pl-k">set</span> new_tool <span class="pl-smi">$::nc_new_tool_request</span>
+
+<span class="pl-k">if</span> { <span class="pl-smi">$new_tool</span> == 1 &amp;&amp; ![<span class="pl-k">info</span> exists ::nc_new_tool_seen(<span class="pl-smi">$tooln</span>)] } {
+<span class="pl-k">set</span> first_time 1
+} <span class="pl-k">else</span> {
+<span class="pl-k">set</span> first_time 0
+}</pre></div>
+<hr>
+<h1>第 4 章 · 主要代码逐行解释</h1>
+<h2>4.1 <code class="notranslate">MOM_set_tool_life</code>（事件入口，3.1）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>代码</th>
+<th>起什么作用</th>
+<th>有什么用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1–3</td>
+<td><code class="notranslate">#====</code> / <code class="notranslate">proc MOM_set_tool_life { } {</code> / <code class="notranslate">#====</code></td>
+<td>定义事件处理函数</td>
+<td>名字必须是 <code class="notranslate">MOM_</code> + UDE 名（<code class="notranslate">set_tool_life</code>），NX 才会在遇到该事件时调它</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code class="notranslate">PB_CMD_set_tool_life_flag</code></td>
+<td>一行转调真正的开关函数</td>
+<td><strong>入口只做转发</strong>：逻辑放在 <code class="notranslate">PB_CMD_</code> 里，这样在 PB 界面上能独立编辑、且 PB Save 后不会按 <code class="notranslate">.pui</code> 重写</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p>⚠ <code class="notranslate">MOM_xxx</code> 这类事件 proc 是<strong>按 <code class="notranslate">.pui</code> 的事件表生成的</strong>，PB 一保存就会被重写；所以<strong>永远不要把逻辑写在这 5 行里</strong>。</p>
+</blockquote>
+<h2>4.2 <code class="notranslate">PB_CMD_set_tool_life_flag</code>（状态 → 总开关，3.2）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>代码</th>
+<th>起什么作用</th>
+<th>有什么用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">global mom_command_status</code></td>
+<td>声明</td>
+<td>把 NX 传进来的"事件状态"引到本函数可见</td>
+<td>这个变量是 UDE 的 <code class="notranslate">Status</code> 下拉值，NX 会在事件触发时设好</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { [info exists …] &amp;&amp; \</code> …</td>
+<td>双条件守卫</td>
+<td>先确认变量存在，再比较</td>
+<td>变量不存在时 <code class="notranslate">string</code> 会报错；先 <code class="notranslate">info exists</code> 兜住</td>
+</tr>
+<tr>
+<td><code class="notranslate">[string equal -nocase "Active" [string trim $mom_command_status]]</code></td>
+<td>大小写无关比较 + 去空白</td>
+<td>判断"是不是 Active"</td>
+<td>🔴 <strong>NX 送进来的是全大写 <code class="notranslate">ACTIVE</code></strong>，用 <code class="notranslate">equal</code>（区分大小写）永远为假 —— 这是本项目最坑的一条，详见 §7.1。<code class="notranslate">-nocase</code> 一次堵死</td>
+</tr>
+<tr>
+<td><code class="notranslate">set ::nc_tool_life_on 1</code></td>
+<td>置全局开关</td>
+<td>打开"整程序要出寿命段"</td>
+<td><strong>只置 1、不置 0</strong>：这是"一旦打开就保持"的粘性开关（对比 3.6 那个每次都被置 0/1 的按工序开关）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>4.3 <code class="notranslate">PB_CMD_collect_cutting_time</code>（记账，3.3）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>代码</th>
+<th>起什么作用</th>
+<th>有什么用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">global mom_tool_number mom_cutting_time mom_tool_text</code></td>
+<td>引入三个 NX 变量</td>
+<td>刀号 / 本道工序切削时间(mim) / 刀具"文本"格</td>
+<td><code class="notranslate">mom_tool_text</code> 就是"参考寿命"的唯一来源</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { [info exists ::nc_new_tool_request] } { set … 0 }</code></td>
+<td>清修订 2 的标志</td>
+<td>本道工序结束，把按工序标记清掉</td>
+<td>防止"某道工序没走到换刀段"时标记漏给下一道工序（两条需求共用同一道工序尾，顺手保险）</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { ![info exists mom_tool_number] } { return }</code></td>
+<td>没刀号就退出</td>
+<td>无刀号的工序不进账本</td>
+<td>⚠ <strong>这是本 proc 里唯一的 early return</strong>；所以后面所有"复位"都必须排在它<strong>之前</strong>（本例清 <code class="notranslate">::nc_new_tool_request</code> 就在它前面，是对的）</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { $mom_tool_number &gt; 100 } { set t [expr {int(double(...)/100)}] } else { set t … }</code></td>
+<td>刀号归整</td>
+<td><code class="notranslate">&gt;100</code> 视为"刀号×100 + 补偿号"，还原出真刀号</td>
+<td>与 <code class="notranslate">PB_CMD_custom_command_10</code> 的编码规则<strong>必须一致</strong>，否则寿命段的变量号和换刀段的变量号会对不上（详见 §7.3）</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { [info exists mom_cutting_time] } { set _cut … } else { set _cut 0.0 }</code></td>
+<td>时间兜底</td>
+<td>变量不存在时按 0 分钟算</td>
+<td>🔴 <strong>关键</strong>：绝对不能写成 <code class="notranslate">if {![info exists …]} { return }</code> —— 那样这把刀<strong>整刀不进账本</strong>，程序尾就"少了一把刀"，而现象很难往"某个变量不存在"上想（见 §7.4）</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { ![info exists ::nc_cut_time($t)] } { set … 0.0 ; lappend ::nc_tool_order $t }</code></td>
+<td>首次登记</td>
+<td>第一次见这把刀：初始化 + 入队</td>
+<td><code class="notranslate">::nc_tool_order</code> 决定<strong>输出顺序</strong>（= 程序里刀具出现的先后），也决定 GOTO 标号的分配顺序</td>
+</tr>
+<tr>
+<td><code class="notranslate">set ::nc_cut_time($t) [expr {$::nc_cut_time($t) + $_cut}]</code></td>
+<td>累加</td>
+<td>同一把刀多道工序 → 时间相加</td>
+<td>这才是"这一件这把刀总共干了多久"，是算上限的分母</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { ![info exists ::nc_ref_text($t)] } { … }</code></td>
+<td>取参考寿命</td>
+<td>只在<strong>还没记过</strong>时读"文本"格</td>
+<td><strong>同把刀取第一次读到的非空值</strong>：避免后面工序（刀具参数可能被改）覆盖掉</td>
+</tr>
+<tr>
+<td><code class="notranslate">MOM_output_literal "(DBGLIFE add …)"</code></td>
+<td>诊断行</td>
+<td>每道工序打一行，显示读到的三个值</td>
+<td>受 <code class="notranslate">::nc_dbg</code> 开关控制；<strong>验"有没有读到数据"只需这一行</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>4.4 <code class="notranslate">PB_CMD_output_tool_life</code>（输出，3.4）—— 分四段看</h2>
+<h3>4.4.1 调试段（9205–9219）</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>作用</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">if { [info exists ::nc_dbg] &amp;&amp; $::nc_dbg == 1 } { … }</code></td>
+<td>调试总开关</td>
+<td>一个变量管全部诊断行；<strong>位置在"总开关 return"之前</strong> ⇒ 即使没加 UDE，也能看到账本</td>
+</tr>
+<tr>
+<td><code class="notranslate">(DBGLIFE life_on=$_on)</code></td>
+<td>打总开关的值</td>
+<td><code class="notranslate">unset</code> = 一道工序都没加 UDE</td>
+</tr>
+<tr>
+<td><code class="notranslate">(DBGLIFE order=$::nc_tool_order)</code></td>
+<td>打账本刀序</td>
+<td>一眼看出"程序里到底记录了哪几把刀"</td>
+</tr>
+<tr>
+<td><code class="notranslate">(DBGLIFE tool=$_t cut=$_c ref=$_r)</code></td>
+<td>逐刀打三个值</td>
+<td><code class="notranslate">ref=&lt;none&gt;</code> 就是缺数据的刀</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>4.4.2 守卫（9221–9223）</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>作用</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">if { ![info exists ::nc_tool_life_on] || $::nc_tool_life_on != 1 } { return }</code></td>
+<td>总开关没置位 → 直接退出</td>
+<td><strong>保持原样</strong>：没加 UDE 的程序，行为与本功能上线前完全一致（零输出、零检查、零报错）</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { ![info exists ::nc_tool_order] } { return }</code></td>
+<td>没有账本 → 退出</td>
+<td>防止"程序里一道工序都没走 End of Path"的极端情况报错</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>4.4.3 第一遍：预检（9225–9256）</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>作用</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">set miss {} / set bad {} / set ok_list {}</code></td>
+<td>三个收集篮</td>
+<td>空文本 / 非法数字 / 通过 —— 分开收集才能给出<strong>不同的提示</strong></td>
+</tr>
+<tr>
+<td><code class="notranslate">foreach t $::nc_tool_order</code></td>
+<td>按账本顺序遍历</td>
+<td>顺序与输出一致，报错顺序也和刀具出现顺序一致</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { ![info exists ::nc_cut_time($t)] } { continue }</code></td>
+<td>没有时间记录就跳过</td>
+<td>防御性；正常记账流程不会缺</td>
+</tr>
+<tr>
+<td><code class="notranslate">set cut [expr {double($::nc_cut_time($t))}]</code></td>
+<td>取真值</td>
+<td>后面要做除法，必须确保是数字</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { $cut &lt;= 0 } { continue }</code></td>
+<td><strong>切削时间为 0 的刀直接跳过</strong></td>
+<td>不参与计算（否则除零），<strong>也不算"缺数据"</strong>（它确实没用上）。例：程序里"只换刀没切削"的刀</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { $ref_txt == "" } { lappend miss $t ; continue }</code></td>
+<td>文本格空 → 记进 <code class="notranslate">miss</code></td>
+<td>这是最常见的缺数据情形</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { ![regexp {[-+]?[0-9]*\.?[0-9]+} $ref_txt ref] } { lappend bad $t ; continue }</code></td>
+<td>正则抠数字</td>
+<td><strong>宽容设计</strong>：填 <code class="notranslate">60</code> 行、填 <code class="notranslate">60min</code> 也行（抠出 60）；填 <code class="notranslate">abc</code> 才算非法（见 §6 S5）</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { $ref &lt;= 0 } { lappend bad $t ; continue }</code></td>
+<td><code class="notranslate">&lt;=0</code> 也算非法</td>
+<td>0 或负数做分母/上限毫无意义</td>
+</tr>
+<tr>
+<td><code class="notranslate">lappend ok_list [list $t $ref $cut]</code></td>
+<td>通过的收进 ok_list</td>
+<td>第二遍只处理通过项</td>
+</tr>
+<tr>
+<td><code class="notranslate">if { [llength $miss] &gt; 0 || [llength $bad] &gt; 0 } { … }</code></td>
+<td><strong>预检闸门</strong></td>
+<td>有任何一把不合格 → 整段不输出（见下两行）</td>
+</tr>
+<tr>
+<td><code class="notranslate">set allbad [concat $miss $bad]</code> / <code class="notranslate">foreach … append ascii "T$t "</code></td>
+<td>拼刀号串</td>
+<td><strong>一次列全</strong>，不让用户"改一把、再报一把"来回折腾</td>
+</tr>
+<tr>
+<td><code class="notranslate">MOM_output_literal "(TOOL LIFE DATA MISSING : $ascii)"</code></td>
+<td>在 NC 里留<strong>纯 ASCII</strong> 证据行</td>
+<td>弹窗可能中文乱码，但 NC 里这行一定看得懂</td>
+</tr>
+<tr>
+<td><code class="notranslate">MOM_abort "TOOL LIFE DATA MISSING :【…】在刀具参数-&gt;更多-&gt;机床控制-&gt;文本输入数字（例如 60）"</code></td>
+<td><strong>中断后处理</strong></td>
+<td>消息里<strong>指名道姓告诉用户去哪一格填</strong>；ASCII 打头 + 中文跟后，两头都能读</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p><strong>为什么 <code class="notranslate">MOM_abort</code> 放在 <code class="notranslate">MOM_output_literal</code> 之后</strong>：这样"证据行"已经进了 NC 文件。<br>
+实测确认（§6 S3/S4/S6/S8）：中断后<strong>一行寿命段都不会输出</strong>，NC 里只留那一行 <code class="notranslate">(TOOL LIFE DATA MISSING : …)</code>。</p>
+</blockquote>
+<h3>4.4.4 第二遍：输出（9258–9281）</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>作用</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">set flag_txt "@0400CAD9C3FCD6D5C1CBA3A1@"</code></td>
+<td>报警里的中文密文</td>
+<td><code class="notranslate">@</code> + GB2312 十六进制 + <code class="notranslate">@</code>；解出来是「<strong>寿命终了！</strong>」。这样机床弹窗显示中文而不是乱码（直接写中文会被机床按单字节拆坏）</td>
+</tr>
+<tr>
+<td><code class="notranslate">set n 100</code></td>
+<td>GOTO 标号起点</td>
+<td><code class="notranslate">N100</code> 起，不和程序里其它标号冲突的概率最高</td>
+</tr>
+<tr>
+<td><code class="notranslate">set limit [expr {int($ref / $cut)}]</code></td>
+<td><strong>上限</strong></td>
+<td><code class="notranslate">int()</code> = 截断取整。60 ÷ 20.09 = 2.98 → <strong>2</strong>（第 3 件时 <code class="notranslate">#650=3 &gt; 2</code> → 报警）</td>
+</tr>
+<tr>
+<td><code class="notranslate">set n1 $n</code> / <code class="notranslate">set n2 [expr {$n + 1}]</code> / <code class="notranslate">incr n 2</code></td>
+<td>本刀的两个标号 + 指针前移 2</td>
+<td>每把刀占 2 个标号，互不重叠</td>
+</tr>
+<tr>
+<td><code class="notranslate">set lifevar [expr {600 + $t * 5}]</code></td>
+<td>寿命计数器变量号</td>
+<td>与 §1.3 的 5 格分区一致（T10 → <code class="notranslate">#650</code>）</td>
+</tr>
+<tr>
+<td>第 1 行 <code class="notranslate">MOM_output_literal "(T$t Total_Cutting_Time:…)"</code></td>
+<td>注释行</td>
+<td><code class="notranslate">[format "%.2f"]</code> 固定两位小数，便于人眼比对；<strong>只给人看，机床不执行</strong></td>
+</tr>
+<tr>
+<td>第 2 行 <code class="notranslate">"#$lifevar=#$lifevar+1"</code></td>
+<td>件数 +1</td>
+<td>累计加工件数（公共变量断电保持）</td>
+</tr>
+<tr>
+<td>第 3 行 <code class="notranslate">"IF \[#$lifevar GT $limit\] GOTO$n1"</code></td>
+<td>比较 + 跳转</td>
+<td><code class="notranslate">\[</code> <code class="notranslate">\]</code> 是为了让 <code class="notranslate">[</code> 原样输出（Tcl 的 <code class="notranslate">[</code> 是命令替换符，必须转义）</td>
+</tr>
+<tr>
+<td>第 4 行 <code class="notranslate">"GOTO$n2"</code></td>
+<td>未超限 → 跳到正常段</td>
+<td>结构上是 <code class="notranslate">if…else</code> 的经典 GOTO 写法</td>
+</tr>
+<tr>
+<td>第 5 行 <code class="notranslate">"N$n1"</code></td>
+<td>报警段标号</td>
+<td>跳转目标</td>
+</tr>
+<tr>
+<td>第 6 行 <code class="notranslate">"#3006=1(T$t $flag_txt)"</code></td>
+<td><strong>机床停机 + 弹窗</strong></td>
+<td>这是唯一能让机床"停下来"的语句；括号里是消息内容</td>
+</tr>
+<tr>
+<td>第 7 行 <code class="notranslate">"#$lifevar=0"</code></td>
+<td>件数清零</td>
+<td>换完刀片重新计数</td>
+</tr>
+<tr>
+<td>第 8 行 <code class="notranslate">"N$n2"</code></td>
+<td>正常段标号</td>
+<td>未超限时从这里继续（也就是直接往下走）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>4.5 初始化（3.5）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>作用</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">set ::nc_dbg 0</code></td>
+<td>调试总开关默认关</td>
+<td>平时 NC 干净；要查问题改成 1（<strong>改一处管全部诊断行</strong>）</td>
+</tr>
+<tr>
+<td><code class="notranslate">unset ::nc_cut_time / ::nc_tool_order / ::nc_ref_text</code></td>
+<td>清三个账本</td>
+<td>在 <code class="notranslate">Start of Program</code> 跑，保证一个程序一份干净账本</td>
+</tr>
+<tr>
+<td><code class="notranslate">unset ::nc_tool_life_on</code></td>
+<td>清总开关</td>
+<td><strong>必须在这里清</strong>：否则跑第二个程序时不加 UDE 也会出寿命段。清完之后由工序里的事件重新置位</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p>源码里紧跟着的一句注释"注意：<code class="notranslate">::nc_tool_life_on</code> 故意不在这里清零"<strong>和代码相反 —— 代码是对的、注释是错的</strong>（这个命令只在 Start of Program 跑一次，就该在这里清零）。别被注释带偏，建议直接删掉那句注释。</p>
+</blockquote>
+<hr>
+<h1>第 5 章 · 这个实现的逻辑是什么</h1>
+<h2>5.1 状态机：2 个开关 + 3 本账</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>名称</th>
+<th>类型</th>
+<th>生命期</th>
+<th>谁写</th>
+<th>谁读</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">::nc_tool_life_on</code></td>
+<td>开关</td>
+<td><strong>程序级粘性</strong>（置 1 后不再清，直到下个程序开始）</td>
+<td><code class="notranslate">PB_CMD_set_tool_life_flag</code></td>
+<td><code class="notranslate">PB_CMD_output_tool_life</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_dbg</code></td>
+<td>开关</td>
+<td>程序级（Start of Program 置值）</td>
+<td><code class="notranslate">PB_CMD_custom_command_11</code></td>
+<td>所有诊断行</td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_tool_order</code></td>
+<td>账本</td>
+<td>程序级</td>
+<td><code class="notranslate">PB_CMD_collect_cutting_time</code>（首次出现时 <code class="notranslate">lappend</code>）</td>
+<td>输出顺序、标号分配</td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_cut_time(t)</code></td>
+<td>账本</td>
+<td>程序级</td>
+<td>记账（累加）</td>
+<td>算上限的分母</td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_ref_text(t)</code></td>
+<td>账本</td>
+<td>程序级</td>
+<td>记账（只记第一次非空）</td>
+<td>算上限的分子</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>为什么"开关"和"账本"要分开</strong>：开关回答"要不要出寿命段"，账本回答"给哪些刀、出什么数"。这样"没加 UDE 但程序里跑了 5 把刀"不会误出（开关守卫在前），"加了 UDE 但没切削"也不会报假错（<code class="notranslate">cut&lt;=0</code> 跳过）。</p>
+<h2>5.2 为什么是"两遍式"</h2>
+<p>一遍扫描同时做"检查"和"输出"，就会出现<strong>出一半才发现有问题</strong>的结果：NC 里前 2 把刀有寿命段、第 3 把缺数据中断 —— 用户拿到一个半成品程序，还得手工删。</p>
+<p><strong>两遍式</strong>把"能不能做"和"怎么做"彻底分开：</p>
+<pre class="notranslate"><code class="notranslate">第一遍：只检查，往 miss / bad / ok_list 三个篮子里装东西，一个字节都不输出
+        有任何 miss/bad -&gt; 打一行 ASCII 证据 + MOM_abort（此时 ok_list 被丢弃）
+第二遍：只输出，遍历 ok_list
+</code></pre>
+<p>⇒ 结果只有两种：<strong>要么一行不出（+ 明确的错误提示），要么全出（且一定完整）</strong>。</p>
+<h2>5.3 为什么缺数据必须"中断"而不是"跳过"</h2>
+<p>这条是<strong>用户明确要求的</strong>，也是被现场事故推出来的：</p>
+<ul>
+<li>"跳过 + 写警告继续出程序"的产物，是一个<strong>看起来完全正常、实则少了一组寿命段</strong>的 NC。</li>
+<li>这种程序到机床上不会有任何异常提示，只是<strong>那把刀的寿命永远不报警</strong> —— 等发现时刀片可能已经崩了、工件已经废了。</li>
+<li>而"当场不出程序"的代价只是工艺员去填一个数字。</li>
+<li>⇒ <strong>默认选中断</strong>。只有当"技术上无法参与计算"（如切削时间恰好为 0，参与就会除零）时才允许静默跳过，并且要有注释写明理由 —— 本例 <code class="notranslate">if { $cut &lt;= 0 } { continue }</code> 正是这种。</li>
+</ul>
+<h2>5.4 上限算法：为什么是 <code class="notranslate">int(参考寿命 ÷ 单件切削时间)</code></h2>
+<p>设参考寿命 <code class="notranslate">ref</code>（分钟），本件这把刀实际切削 <code class="notranslate">cut</code>（分钟）：</p>
+<ul>
+<li>该刀还能加工多少件 ≈ <code class="notranslate">ref / cut</code>。</li>
+<li>取<strong>截断整数</strong> <code class="notranslate">int()</code>：60/20.09 = 2.98 → 2。意思是"第 3 件做完时已经超过 60 分钟了，所以在第 3 件开始前就该报警"。</li>
+<li>计数器在<strong>程序尾 +1</strong>，所以判断的是"<strong>已经做完的件数</strong>是否超过上限"：第 1 件尾 <code class="notranslate">#650=1</code>（1&gt;2 假）、第 2 件尾 <code class="notranslate">#650=2</code>（2&gt;2 假）、第 3 件尾 <code class="notranslate">#650=3</code>（3&gt;2 真 → 报警）。</li>
+<li>边界：<code class="notranslate">ref &lt; cut</code> 时上限 = 0 ⇒ <strong>每件都报警</strong>（第一件尾 <code class="notranslate">#650=1 &gt; 0</code>）。这是合理的：一件的切削量就超过了刀片寿命。</li>
+<li>⚠ <code class="notranslate">cut</code> 是<strong>本程序里这把刀的总切削时间</strong>（多道工序累加），不是单道工序 —— 所以"单件"= 这一个 NC 程序对应的那一个工件。</li>
+</ul>
+<h2>5.5 变量号与标号算法</h2>
+<pre class="notranslate"><code class="notranslate">寿命计数器     lifevar = 600 + 刀号 × 5      （T10 → #650，T11 → #655）
+报警段标号     n1/n2   = 100 + 2×序号        （第 1 把 → N100/N101，第 2 把 → N102/N103）
+</code></pre>
+<ul>
+<li>为什么 <code class="notranslate">×5</code>：<code class="notranslate">#6xx</code> 是"每把刀 5 格"的既定分区（§1.3）。</li>
+<li>为什么标号 <code class="notranslate">+2</code>：每把刀需要"报警段入口 + 正常段入口"两个标号。</li>
+<li>为什么从 <code class="notranslate">100</code> 起：NX 生成的程序里 <code class="notranslate">N</code> 号通常从 <code class="notranslate">1</code> 开始连续编号，从 <code class="notranslate">100</code> 起能最大限度避开。<strong>但这不是绝对保证</strong> —— 若你的程序里本来就有 <code class="notranslate">N100</code>，会冲突。改 <code class="notranslate">set n 100</code> 那一行即可（例如改成 <code class="notranslate">900</code>）。</li>
+</ul>
+<h2>5.6 <code class="notranslate">#3006=1(…)</code> 与那串 <code class="notranslate">@…@</code> 密文</h2>
+<ul>
+<li>FANUC 的宏报警/宏消息入口是 <code class="notranslate">#3000</code>~<code class="notranslate">#3006</code> 系列。本机后处理选的是 <strong><code class="notranslate">#3006</code></strong>：在那一程序段结束时停机并显示消息。</li>
+<li><strong>具体表现（是否停主轴、是否要求按 RESET、是否只 feed hold）取决于机床参数</strong>，不同机台不一样 —— <strong>首次上机务必空跑一件确认</strong>。</li>
+<li>消息里的 <code class="notranslate">@0400CAD9C3FCD6D5C1CBA3A1@</code>：<code class="notranslate">0400</code> 是前缀，其后 <code class="notranslate">CAD9 C3FC D6D5 C1CB A3A1</code> 是 <strong>GB2312 编码</strong>的「寿命终了！」。用 <code class="notranslate">@</code> 包起来 + 十六进制，是为了<strong>把中文安全地送进 FANUC 的消息字段</strong>（直接写中文会被按单字节拆坏、显示成乱码）。</li>
+<li>想改提示文字：用任意 GB2312 编码器把新文字转成十六进制，替换 <code class="notranslate">flag_txt</code> 那一行即可。<strong>别改成非中文以外的东西</strong>（比如加英文），消息字段长度有限。</li>
+</ul>
+<h2>5.7 单位与精度</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>量</th>
+<th>单位</th>
+<th>精度处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">mom_cutting_time</code></td>
+<td><strong>分钟</strong>（NX 原始单位）</td>
+<td>不做转换</td>
+</tr>
+<tr>
+<td>输出注释里的时间/寿命</td>
+<td>分钟</td>
+<td><code class="notranslate">[format "%.2f"]</code> → 固定两位小数</td>
+</tr>
+<tr>
+<td>上限 <code class="notranslate">limit</code></td>
+<td>件（整数）</td>
+<td><code class="notranslate">int()</code> 截断，<strong>不四舍五入</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p>若以后要做"秒"或"小时"，<strong>只改显示那一行</strong>（<code class="notranslate">Total_Cutting_Time:</code> 那行是纯注释），<strong>不要动 <code class="notranslate">limit</code> 的算法</strong> —— 它跟单位无关（分子分母同单位即可）。</p>
+</blockquote>
+<hr>
+<h1>第 6 章 · 真 Tcl 8.6 实测数据</h1>
+<ul>
+<li>解释器：<code class="notranslate">C:\Program Files\Siemens\Designcenter2606\NXBIN\python\tcl86t.dll</code>（<strong>Tcl 8.6.15</strong>，NX 自带）</li>
+<li>方法：用 ctypes 起解释器 → 按大括号配对<strong>从真实 <code class="notranslate">.tcl</code> 里抠出 4 个 proc 的原文</strong> → 桩掉 <code class="notranslate">MOM_output_literal</code> / <code class="notranslate">MOM_abort</code> / <code class="notranslate">MOM_reload_variable</code> → 逐场景跑</li>
+<li>脚本：<code class="notranslate">Test-ToolLife.py</code>（桌面）/ <code class="notranslate">tclenc_verify\toollife_test.py</code>（工作区）；完整报告 <code class="notranslate">toollife_test_report.txt</code></li>
+<li>⚠ 桩 <code class="notranslate">MOM_abort</code> <strong>必须抛错</strong>才能复刻真实中断行为（否则第二遍会继续跑，测出来的是假的）</li>
+</ul>
+<h2>6.1 事件状态 → 开关（8 种取值）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>NX 送进来的值</th>
+<th><code class="notranslate">::nc_tool_life_on</code></th>
+<th><code class="notranslate">::nc_new_tool_request</code></th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">ACTIVE</code></td>
+<td>1</td>
+<td>1</td>
+<td><strong>全大写 = NX 真实送进来的值</strong></td>
+</tr>
+<tr>
+<td><code class="notranslate">Active</code></td>
+<td>1</td>
+<td>1</td>
+<td>大小写变体</td>
+</tr>
+<tr>
+<td><code class="notranslate">active</code></td>
+<td>1</td>
+<td>1</td>
+<td>小写</td>
+</tr>
+<tr>
+<td><code class="notranslate">Inactive</code></td>
+<td><em>unset</em></td>
+<td>0</td>
+<td>不生效</td>
+</tr>
+<tr>
+<td><code class="notranslate">INACTIVE</code></td>
+<td><em>unset</em></td>
+<td>0</td>
+<td>不生效</td>
+</tr>
+<tr>
+<td><code class="notranslate">Off</code></td>
+<td><em>unset</em></td>
+<td>0</td>
+<td>不生效</td>
+</tr>
+<tr>
+<td>（变量不存在）</td>
+<td><em>unset</em></td>
+<td><strong>1</strong></td>
+<td>⚠ 见 §7.8</td>
+</tr>
+<tr>
+<td><code class="notranslate">USER DEFINED</code></td>
+<td><em>unset</em></td>
+<td><strong>1</strong></td>
+<td>⚠ 见 §7.8</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p>两个开关实现方式不同：<code class="notranslate">set_tool_life</code> 用<strong>白名单 + <code class="notranslate">-nocase</code></strong>（只有 Active 才算）；<br>
+<code class="notranslate">set_new_tool</code> 用<strong>黑名单</strong>（不在 <code class="notranslate">{inactive off false disable disabled}</code> 里就算）。<br>
+结果差异就在最后两行：黑名单写法把"空值 / 其它值"一律当成 Active（<strong>fail-open</strong>）。</p>
+</blockquote>
+<h2>6.2 记账：4 道工序喂进去</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>喂进去的工序</th>
+<th>累计切削(min)</th>
+<th>参考寿命文本</th>
+<th>账本刀序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T10 第 1 道工序</td>
+<td>1.20</td>
+<td><code class="notranslate">60</code></td>
+<td><code class="notranslate">10</code></td>
+</tr>
+<tr>
+<td>T10 第 2 道工序（应累加）</td>
+<td>0.38</td>
+<td><code class="notranslate">60</code></td>
+<td><code class="notranslate">10</code></td>
+</tr>
+<tr>
+<td>T11 文本格为空</td>
+<td>2.50</td>
+<td><em>（空）</em></td>
+<td><code class="notranslate">10 11</code></td>
+</tr>
+<tr>
+<td>刀号 1005 → 应归整成 T10 并继续累加</td>
+<td>0.75</td>
+<td><code class="notranslate">45</code></td>
+<td><code class="notranslate">10 11</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>记完账后：<strong>T10 → cut=2.33、ref=60</strong>（1.20 + 0.38 + 0.75，第三条 1005 归到 T10）；<strong>T11 → cut=2.5、ref=无</strong> ✅ 完全符合预期。</p>
+<h2>6.3 刀号编码边界</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>喂进 <code class="notranslate">mom_tool_number</code></th>
+<th>账本记成</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>99</td>
+<td>T99</td>
+<td>直接取整</td>
+</tr>
+<tr>
+<td>100</td>
+<td>T100</td>
+<td><strong><code class="notranslate">&gt;100</code> 才算组合码，所以 100 原样保留</strong></td>
+</tr>
+<tr>
+<td>101</td>
+<td>T1</td>
+<td>1×100 + 01</td>
+</tr>
+<tr>
+<td>1005</td>
+<td>T10</td>
+<td>10×100 + 05</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>⚠ <strong><code class="notranslate">mom_cutting_time</code> 不存在时</strong>：账本记 <code class="notranslate">order = 12</code>、<code class="notranslate">cut_time(12) = 0.0</code> ✅（<strong>刀号登记住了</strong>，不会整刀消失）。</p>
+<h2>6.4 程序尾八种情形</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>场景</th>
+<th>输出行数</th>
+<th>是否中断</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1 没加过 <code class="notranslate">set_tool_life</code></td>
+<td><strong>0</strong></td>
+<td>否</td>
+<td>零输出、不检查、不报错 ✅</td>
+</tr>
+<tr>
+<td>S2 正常：T10 / T11 两把刀</td>
+<td>16</td>
+<td>否</td>
+<td>各出一组 8 行 ✅</td>
+</tr>
+<tr>
+<td>S3 缺数据：T11 文本格为空</td>
+<td><strong>1</strong></td>
+<td><strong>是</strong></td>
+<td>只留 <code class="notranslate">(TOOL LIFE DATA MISSING : T11 )</code>，<strong>一行寿命段都不出</strong> ✅</td>
+</tr>
+<tr>
+<td>S4 非数字：文本 = <code class="notranslate">abc</code></td>
+<td>1</td>
+<td>是</td>
+<td>同上 ✅</td>
+</tr>
+<tr>
+<td>S5 文本 = <code class="notranslate">60min</code></td>
+<td>8</td>
+<td>否</td>
+<td>正则抠出 60 → <strong>正常通过</strong>（宽容，非报错）✅</td>
+</tr>
+<tr>
+<td>S6 参考寿命 = <code class="notranslate">0</code></td>
+<td>1</td>
+<td>是</td>
+<td><code class="notranslate">&lt;=0</code> 按非法 ✅</td>
+</tr>
+<tr>
+<td>S7 该刀切削时间为 0</td>
+<td>8</td>
+<td>否</td>
+<td>T10 静默跳过（不算缺数据），只输出 T11 ✅</td>
+</tr>
+<tr>
+<td>S8 T11 + T13 都缺</td>
+<td>1</td>
+<td>是</td>
+<td><code class="notranslate">(TOOL LIFE DATA MISSING : T11 T13 )</code> — <strong>一次报全</strong> ✅</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>6.5 输出原文逐字对照（S2）</h2>
+<p>16 行与期望值<strong>逐行相同，不一致项 = 0</strong>：</p>
+<pre lang="text" class="notranslate"><code class="notranslate">(T10 Total_Cutting_Time:20.09min,Reference Life Time:60.00min)
+#650=#650+1
+IF [#650 GT 2] GOTO100
+GOTO101
+N100
+#3006=1(T10 @0400CAD9C3FCD6D5C1CBA3A1@)
+#650=0
+N101
+(T11 Total_Cutting_Time:1.58min,Reference Life Time:60.00min)
+#655=#655+1
+IF [#655 GT 37] GOTO102
+GOTO103
+N102
+#3006=1(T11 @0400CAD9C3FCD6D5C1CBA3A1@)
+#655=0
+N103
+</code></pre>
+<p>（T10：<code class="notranslate">600+10×5 = #650</code>、<code class="notranslate">int(60/20.09) = 2</code>；T11：<code class="notranslate">#655</code>、<code class="notranslate">int(60/1.58) = 37</code>；标号 <code class="notranslate">N100/N101</code> → <code class="notranslate">N102/N103</code> ✅）</p>
+<h2>6.6 上限算法</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>参考寿命(min)</th>
+<th>单件切削(min)</th>
+<th>上限</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>60</td>
+<td>20.09</td>
+<td><strong>2</strong></td>
+<td>60/20.09 = 2.98 → 2</td>
+</tr>
+<tr>
+<td>60</td>
+<td>1.58</td>
+<td><strong>37</strong></td>
+<td>60/1.58 = 37.9 → 37</td>
+</tr>
+<tr>
+<td>60</td>
+<td>0.5</td>
+<td><strong>120</strong></td>
+<td>整除也算</td>
+</tr>
+<tr>
+<td>60</td>
+<td>61.0</td>
+<td><strong>0</strong></td>
+<td>一件就超寿命 → <strong>每件都报警</strong></td>
+</tr>
+<tr>
+<td>45</td>
+<td>0.75</td>
+<td><strong>60</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h1>第 7 章 · 关键问题（坑）清单</h1>
+<h2>7.1 🔴 UDE 状态是<strong>全大写 <code class="notranslate">ACTIVE</code></strong></h2>
+<p>最坑的一条。<code class="notranslate">PARAM command_status</code> 的选项在 <code class="notranslate">.cdl</code> 里写的是 <code class="notranslate">"Active"</code>/<code class="notranslate">"Inactive"</code>，但<strong>下发到后处理时被大写成 <code class="notranslate">ACTIVE</code></strong>。</p>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> ❌ 永远为假</span>
+<span class="pl-k">if</span> { ![<span class="pl-k">string</span> compare <span class="pl-s"><span class="pl-pds">"</span>Active<span class="pl-pds">"</span></span> <span class="pl-smi">$mom_command_status</span>] } { … }
+<span class="pl-c"><span class="pl-c">#</span> ✅</span>
+<span class="pl-k">if</span> { [<span class="pl-k">string</span> equal -nocase <span class="pl-s"><span class="pl-pds">"</span>Active<span class="pl-pds">"</span></span> [<span class="pl-k">string</span> trim <span class="pl-smi">$mom_command_status</span>]] } { … }</pre></div>
+<p>症状极具欺骗性：<strong>不报错、不中断</strong>，只是条件永远为假 —— 于是"事件触发了等于没触发"。排查手法：在该 UDE 的处理命令里临时插一行 <code class="notranslate">MOM_output_literal "(DBG status=$mom_command_status)"</code>，出一次程序看 NC 里到底是什么值。</p>
+<h2>7.2 🔴 两个开关的<strong>生命周期完全不同</strong></h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th></th>
+<th><code class="notranslate">set_tool_life</code>（本篇）</th>
+<th><code class="notranslate">set_new_tool</code>（修订 2）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>语义</td>
+<td><strong>全局粘性</strong>：任意一道工序 Active → 整程序生效</td>
+<td><strong>按工序一次性</strong>：只有加了事件的那道工序</td>
+</tr>
+<tr>
+<td>谁清零</td>
+<td><code class="notranslate">Start of Program</code> 清一次</td>
+<td>消费它的命令（<code class="notranslate">custom_command_10</code>）用完立刻清 + <code class="notranslate">End of Path</code> 兜底再清</td>
+</tr>
+<tr>
+<td>实现</td>
+<td>只 <code class="notranslate">set 1</code>，不 <code class="notranslate">set 0</code></td>
+<td>每次都 <code class="notranslate">set 1</code> 或 <code class="notranslate">set 0</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>动手前必须和用户把口径敲死</strong>。本项目在这上面返工过一次：第一版把需求①（New/Old）也做成了"全局粘性"，结果<strong>每把刀第一次出现都判成 New</strong>，而用户要的是"只有加了标记的那道工序才 New"。</p>
+<h2>7.3 刀号 <code class="notranslate">&gt;100</code> 的编码约定（三处必须一致）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>地方</th>
+<th>代码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>记账（6333 行区）</td>
+<td><code class="notranslate">if { $mom_tool_number &gt; 100 } { set t [expr {int(double($mom_tool_number)/100)}] }</code></td>
+</tr>
+<tr>
+<td>换刀段 <code class="notranslate">custom_command_10</code></td>
+<td><code class="notranslate">if {$mom_tool_number &gt; 100 } { set tooln [expr $mom_tool_number/100] }</code></td>
+</tr>
+<tr>
+<td>坐标宏（修订 14）</td>
+<td>刀号 &gt;100 先 <code class="notranslate">int(tn/100.0+0.5)</code> 还原</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>⇒ <strong>改任何一处都要同步改另外两处</strong>，否则"寿命段的变量号"和"换刀段的变量号"会指向不同的刀 → 计数记到别人头上去。</p>
+<p>⚠ 边界（实测 §6.3）：<code class="notranslate">&gt;100</code> 才当组合码 ⇒ <strong>刀号正好 100 会被当成"真 T100"</strong>；而 101 会被解释成 T1。若你的刀库里有 100~999 的"纯刀号"，这个约定就歧义了，必须先统一。</p>
+<h2>7.4 🔴 可选变量缺失时<strong>绝不能 <code class="notranslate">return</code></strong></h2>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> ❌ 一旦某道工序没有 mom_cutting_time，这把刀就整刀不进账本</span>
+<span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists mom_cutting_time] } { <span class="pl-k">return</span> }
+<span class="pl-c"><span class="pl-c">#</span> ✅ 按 0 记账，但刀号一定要登记</span>
+<span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_cutting_time] } { <span class="pl-k">set</span> _cut <span class="pl-smi">$mom_cutting_time</span> } <span class="pl-k">else</span> { <span class="pl-k">set</span> _cut 0.0 }</pre></div>
+<p>漏登记的后果是<strong>程序尾"少了一把刀"</strong>，而现象很难往"某个变量不存在"上想。诊断行里会显示 <code class="notranslate">cut=0.0</code>，能抓出来。</p>
+<h2>7.5 诊断行必须在<strong>所有 early return 之前</strong></h2>
+<p><code class="notranslate">PB_CMD_output_tool_life</code> 的第一句实际代码是总开关守卫（9222 行）。若把调试段放在它<strong>后面</strong>，那么"没加 UDE"时就什么都看不到 —— 而"没加 UDE"恰恰是最需要确认的情形（"我明明加了，怎么没输出？"）。</p>
+<p>⇒ 本项目把调试段放在 9205–9219，<strong>位于守卫之前</strong>。同理 <code class="notranslate">PB_CMD_collect_cutting_time</code> 的诊断行放在末尾（那里没有 early return 冲突，但 <code class="notranslate">return</code> 在 6347 行 —— <strong>清 <code class="notranslate">::nc_new_tool_request</code> 那行必须排在 6347 之前</strong>，源码里是对的）。</p>
+<h2>7.6 <code class="notranslate">::nc_tool_life_on</code> 的清零时机</h2>
+<ul>
+<li><strong>清在哪</strong>：<code class="notranslate">PB_CMD_custom_command_11</code>（挂 <code class="notranslate">Start of Program</code>，整程序只跑一次）。</li>
+<li><strong>不在哪清</strong>：不在 <code class="notranslate">End of Program</code>、不在 <code class="notranslate">End of Path</code>。理由：它是"整程序"级的开关，End of Path 清掉就会导致后面的刀都不出寿命段。</li>
+<li>源码里那句注释（"故意不在这里清零"）是<strong>写错的</strong>，代码是对的。</li>
+</ul>
+<h2>7.7 UDE 定义有<strong>两份</strong>，其中一份不随后处理文件走</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>位置</th>
+<th>作用</th>
+<th>会不会跟着拷贝</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">mill_intergrex_300_2022.cdl</code>（后处理自带）</td>
+<td>后处理侧的 EVENT 映射</td>
+<td>✅ 会</td>
+</tr>
+<tr>
+<td><code class="notranslate">&lt;NX&gt;\MACH\resource\user_def_event\ude.cdl</code>（<strong>NX 全局</strong>）</td>
+<td>事件定义库，NX 据此把 UDE 送进后处理</td>
+<td>❌ <strong>不会</strong>，每台机器的 NX 各一份</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>⇒ <strong>换电脑 / 重装 NX 后，必须在新机器上补上全局 <code class="notranslate">ude.cdl</code> 里的 <code class="notranslate">EVENT set_tool_life</code> 块，然后重启 NX。</strong> 少一份的后果是<strong>静默丢弃</strong>（不报错、不输出），最容易被误判成"代码写错了"。</p>
+<blockquote>
+<p>顺带一处<strong>不一致</strong>（不影响功能，但要知道）：后处理自带 <code class="notranslate">.cdl</code> 的 <code class="notranslate">set_tool_life</code> 有 <strong>3 个选项</strong>（<code class="notranslate">Active/Inactive/User Defined</code>），NX 全局 <code class="notranslate">ude.cdl</code> 里只有 <strong>2 个</strong>（<code class="notranslate">Active/Inactive</code>）。选 <code class="notranslate">User Defined</code> 在后处理侧<strong>不会</strong>打开寿命开关（实测 §6.1）。</p>
+</blockquote>
+<h2>7.8 已知边界（实测确认）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>边界</th>
+<th>现象</th>
+<th>要不要改</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">set_new_tool</code> 的<strong>黑名单</strong>写法</td>
+<td><code class="notranslate">mom_command_status</code> 缺失、或值不在黑名单里（如 <code class="notranslate">USER DEFINED</code>）→ <strong>判成 Active</strong>（fail-open）</td>
+<td>想更保守就换成白名单：<code class="notranslate">if { [lsearch -exact {active activate on yes true enable enabled 1} $st] &gt;= 0 }</code></td>
+</tr>
+<tr>
+<td>文本填 <code class="notranslate">60min</code>、<code class="notranslate">约60</code></td>
+<td>正则抠出 <code class="notranslate">60</code>，<strong>通过</strong></td>
+<td>宽容设计，不用改；但<strong>建议还是只填数字</strong>，避免"约"字后面跟别的数字时抠错（正则取的是<strong>第一个</strong>匹配）</td>
+</tr>
+<tr>
+<td>文本填 <code class="notranslate">60 70</code></td>
+<td>抠出第一个 <code class="notranslate">60</code></td>
+<td>同上，只填一个数字</td>
+</tr>
+<tr>
+<td>刀号正好 100</td>
+<td>当成真 T100</td>
+<td>见 §7.3</td>
+</tr>
+<tr>
+<td>该刀切削时间为 0</td>
+<td>静默跳过（不算缺数据、不输出）</td>
+<td>合理（除零保护）</td>
+</tr>
+<tr>
+<td><code class="notranslate">N100</code> 与程序现有标号冲突</td>
+<td>跳转错乱</td>
+<td>改 <code class="notranslate">set n 100</code> 那一行</td>
+</tr>
+<tr>
+<td>多把刀共用同一刀号</td>
+<td>时间会累加到同一账上</td>
+<td>是设计如此（同刀号=同物理刀）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>7.9 ⚠ 现场踩过的最大一个坑：<strong>两台电脑的文件不同步</strong></h2>
+<p>历史事故：向用户交付两个新 proc 后，功能仍不生效。诊断定案手法（<strong>值得复用</strong>）：</p>
+<ul>
+<li><strong>同开关控制的两组诊断行，一组出现、另一组不出现</strong> ⇒ 开关是开的，而"不出现那组"所在的 proc <strong>没被替换</strong>。</li>
+<li>本例：NC 里有 7 处 <code class="notranslate">(DBGNEW …)</code>，却<strong>一行 <code class="notranslate">(DBGLIFE …)</code> 都没有</strong> ⇒ 出程序那台上的 <code class="notranslate">PB_CMD_output_tool_life</code> 还是"写警告、悄悄跳过"的旧版。<strong>不是账本问题、不是新代码有 bug。</strong></li>
+</ul>
+<p>⇒ 给每段新逻辑配一条<strong>同开关控制的、独一无二的诊断行</strong>，以后任何"改了但没效果"都能 30 秒内区分"<strong>没换上</strong>"和"<strong>换上了但有别的 bug</strong>"。</p>
+<hr>
+<h1>第 8 章 · 维护、排错、验收</h1>
+<h2>8.1 三条纪律（老规矩）</h2>
+<ol>
+<li><strong>先在 PB 界面里改完一切 → Save 一次 → 之后永不再在 PB 里 Save。</strong><br>
+理由：<code class="notranslate">MOM_xxx</code> 事件 proc 与 <code class="notranslate">.def</code> 块模板会被 PB 按 <code class="notranslate">.pui</code> 重写；<code class="notranslate">PB_CMD_*</code> 的正文虽实测能存活，但"两台越差越多"多半就是这么来的。</li>
+<li><strong>手改只改 <code class="notranslate">PB_CMD_*</code> 的正文，绝不改 <code class="notranslate">MOM_xxx</code> 那 5 行入口。</strong></li>
+<li><strong>明文母本必须留着</strong>（<code class="notranslate">_bf.tcl</code>）；加密版<strong>绝不能再让 PB 打开并保存</strong>（PB 会按 <code class="notranslate">.pui</code> 重写 <code class="notranslate">.tcl</code>，加密当场作废）。</li>
+</ol>
+<h2>8.2 现场排错表（打开 NC 搜这些串）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>看到什么</th>
+<th>说明</th>
+<th>下一步</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一句 <code class="notranslate">DBGLIFE</code> 都没有</td>
+<td>该命令<strong>还是旧版</strong>，或跑的不是这份后处理</td>
+<td>在<strong>出程序那台</strong>上搜 <code class="notranslate">DBGLIFE</code>，确认文件；按 §7.9 定案</td>
+</tr>
+<tr>
+<td><code class="notranslate">(DBGLIFE life_on=unset)</code></td>
+<td>一道工序都没加 <code class="notranslate">set_tool_life</code>，或 UDE 没送达</td>
+<td>检查工序开始事件；检查 NX 全局 <code class="notranslate">ude.cdl</code>（§7.7）</td>
+</tr>
+<tr>
+<td><code class="notranslate">(DBGLIFE life_on=1)</code> + <code class="notranslate">(DBGLIFE order=10 11 12 13)</code></td>
+<td>开关生效，4 把刀都进账本了</td>
+<td>继续往下看</td>
+</tr>
+<tr>
+<td><code class="notranslate">(DBGLIFE tool=11 cut=… ref=&lt;none&gt;)</code></td>
+<td><strong>T11 的文本格是空的</strong></td>
+<td>去填数字</td>
+</tr>
+<tr>
+<td><code class="notranslate">(DBGLIFE add tool=11 cut=0.0 …)</code></td>
+<td>这道工序没读到切削时间</td>
+<td>把这段 NC 发维护者</td>
+</tr>
+<tr>
+<td><code class="notranslate">(TOOL LIFE DATA MISSING : T11 T12 )</code> + 后处理停下</td>
+<td><strong>新逻辑生效了，正是要的行为</strong></td>
+<td>去把那两把刀填上</td>
+</tr>
+<tr>
+<td>每把刀都有 <code class="notranslate">ref=60</code>，结尾出现 N 组寿命段</td>
+<td>全部通过 ✅</td>
+<td>把 <code class="notranslate">::nc_dbg</code> 改回 <code class="notranslate">0</code></td>
+</tr>
+<tr>
+<td>程序尾<strong>没有</strong>寿命段，也没有任何报错</td>
+<td>总开关没置位（正常行为）</td>
+<td>若你确实加了 UDE → 按上一行排查</td>
+</tr>
+<tr>
+<td>弹窗中文乱码</td>
+<td>机床不支持 GB2312 或该字段是 ASCII-only</td>
+<td>看 NC 里那行纯 ASCII 的 <code class="notranslate">TOOL LIFE DATA MISSING</code>，或按 §5.6 换编码</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>8.3 验收判据（每次改完必查）</h2>
+<ol>
+<li><strong>代码逐字一致</strong>：跑 <code class="notranslate">check_md_code15.py</code>，把本文档里 <strong>8 段源码代码块</strong>（§3.1–§3.6，§3.6 下含 3 段）与明文母本做逐字比对 —— <strong>差异必须为 0</strong>。（§7 里那些故意写错的 ❌ 示例不算母本原文，脚本已按设计跳过；当前实测：8/8 一致、合计不一致 0。）</li>
+<li><strong>逻辑离线回归</strong>：跑 <code class="notranslate">Test-ToolLife.py</code>，第 6 章 5 张表的结论必须复现（尤其 <strong>S2 逐字对照不一致项 = 0</strong>）。</li>
+<li><strong>开关两态都要测</strong>：不加 UDE（应零输出）+ 加 UDE（应出寿命段）。</li>
+<li><strong>缺数据要真断</strong>：故意留一把刀不填文本，确认<strong>后处理当场停</strong>、NC 里只有一行 <code class="notranslate">MISSING</code>。</li>
+<li><strong>验收完关诊断</strong>：<code class="notranslate">::nc_dbg</code> 改回 <code class="notranslate">0</code>，NC 里不应再有 <code class="notranslate">DBG…</code> 行。</li>
+<li><strong>PB 保存后的存活检查</strong>：<code class="notranslate">grep -c "proc PB_CMD_output_tool_life { } {"</code> 必须 = <strong>1</strong>（不是 0、也不是 2）。</li>
+</ol>
+<h2>8.4 机床侧前提（上机前必须确认）</h2>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> <code class="notranslate">#600</code>~<code class="notranslate">#999</code> 区在这台机床上<strong>没有别的程序在用</strong>（公共变量是全局的，会互相踩）。</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> <code class="notranslate">#650</code>、<code class="notranslate">#655</code>… 这些号在本机床的<strong>刀具寿命/调正量体系</strong>里确实是按 <code class="notranslate">600+刀号×5</code> 分的。</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> <code class="notranslate">#3006=1(…)</code> 在本机床上的<strong>实际表现</strong>（停机方式、是否需 RESET）—— <strong>首次空跑一件确认</strong>。</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 消息里的中文能正常显示（GB2312 段）。</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> <strong>本程序里没有 <code class="notranslate">N100</code> 及以上的标号</strong>，或已把 <code class="notranslate">set n 100</code> 改到冲突区间之外。</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 第一件跑完后，机械侧确认 <code class="notranslate">#650</code> 变成了 <code class="notranslate">1</code>（而不是 <code class="notranslate">2</code> 或 <code class="notranslate">0</code>）。</li>
+</ul>
+<hr>
+<h1>第 9 章 · 附录：变量 / 常量 / 文件速查</h1>
+<h2>9.1 本功能用到的全局变量（<code class="notranslate">::</code> 前缀）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>变量</th>
+<th>含义</th>
+<th>谁写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">::nc_tool_life_on</code></td>
+<td>总开关（任意工序 Active 即 1）</td>
+<td><code class="notranslate">PB_CMD_set_tool_life_flag</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_dbg</code></td>
+<td>调试总开关（1 = 打诊断行）</td>
+<td><code class="notranslate">PB_CMD_custom_command_11</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_tool_order</code></td>
+<td>账本：刀具出现顺序</td>
+<td><code class="notranslate">PB_CMD_collect_cutting_time</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_cut_time(t)</code></td>
+<td>账本：该刀本程序累计切削分钟</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_ref_text(t)</code></td>
+<td>账本：该刀参考寿命文本（首次非空值）</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_new_tool_request</code></td>
+<td>（修订 2）按工序的 New 标记</td>
+<td><code class="notranslate">PB_CMD_set_new_tool_flag</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_new_tool_seen(t)</code></td>
+<td>（修订 2）本程序该刀是否已出过 New 段</td>
+<td><code class="notranslate">PB_CMD_custom_command_10</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">::nc_addvar_on</code></td>
+<td>（修订 14）坐标宏开关</td>
+<td><code class="notranslate">PB_CMD_add_variable_flag</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>9.2 NX 送进来的变量</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>变量</th>
+<th>含义</th>
+<th>单位 / 值域</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">mom_tool_number</code></td>
+<td>刀号（可能是"刀号×100+补偿号"的组合码）</td>
+<td>数</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_cutting_time</code></td>
+<td><strong>本道工序</strong>有效切削时间</td>
+<td>分钟；个别工序可能不存在</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_tool_text</code></td>
+<td>刀具对话框「更多 → 机床控制 → 文本」格</td>
+<td>字符串</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_command_status</code></td>
+<td>UDE 的 Status 下拉值</td>
+<td><strong>全大写</strong> <code class="notranslate">ACTIVE</code> / <code class="notranslate">INACTIVE</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>9.3 关键常量与公式</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>项</th>
+<th>值 / 公式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>寿命计数器变量号</td>
+<td><code class="notranslate">600 + 刀号 × 5</code></td>
+</tr>
+<tr>
+<td>报警段标号</td>
+<td><code class="notranslate">100 + 2×序号</code>（<code class="notranslate">N100/N101</code>、<code class="notranslate">N102/N103</code>…）</td>
+</tr>
+<tr>
+<td>上限</td>
+<td><code class="notranslate">int(参考寿命 ÷ 单件累计切削时间)</code></td>
+</tr>
+<tr>
+<td>报警语句</td>
+<td><code class="notranslate">#3006=1(T&lt;刀号&gt; &lt;GB2312-hex&gt;)</code></td>
+</tr>
+<tr>
+<td>报警文案</td>
+<td><code class="notranslate">@0400CAD9C3FCD6D5C1CBA3A1@</code> = 「寿命终了！」</td>
+</tr>
+<tr>
+<td>缺数据证据行</td>
+<td><code class="notranslate">(TOOL LIFE DATA MISSING : T11 T12 )</code></td>
+</tr>
+<tr>
+<td>诊断行前缀</td>
+<td><code class="notranslate">DBGLIFE</code> / <code class="notranslate">DBGNEW</code>（受 <code class="notranslate">::nc_dbg</code> 控制）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>9.4 相关文件</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>文件</th>
+<th>位置 / 用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>明文母本</td>
+<td><code class="notranslate">桌面\mill_intergrex_300_2022_bf.tcl</code>（改代码的依据；<code class="notranslate">.tcl</code> 是加密产物时以它为准）</td>
+</tr>
+<tr>
+<td><code class="notranslate">.pui</code></td>
+<td><code class="notranslate">桌面\mill_intergrex_300_2022.pui</code>（UDE 登记 790 行 / 事件成员 740、837、841 行）</td>
+</tr>
+<tr>
+<td><code class="notranslate">.cdl</code></td>
+<td><code class="notranslate">桌面\mill_intergrex_300_2022.cdl</code>（<code class="notranslate">EVENT set_tool_life</code> <a class="user-mention notranslate" data-hovercard-type="user" data-hovercard-url="/users/13276/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/13276">@13276</a>）</td>
+</tr>
+<tr>
+<td>NX 全局 UDE</td>
+<td><code class="notranslate">…\Designcenter2606\MACH\resource\user_def_event\ude.cdl</code>（<code class="notranslate">EVENT set_tool_life</code> <a class="user-mention notranslate" data-hovercard-type="user" data-hovercard-url="/users/17/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/17">@17</a>）</td>
+</tr>
+<tr>
+<td>离线验收脚本</td>
+<td><code class="notranslate">桌面\Test-ToolLife.py</code> / <code class="notranslate">tclenc_verify\toollife_test.py</code></td>
+</tr>
+<tr>
+<td>实测报告</td>
+<td><code class="notranslate">tclenc_verify\toollife_test_report.txt</code></td>
+</tr>
+<tr>
+<td>文档代码校验</td>
+<td><code class="notranslate">tclenc_verify\check_md_code15.py</code></td>
+</tr>
+<tr>
+<td>真 Tcl 解释器</td>
+<td><code class="notranslate">…\Designcenter2606\NXBIN\python\tcl86t.dll</code>（8.6.15）</td>
+</tr>
+<tr>
+<td>上游文档</td>
+<td><code class="notranslate">后处理改造_修订2_NewOld按工序.md</code>、<code class="notranslate">修订3_刀具寿命中断版.md</code>、<code class="notranslate">修订14_坐标加变量号_防忘文章.md</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<p><em>（本文所有代码块与源文件做过逐字比对；所有行为结论来自真 Tcl 8.6 实测，非推测。改代码前请先跑 §8.3 的两条。）</em></p></div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://bk.929295.xyz">数控技术博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("08/09/2024"!=""){
+    var startSite=new Date("08/09/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","yingfanyu/yingfanyu.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
