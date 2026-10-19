@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# 部署到飞牛 fnOS（ARM64）
+
+> 结论：**能跑，而且比 Windows 更适合。">
+<meta property="og:title" content="workbuddy签到脚本部署到飞牛 fnOS（ARM64）">
+<meta property="og:description" content="# 部署到飞牛 fnOS（ARM64）
+
+> 结论：**能跑，而且比 Windows 更适合。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://bk.929295.xyz/post/workbuddy-qian-dao-jiao-ben-bu-shu-dao-fei-niu-%20fnOS%EF%BC%88ARM64%EF%BC%89.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>workbuddy签到脚本部署到飞牛 fnOS（ARM64）</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">workbuddy签到脚本部署到飞牛 fnOS（ARM64）</h1>
+<div class="title-right">
+    <a href="https://bk.929295.xyz" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/yingfanyu/yingfanyu.github.io/issues/69" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>部署到飞牛 fnOS（ARM64）</h1>
+<blockquote>
+<p>结论：<strong>能跑，而且比 Windows 更适合。</strong> NAS 24 小时开机、不需要桌面会话、开机自启，<br>
+这三点正好补上 Windows 版的短板（关机漏签、要等人登录桌面）。</p>
+<p>唯一必须改的地方是浏览器：Windows 用 Edge，飞牛上没有 Edge，改用系统 Chromium。<br>
+代码已经改好，<code class="notranslate">tools/</code> 一套代码两个平台通用。</p>
+</blockquote>
+<hr>
+<h2>一、可行性说明（为什么能）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>依赖</th>
+<th>Windows 版</th>
+<th>飞牛 ARM 版</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>运行时</td>
+<td>WorkBuddy 内置 Node</td>
+<td>系统 Node 22+ 或 <code class="notranslate">/opt/workbuddy-node</code></td>
+</tr>
+<tr>
+<td>浏览器</td>
+<td>Microsoft Edge</td>
+<td>Debian 仓库的 <code class="notranslate">chromium</code>（ARM64 有官方包）</td>
+</tr>
+<tr>
+<td>显示</td>
+<td>屏幕外窗口</td>
+<td><strong>Xvfb 虚拟屏</strong>（无显示器也能「有界面」运行）</td>
+</tr>
+<tr>
+<td>调度</td>
+<td>计划任务</td>
+<td>systemd timer</td>
+</tr>
+<tr>
+<td>登录态</td>
+<td><code class="notranslate">.edge-profile</code></td>
+<td>同样是 <code class="notranslate">.edge-profile</code>，<strong>但和 Windows 的不通用，要重新扫码</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>代码里已经处理了 ARM/Linux 的坑：</p>
+<ul>
+<li><code class="notranslate">--no-sandbox</code>、<code class="notranslate">--disable-dev-shm-usage</code>（NAS 上 <code class="notranslate">/dev/shm</code> 很小，不加会崩）</li>
+<li><code class="notranslate">--password-store=basic --use-mock-keychain</code>（无 keyring 环境，不加会导致<strong>每次重启后登录态丢失</strong>）</li>
+<li>浏览器启动失败自动换 headless 重试</li>
+<li>失败时清理残留 Chromium 进程，避免越积越多</li>
+</ul>
+<hr>
+<h2>二、前提条件</h2>
+<ul>
+<li>飞牛 fnOS（ARM64 / aarch64），系统基于 Debian 12</li>
+<li>Web UI 里已开启 SSH</li>
+<li>你的飞牛账号（OOBE 创建的那个，如 <code class="notranslate">admin</code>）<strong>有 sudo 权限</strong></li>
+<li>NAS 能访问 <code class="notranslate">www.workbuddy.cn</code> 和外网（Server酱、smtp.qq.com）</li>
+</ul>
+<blockquote>
+<p>fnOS 默认禁止 root 远程登录，这是正常的。全程用普通账号 + <code class="notranslate">sudo</code>，不要改成 root 直连。</p>
+</blockquote>
+<hr>
+<h2>三、部署（5 步）</h2>
+<h3>1. 把项目传到 NAS</h3>
+<p>在 Windows 上执行（IP 换成你的飞牛）：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">scp -r <span class="pl-s"><span class="pl-pds">"</span>C:/Users/Administrator/WorkBuddy/2026-10-19-22-25-00/workbuddy-checkin<span class="pl-pds">"</span></span> admin@192.168.1.100:<span class="pl-k">~</span>/</pre></div>
+<p>也可以用飞牛的 SMB 共享，把整个目录拷到 <code class="notranslate">/vol1/1000/</code> 下的某个位置。</p>
+<blockquote>
+<p>只拷代码就够了。<strong>不要拷 <code class="notranslate">.edge-profile</code></strong> —— Windows 的 cookie 用 DPAPI 加密，<br>
+Linux 解不开，拷过去只会让脚本认为「有登录态」然后一直 401。</p>
+</blockquote>
+<h3>2. 装依赖 + 注册定时任务</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c1">cd</span> <span class="pl-k">~</span>/workbuddy-checkin
+sudo bash linux/install.sh</pre></div>
+<p>脚本会：装 <code class="notranslate">chromium xvfb fonts-wqy-zenhei</code>，准备 Node 22（没有就下 ARM64 官方包到<br>
+<code class="notranslate">/opt/workbuddy-node</code>），写入 systemd timer 并启用。</p>
+<h3>3. 填通知配置</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate">nano config.json</pre></div>
+<p>必须填的：<code class="notranslate">sctKey</code>（Server酱 SendKey）、<code class="notranslate">email.user</code> / <code class="notranslate">email.pass</code>（QQ 邮箱 SMTP 授权码）。<br>
+<strong>用你自己账号的凭据</strong>，不要用原来 Windows 上那份（那份已经泄露过，建议重置）。</p>
+<h3>4. 扫码登录（关键一步）</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate">bash linux/login.sh</pre></div>
+<p>脚本会打印：</p>
+<pre class="notranslate"><code class="notranslate">== 需要扫码登录 ==
+   截图已保存: /home/admin/workbuddy-checkin/login-qrcode.png
+   打开这张图片，用微信扫一扫（图片每 20 秒自动更新）
+</code></pre>
+<p>在飞牛「文件管理」里找到这个 PNG 打开，微信扫码。看到 <code class="notranslate">✔ 登录成功，接口可用</code> 就好。</p>
+<blockquote>
+<p>之后一般一年才需要一次。<strong>不要在这台机器上再手动开浏览器登录</strong>，脚本只认这个 profile。</p>
+</blockquote>
+<h4>备选：手机号 + 短信验证码（不用传截图，推荐）</h4>
+<div class="highlight highlight-source-shell"><pre class="notranslate">bash linux/phone-login.sh 17316929295</pre></div>
+<p>脚本会自动切到「手机号」页签、填号码、勾选协议、点「获取验证码」，然后停下来等你：</p>
+<pre class="notranslate"><code class="notranslate">== 验证码已请求（25 分钟内有效，直接输入验证码后回车即可）==
+   也可发送 resend 重新获取，quit 退出
+</code></pre>
+<p>手机收到短信后，<strong>直接在终端输入 6 位验证码回车</strong>，脚本自动填入、提交、校验接口，成功即打印 <code class="notranslate">✔ 登录成功，接口可用</code>。</p>
+<ul>
+<li>验证码过期就输入 <code class="notranslate">resend</code> 重新获取（按钮有 60 秒倒计时，倒计时内重发无效）</li>
+<li>后台运行（<code class="notranslate">setsid nohup</code>）时改用命令文件投递：<code class="notranslate">printf 'code:123456' &gt; /tmp/wb-sms-cmd</code></li>
+<li>这条路走的是腾讯 OneID 短信登录，<strong>不限手机号是否绑定过微信</strong>，但登录后仍是同一个账号</li>
+</ul>
+<h3>5. 验证</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate">bash linux/run.sh --force
+systemctl list-timers <span class="pl-s"><span class="pl-pds">'</span>workbuddy*<span class="pl-pds">'</span></span></pre></div>
+<p>正常输出应该是 <code class="notranslate">签到成功 · 连续 N 天</code> + 积分明细。</p>
+<p><strong>建议再做一次重启验证</strong>（一次性，确认整条链路）：<code class="notranslate">sudo reboot</code>，等设备回来后再等 4 分钟，执行：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">journalctl -u workbuddy-checkin.service --since <span class="pl-s"><span class="pl-pds">"</span>-10min<span class="pl-pds">"</span></span> <span class="pl-k">|</span> tail -20
+node tools/daily-checkin.js --dry-run</pre></div>
+<p>预期：开机后 3 分钟出现一次 <code class="notranslate">Finished workbuddy-checkin.service</code>（当天已签则输出「已成功签到，跳过本次执行」），dry-run 能正常读出连续天数与积分 —— 说明登录态扛住了重启。</p>
+<blockquote>
+<p>已在实机（飞牛 ARM64 / Debian 12）验证通过：重启后 07:10:36 自动触发、登录态保留、连续 21 天与积分读取正常、Server酱 + 邮件推送成功。</p>
+</blockquote>
+<hr>
+<h2>四、时间表（装完就有）</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>时间</th>
+<th>动作</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开机后 3 分钟</td>
+<td>跑一次签到</td>
+<td>当天已签则静默跳过，不打扰</td>
+</tr>
+<tr>
+<td><strong>每天 05:01</strong></td>
+<td><strong>正常签到</strong></td>
+<td><strong>主任务</strong></td>
+</tr>
+<tr>
+<td>每天 09:05</td>
+<td>重试</td>
+<td>05:01 若因网络/重启失败，这次补上；已成功则静默跳过、不推送</td>
+</tr>
+<tr>
+<td>每天 21:50</td>
+<td>再跑一次</td>
+<td>当天没签成才真正执行（等于自动补签）</td>
+</tr>
+<tr>
+<td>每天 22:30</td>
+<td>兜底巡检</td>
+<td>仍未成功 → 推送告警</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><code class="notranslate">Persistent=true</code>：如果 05:01 时 NAS 正好在重启或断网，恢复后会自动补跑。</p>
+<hr>
+<h2>五、「签到失败也推送」是怎么保证的</h2>
+<p>你要求的是失败也要通知，现在有三层：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>场景</th>
+<th>谁负责</th>
+<th>会不会推送</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>登录态失效（401）</td>
+<td><code class="notranslate">daily-checkin.js</code></td>
+<td>✅ 立即推送「登录已失效」</td>
+</tr>
+<tr>
+<td>浏览器起不来 / 页面执行异常</td>
+<td><code class="notranslate">daily-checkin.js</code></td>
+<td>✅ 立即推送失败原因</td>
+</tr>
+<tr>
+<td>接口返回异常 code</td>
+<td><code class="notranslate">daily-checkin.js</code></td>
+<td>✅ 推送 <code class="notranslate">签到返回 code=xxx</code></td>
+</tr>
+<tr>
+<td>05:01 失败</td>
+<td>09:05 重试 / 21:50 补签</td>
+<td>补签成功不重复推送，失败会推</td>
+</tr>
+<tr>
+<td><strong>任务根本没启动</strong>（Node 丢了、服务没起来）</td>
+<td>22:30 巡检</td>
+<td>✅ 推送「今日签到未成功」</td>
+</tr>
+<tr>
+<td>NAS 整机断电/断网</td>
+<td>无</td>
+<td>❌ 发不出去；恢复后 <code class="notranslate">Persistent</code> 会补跑</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>最后一行是物理限制：机器不在线，任何本地通知都发不出去。所以「22:30 巡检」是最后一道兜底。</p>
+<blockquote>
+<p>Server酱免费版每天限 5 条，正常情况下一天最多 1 条成功 + 1 条失败告警，不会超。</p>
+</blockquote>
+<hr>
+<h2>六、排障</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>现象</th>
+<th>排查</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">找不到 Chromium</code></td>
+<td><code class="notranslate">which chromium</code>；没有就 <code class="notranslate">sudo apt install -y chromium</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">浏览器没有打开页面</code></td>
+<td><code class="notranslate">sudo apt install -y xvfb</code>；或 <code class="notranslate">chromium --version</code> 手动试</td>
+</tr>
+<tr>
+<td>登录页截图是空白</td>
+<td>可能页面还没渲染，等 20 秒再看（脚本每 20 秒刷新一次图）</td>
+</tr>
+<tr>
+<td>一直 401</td>
+<td>登录态失效，重跑 <code class="notranslate">bash linux/login.sh</code></td>
+</tr>
+<tr>
+<td>服务没跑</td>
+<td><code class="notranslate">systemctl status workbuddy-checkin.service --no-pager</code><br><code class="notranslate">journalctl -u workbuddy-checkin.service -n 100 --no-pager</code></td>
+</tr>
+<tr>
+<td>想看下次触发时间</td>
+<td><code class="notranslate">systemctl list-timers 'workbuddy*'</code></td>
+</tr>
+<tr>
+<td>改签到时间</td>
+<td><code class="notranslate">sudo systemctl edit workbuddy-checkin.timer</code> 覆盖 <code class="notranslate">OnCalendar</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>ARM 特有：</p>
+<ul>
+<li><strong>Node 版本必须 ≥ 22</strong>：脚本用了内置 <code class="notranslate">WebSocket</code>（Node 21 起稳定），用 Debian 源里的<br>
+Node 18 会直接报 <code class="notranslate">WebSocket is not defined</code>。install.sh 会自动处理。</li>
+<li><strong>Chromium 内存</strong>：单次运行峰值约 400–600 MB，跑完自动退出。NAS 内存 2 GB 以上没问题。</li>
+<li><strong>不要在 Docker 里再套一层 <code class="notranslate">--no-sandbox</code> 之外的限制</strong>，否则 CDP 端口连不上。</li>
+</ul>
+<hr>
+<h2>七、和 Windows 版的关系</h2>
+<p>同一套 <code class="notranslate">tools/</code>，靠 <code class="notranslate">process.platform</code> 自动选浏览器路径和启动参数。区别只有：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th></th>
+<th>Windows</th>
+<th>飞牛</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>启动方式</td>
+<td><code class="notranslate">每日签到.bat</code> / 计划任务</td>
+<td><code class="notranslate">linux/run.sh</code> / systemd timer</td>
+</tr>
+<tr>
+<td>浏览器</td>
+<td>Edge</td>
+<td>chromium</td>
+</tr>
+<tr>
+<td>登录</td>
+<td>双击 <code class="notranslate">登录.bat</code>，扫码</td>
+<td><code class="notranslate">bash linux/login.sh</code>，看截图扫码</td>
+</tr>
+<tr>
+<td>登录态</td>
+<td>各自的 <code class="notranslate">.edge-profile</code></td>
+<td>各自的 <code class="notranslate">.edge-profile</code>（不通用）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>两边<strong>不要同时跑同一个 profile</strong>（本来也不可能，在不同机器上）。同一个账号在两边各自签到<br>
+是幂等的，谁先签都行，另一次会返回「今日已签到」。</p>
+<hr>
+<h2>八、卸载</h2>
+<div class="highlight highlight-source-shell"><pre class="notranslate">sudo bash linux/uninstall.sh</pre></div>
+<p>只删定时任务，项目目录、登录态、配置都保留。</p></div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://bk.929295.xyz">数控技术博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("08/09/2024"!=""){
+    var startSite=new Date("08/09/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","yingfanyu/yingfanyu.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
