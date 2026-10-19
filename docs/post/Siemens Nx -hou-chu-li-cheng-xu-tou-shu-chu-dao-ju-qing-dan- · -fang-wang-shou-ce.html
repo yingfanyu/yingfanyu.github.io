@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# 程序头输出刀具清单 · 防忘手册
+
+> 适用后处理：`JGJJ_2021.pui / .tcl / .def`（NX Post Builder，FANUC 宏程序风格）
+> 记录日期：2026-10-19
+> 目标：**一次后处理**，在程序名下一行输出每把刀一行的注释清单（刀号 / 切削时间 / 参考寿命 / 可加工次数 / H、D 补偿宏变量号）
+
+---
+
+## 0. 一句话讲清做法
+
+照常把整份 NC 输出完 → 在程序结束的最后一步把文件**读回来** → 在'程序名'下一行**插入几行注释** → 写临时文件 → 改名覆盖原文件。">
+<meta property="og:title" content="Siemens Nx 后处理程序头输出刀具清单 · 防忘手册">
+<meta property="og:description" content="# 程序头输出刀具清单 · 防忘手册
+
+> 适用后处理：`JGJJ_2021.pui / .tcl / .def`（NX Post Builder，FANUC 宏程序风格）
+> 记录日期：2026-10-19
+> 目标：**一次后处理**，在程序名下一行输出每把刀一行的注释清单（刀号 / 切削时间 / 参考寿命 / 可加工次数 / H、D 补偿宏变量号）
+
+---
+
+## 0. 一句话讲清做法
+
+照常把整份 NC 输出完 → 在程序结束的最后一步把文件**读回来** → 在'程序名'下一行**插入几行注释** → 写临时文件 → 改名覆盖原文件。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://bk.929295.xyz/post/Siemens%20Nx%20-hou-chu-li-cheng-xu-tou-shu-chu-dao-ju-qing-dan-%20%C2%B7%20-fang-wang-shou-ce.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>Siemens Nx 后处理程序头输出刀具清单 · 防忘手册</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">Siemens Nx 后处理程序头输出刀具清单 · 防忘手册</h1>
+<div class="title-right">
+    <a href="https://bk.929295.xyz" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/yingfanyu/yingfanyu.github.io/issues/68" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>程序头输出刀具清单 · 防忘手册</h1>
+<blockquote>
+<p>适用后处理：<code class="notranslate">JGJJ_2021.pui / .tcl / .def</code>（NX Post Builder，FANUC 宏程序风格）<br>
+记录日期：2026-10-19<br>
+目标：<strong>一次后处理</strong>，在程序名下一行输出每把刀一行的注释清单（刀号 / 切削时间 / 参考寿命 / 可加工次数 / H、D 补偿宏变量号）</p>
+</blockquote>
+<hr>
+<h2>0. 一句话讲清做法</h2>
+<p>照常把整份 NC 输出完 → 在程序结束的最后一步把文件<strong>读回来</strong> → 在"程序名"下一行<strong>插入几行注释</strong> → 写临时文件 → 改名覆盖原文件。</p>
+<p>不用临时变量攒正文，也不用再遍历一遍程序。</p>
+<hr>
+<h2>1. 这东西有什么用</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>用途</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>程序头一眼看全刀具</td>
+<td>不用翻到程序尾才知道这台程序要用几把刀、哪几把</td>
+</tr>
+<tr>
+<td>备刀 / 对刀</td>
+<td>清单里直接给出 H、D 补偿用的宏变量号（如 <code class="notranslate">#603</code> / <code class="notranslate">#604</code>），现场对刀不用翻后处理</td>
+</tr>
+<tr>
+<td>工时与寿命预警</td>
+<td><code class="notranslate">Cut_Time</code> 是实际切削时间，<code class="notranslate">QTY</code> 是"这把刀还能做几件"</td>
+</tr>
+<tr>
+<td>机床端可见</td>
+<td>清单写进 NC 的注释里，操作工在机床上就能看到，不是外部报表</td>
+</tr>
+<tr>
+<td>与程序尾呼应</td>
+<td>程序尾那段寿命计数用的是同一批数据，头部是"预告"，尾部是"结算"</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>实际输出（用一份 5 工序 / 3 把刀的程序跑出来的真实数据）：</p>
+<pre class="notranslate"><code class="notranslate">%
+testnewtool
+(T1 Cut_Time:4.01min,Life_Time:60.00min,QTY=14,Length_No.=#603,Radius_No.=#604)
+(T15 Cut_Time:0.57min,Life_Time:60.00min,QTY=105,Length_No.=#673,Radius_No.=#674)
+(T10 Cut_Time:0.23min,Life_Time:60.00min,QTY=260,Length_No.=#648,Radius_No.=#649)
+G40 G17 G90 G49 G21
+(XCB_COPY)
+...
+</code></pre>
+<p>其中 <code class="notranslate">#603 = 600 + 1*5 - 2</code>、<code class="notranslate">#604 = 600 + 1*5 - 1</code>，与程序里 <code class="notranslate">clear_compensation_variable_H/D</code> 用的是同一个公式。</p>
+<hr>
+<h2>2. 为什么不能"直接在程序开头循环输出"</h2>
+<p>这是位置上做不到，不是写法问题。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>做法</th>
+<th>为什么不行</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>在 <code class="notranslate">Start of Program</code> 里循环 <code class="notranslate">toollist</code></td>
+<td>那一刻 MOM 刚拿到第一道工序，后面的刀还没派发，<code class="notranslate">toollist</code> 里只有第一把刀</td>
+</tr>
+<tr>
+<td>用 <code class="notranslate">mom_tool_count</code> / <code class="notranslate">mom_tool_use(n,0..1)</code></td>
+<td>这两个要到程序结束才累加完整；而且它们是喂给 <code class="notranslate">.lpt</code> 清单文件的，本 post 的 <code class="notranslate">mom_sys_list_output = "OFF"</code>，整条链是死代码</td>
+</tr>
+<tr>
+<td>Shop Doc 预扫描（<code class="notranslate">MOM_do_template_file pb_post_tool_list.tpl</code>）</td>
+<td>可行（NX 自带现成命令 <code class="notranslate">pb_cmd_tool_list.tcl</code>），但会让引擎<strong>把整个程序再走一遍</strong>，大程序后处理时间翻倍</td>
+</tr>
+<tr>
+<td>边输出边把正文攒进变量</td>
+<td>内核是<strong>流式</strong>写文件的，正文早已落盘；再 <code class="notranslate">append</code> 一份，最后写出去就是两份正文</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>所以选"结束后重排"：正文不动，只在头部插几行，代价是<strong>多一次磁盘读写</strong>（几百 KB，毫秒级）。</p>
+<hr>
+<h2>3. 实现逻辑</h2>
+<h3>3.1 数据从哪来（全是现成的，不用新攒）</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>变量</th>
+<th>谁写的</th>
+<th>tcl 位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">toollist</code></td>
+<td><code class="notranslate">PB_CMD_tool_change_tool_data</code> 换刀时</td>
+<td>10637~10641</td>
+<td><code class="notranslate">lsearch</code> 去重 + <code class="notranslate">lappend</code>，<strong>顺序 = 首次使用顺序</strong>；<code class="notranslate">PB_CMD_init_flag</code> 7286 起每次后处理清空</td>
+</tr>
+<tr>
+<td><code class="notranslate">cuttime($t)</code></td>
+<td><code class="notranslate">PB_CMD_cancel_variable</code> 每道工序结束</td>
+<td>5547~5551</td>
+<td>累加 <code class="notranslate">mom_toolpath_cutting_time</code>（实际进给切削时间，不含快移）</td>
+</tr>
+<tr>
+<td><code class="notranslate">toollife($t)</code></td>
+<td>同换刀段</td>
+<td>10643~10648</td>
+<td>从 <code class="notranslate">mom_tool_text</code>（刀具 → 更多 → 机床控制 → 文本）抄来，单位 min，带 3~300 分钟校验</td>
+</tr>
+<tr>
+<td><code class="notranslate">base_variable_number</code></td>
+<td><code class="notranslate">PB_CMD_init_flag</code></td>
+<td>7283</td>
+<td><code class="notranslate">600</code>，宏变量基址</td>
+</tr>
+<tr>
+<td><code class="notranslate">mom_sys_control_out/in</code></td>
+<td><code class="notranslate">ugpost_base</code> 初始化</td>
+<td>178~179</td>
+<td><code class="notranslate">(</code> 和 <code class="notranslate">)</code>，注释定界符</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>3.2 时序</h3>
+<pre class="notranslate"><code class="notranslate">     换刀 T..M06            ← 记 toollist（去重）、记 toollife(t)
+        ...
+     每道工序结束            ← cuttime(t) += 本工序切削时间
+        ...
+     程序结束
+       ├ end_of_program_5
+       ├ PB_CMD_output1_tool_life   ← 程序尾原有那段寿命结算（不改）
+       ├ rewind_code                ← M99
+       ├ rewind_stop_code           ← 末尾 %
+       ├ MOM_set_seq_off
+       ├ ★ PB_CMD_prepend_tool_list ← 我们要加的：此时文件已完整
+       ├ LIST_FILE_TRAILER          ← 本 post 里是空转
+       └ CLOSE_files                ← 只关 list_file / warn_file，不碰 NC
+</code></pre>
+<h3>3.3 插入动作的五步</h3>
+<ol>
+<li><strong>让内核关句柄</strong> <code class="notranslate">MOM_close_output_file</code>（否则读到缺尾内容，Windows 上改名还会报"拒绝访问"）</li>
+<li><strong>二进制读全文</strong> 到一个字符串 <code class="notranslate">body</code></li>
+<li><strong>按 <code class="notranslate">toollist</code> 生成要插入的文本</strong> <code class="notranslate">ins</code>（每把刀一行）</li>
+<li><strong>数 2 个换行定位</strong>，插在"程序名"那一行的下面</li>
+<li><strong>写 <code class="notranslate">.tmp</code> → <code class="notranslate">file rename -force</code></strong> 覆盖原文件</li>
+</ol>
+<hr>
+<h2>4. 完整代码</h2>
+<h3>4.1 在 Post Builder 里新建定制命令</h3>
+<ul>
+<li>名字：<code class="notranslate">PB_CMD_prepend_tool_list</code></li>
+<li>界面路径：<strong>Post Builder → 定制命令（Custom Command）→ 新建 → 改名 → 粘贴代码</strong></li>
+<li><g-emoji class="g-emoji" alias="warning">⚠️</g-emoji> 只粘<strong>脚本体</strong>，不要粘 <code class="notranslate">proc PB_CMD_prepend_tool_list { } {</code> 和末尾的 <code class="notranslate">}</code>（否则 proc 套 proc，第一次调用不生效）</li>
+</ul>
+<h3>4.2 代码（注释已写在内）</h3>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<span class="pl-c"><span class="pl-c">#</span> PB_CMD_prepend_tool_list</span>
+<span class="pl-c"><span class="pl-c">#</span> 作用：NC 全部写完后，把"每把刀一行"的清单插到程序名下一行</span>
+<span class="pl-c"><span class="pl-c">#</span> 挂载：程序和刀轨 → 程序 → 程序结束序列 → {End of Program} 成员表【最后一位】</span>
+<span class="pl-c"><span class="pl-c">#</span> 前提：toollist / cuttime() / toollife() / base_variable_number 由换刀段维护</span>
+<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+
+<span class="pl-c"><span class="pl-c">#</span> 借用外部变量。proc 里不写 global，读到的是不存在的局部变量，会直接报错</span>
+<span class="pl-k">global</span> ptp_file_name toollist cuttime toollife base_variable_number
+<span class="pl-k">global</span> mom_sys_control_out mom_sys_control_in mom_sys_ptp_output
+
+<span class="pl-c"><span class="pl-c">#</span> ---------- 四道保险：任一不满足就原样退出，一个字节都不动 ----------</span>
+<span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists toollist] || [<span class="pl-k">llength</span> <span class="pl-smi">$toollist</span>] == 0 } { <span class="pl-k">return</span> }   ;<span class="pl-c"><span class="pl-c">#</span> 没有换刀记录（空程序）</span>
+<span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ptp_file_name] } { <span class="pl-k">return</span> }                          ;<span class="pl-c"><span class="pl-c">#</span> 没有输出文件名</span>
+<span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists mom_sys_ptp_output] || <span class="pl-smi">$mom_sys_ptp_output</span> != <span class="pl-s"><span class="pl-pds">"</span>ON<span class="pl-pds">"</span></span> } { <span class="pl-k">return</span> }  ;<span class="pl-c"><span class="pl-c">#</span> 没生成 NC</span>
+<span class="pl-k">if</span> { ![<span class="pl-k">file</span> exists <span class="pl-smi">$ptp_file_name</span>] } { <span class="pl-k">return</span> }                         ;<span class="pl-c"><span class="pl-c">#</span> 文件不存在</span>
+
+<span class="pl-c"><span class="pl-c">#</span> ---------- ① 先让内核关句柄 ----------</span>
+<span class="pl-c"><span class="pl-c">#</span> 不关：可能读到还没刷盘的最后几行；Windows 上第 ⑤ 步改名会被"文件被占用"拒绝</span>
+<span class="pl-c"><span class="pl-c">#</span> 套 catch：万一内核认为文件本来就没打开，这条会抛错，不能让后处理因此中断</span>
+<span class="pl-k">catch</span> { MOM_close_output_file <span class="pl-smi">$ptp_file_name</span> }
+
+<span class="pl-c"><span class="pl-c">#</span> ---------- ② 二进制读全文 ----------</span>
+<span class="pl-c"><span class="pl-c">#</span> 必须 binary：文本模式读时把 \r\n 折成 \n，写回时再补成 \r\n，</span>
+<span class="pl-c"><span class="pl-c">#</span> 而我们自己写的 ins 里已经是 \r\n，会被再转一次变成 \r\r\n（多空行）；</span>
+<span class="pl-c"><span class="pl-c">#</span> 另外文本模式会按系统编码转码，程序里的 GBK 中文注释会乱码</span>
+<span class="pl-k">set</span> fh [<span class="pl-k">open</span> <span class="pl-smi">$ptp_file_name</span> r]
+<span class="pl-k">fconfigure</span> <span class="pl-smi">$fh</span> -translation binary
+<span class="pl-k">set</span> body [<span class="pl-k">read</span> <span class="pl-smi">$fh</span>]
+<span class="pl-k">close</span> <span class="pl-smi">$fh</span>
+
+<span class="pl-c"><span class="pl-c">#</span> ---------- ③ 生成插入文本：一行一把刀 ----------</span>
+<span class="pl-k">set</span> ins <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>
+<span class="pl-k">foreach</span> t <span class="pl-smi">$toollist</span> {
+
+   <span class="pl-c"><span class="pl-c">#</span> 切削时间：没有记录就是 0</span>
+   <span class="pl-k">set</span> ct 0.0
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists cuttime(<span class="pl-smi">$t</span>)] } { <span class="pl-k">set</span> ct <span class="pl-smi">$cuttime($t)</span> }
+
+   <span class="pl-c"><span class="pl-c">#</span> 参考寿命：没有记录或不是数字就当 0（防止 expr 报错把后处理打断）</span>
+   <span class="pl-k">set</span> lf 0.0
+   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists toollife(<span class="pl-smi">$t</span>)] &amp;&amp; [<span class="pl-k">string</span> is double -strict [<span class="pl-k">string</span> trim <span class="pl-smi">$toollife($t)</span>]] } {
+      <span class="pl-k">set</span> lf [<span class="pl-k">string</span> trim <span class="pl-smi">$toollife($t)</span>]
+   }
+
+   <span class="pl-c"><span class="pl-c">#</span> 可加工次数 = 参考寿命 / 单件切削时间，与程序尾 IF[#605 GT n] 的门槛完全同源</span>
+   <span class="pl-k">set</span> qty 0
+   <span class="pl-k">if</span> { <span class="pl-smi">$ct</span> &gt; 0 &amp;&amp; <span class="pl-smi">$lf</span> &gt; 0 } { <span class="pl-k">set</span> qty [<span class="pl-k">expr</span> {int(<span class="pl-smi">$lf</span> / <span class="pl-smi">$ct</span>)}] }
+
+   <span class="pl-c"><span class="pl-c">#</span> H / D 补偿宏变量号，与 clear_compensation_variable_H/D 同一公式：</span>
+   <span class="pl-c"><span class="pl-c">#</span>   H = 600 + t*5 - 2  →  T1 = #603</span>
+   <span class="pl-c"><span class="pl-c">#</span>   D = 600 + t*5 - 1  →  T1 = #604</span>
+   <span class="pl-k">set</span> h [<span class="pl-k">expr</span> <span class="pl-smi">$base_variable_number</span> + <span class="pl-smi">$t</span> * 5 - 2]
+   <span class="pl-k">set</span> d [<span class="pl-k">expr</span> <span class="pl-smi">$base_variable_number</span> + <span class="pl-smi">$t</span> * 5 - 1]
+
+   <span class="pl-c"><span class="pl-c">#</span> 拼一整行；控制符取自 mom_sys_control_out/in，以后换注释符这里会自动跟</span>
+   <span class="pl-c"><span class="pl-c">#</span> ⚠️ 注释内容里不能再出现 ( ) —— FANUC 会把它当定界符，提前截断或报警</span>
+   <span class="pl-k">append</span> ins <span class="pl-s"><span class="pl-pds">"</span><span class="pl-smi">${mom_sys_control_out}</span>T<span class="pl-smi">$t</span> Cut_Time:<span class="pl-s1"><span class="pl-pse">[</span><span class="pl-k">format</span> %.2f <span class="pl-smi">$ct</span><span class="pl-pse">]</span></span>min,Life_Time:<span class="pl-s1"><span class="pl-pse">[</span><span class="pl-k">format</span> %.2f <span class="pl-smi">$lf</span><span class="pl-pse">]</span></span>min,QTY=<span class="pl-smi">$qty</span>,Length_No.=#<span class="pl-smi">$h</span>,Radius_No.=#<span class="pl-smi">$d${mom_sys_control_in}</span><span class="pl-cce">\r\n</span><span class="pl-pds">"</span></span>
+}
+
+<span class="pl-c"><span class="pl-c">#</span> ---------- ④ 定位插入点：数 2 个换行 ----------</span>
+<span class="pl-c"><span class="pl-c">#</span> 第 1 个换行后是 %</span>
+<span class="pl-c"><span class="pl-c">#</span> 第 2 个换行后是 程序名   ← pos 停在这里，新行插在程序名下面</span>
+<span class="pl-c"><span class="pl-c">#</span> 想插到 % 之前改成 {1 1}；想插到第一条 G 代码之后改成 {1 3}</span>
+<span class="pl-k">set</span> pos 0
+<span class="pl-k">foreach</span> _ {1 2} {
+   <span class="pl-k">set</span> nl [<span class="pl-k">string</span> first <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span> <span class="pl-smi">$body</span> <span class="pl-smi">$pos</span>]
+   <span class="pl-k">if</span> { <span class="pl-smi">$nl</span> &lt; 0 } { <span class="pl-k">set</span> pos [<span class="pl-k">string</span> length <span class="pl-smi">$body</span>] ; <span class="pl-k">break</span> }   ;<span class="pl-c"><span class="pl-c">#</span> 行数不足就追加到末尾</span>
+   <span class="pl-k">set</span> pos [<span class="pl-k">expr</span> {<span class="pl-smi">$nl</span> + 1}]
+}
+
+<span class="pl-c"><span class="pl-c">#</span> ---------- ⑤ 写临时文件再整体改名 ----------</span>
+<span class="pl-c"><span class="pl-c">#</span> 不能直接 open $ptp_file_name w：那会立刻清空原文件，中途一出错 NC 就没了</span>
+<span class="pl-k">set</span> tmp <span class="pl-s"><span class="pl-pds">"</span><span class="pl-smi">${ptp_file_name}</span>.tmp<span class="pl-pds">"</span></span>
+<span class="pl-k">set</span> fw [<span class="pl-k">open</span> <span class="pl-smi">$tmp</span> w]
+<span class="pl-k">fconfigure</span> <span class="pl-smi">$fw</span> -translation binary                          ;<span class="pl-c"><span class="pl-c">#</span> 与读保持同一模式</span>
+<span class="pl-k">puts</span> -nonewline <span class="pl-smi">$fw</span> [<span class="pl-k">string</span> range <span class="pl-smi">$body</span> 0 [<span class="pl-k">expr</span> {<span class="pl-smi">$pos</span> - 1}]] ;<span class="pl-c"><span class="pl-c">#</span> 第一段：文件头 → 程序名行尾</span>
+<span class="pl-k">puts</span> -nonewline <span class="pl-smi">$fw</span> <span class="pl-smi">$ins</span>                                     ;<span class="pl-c"><span class="pl-c">#</span> 第二段：新插入的清单</span>
+<span class="pl-k">puts</span> -nonewline <span class="pl-smi">$fw</span> [<span class="pl-k">string</span> range <span class="pl-smi">$body</span> <span class="pl-smi">$pos</span> end]            ;<span class="pl-c"><span class="pl-c">#</span> 第三段：原文件剩下的全部</span>
+<span class="pl-k">close</span> <span class="pl-smi">$fw</span>
+<span class="pl-k">file</span> rename -force <span class="pl-smi">$tmp</span> <span class="pl-smi">$ptp_file_name</span>                       ;<span class="pl-c"><span class="pl-c">#</span> 原子替换；失败时原 NC 仍完好</span></pre></div>
+<h3>4.3 代码逐段说明</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>段</th>
+<th>在干什么</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">global</code> 那两行</td>
+<td>把外部变量"借"进来</td>
+<td><code class="notranslate">t</code> / <code class="notranslate">ins</code> / <code class="notranslate">ct</code> / <code class="notranslate">lf</code> / <code class="notranslate">qty</code> / <code class="notranslate">h</code> / <code class="notranslate">d</code> 是本地变量，<strong>不要</strong>写进 global</td>
+</tr>
+<tr>
+<td>四道 <code class="notranslate">return</code></td>
+<td>条件不齐就退出</td>
+<td>空程序、只出清单不出 NC、文件被删，都会走到这里</td>
+</tr>
+<tr>
+<td><code class="notranslate">MOM_close_output_file</code></td>
+<td>关闭内核的写通道</td>
+<td>本 post 在 <code class="notranslate">MOM_start_of_group</code>（tcl 680）已经用过同一句，可用</td>
+</tr>
+<tr>
+<td><code class="notranslate">open</code> + <code class="notranslate">fconfigure binary</code> + <code class="notranslate">read</code> + <code class="notranslate">close</code></td>
+<td>一次性读全文</td>
+<td><code class="notranslate">fh</code> 是<strong>通道号</strong>不是内容；<code class="notranslate">body</code> 才是字节串</td>
+</tr>
+<tr>
+<td><code class="notranslate">foreach t $toollist</code></td>
+<td>逐把刀生成一行</td>
+<td><code class="notranslate">t</code> 由 <code class="notranslate">foreach</code> 自己创建，不是"没声明"</td>
+</tr>
+<tr>
+<td><code class="notranslate">format %.2f</code></td>
+<td>两位小数</td>
+<td>与程序尾 <code class="notranslate">%3.2f</code> 输出结果一致</td>
+</tr>
+<tr>
+<td><code class="notranslate">foreach _ {1 2}</code></td>
+<td>数两个换行</td>
+<td><code class="notranslate">_</code> 表示"不关心这个值"，纯粹当计数器用</td>
+</tr>
+<tr>
+<td><code class="notranslate">string range</code> 三段</td>
+<td>切文件</td>
+<td><code class="notranslate">end</code> 是 Tcl 的特殊下标，表示最后一位</td>
+</tr>
+<tr>
+<td><code class="notranslate">file rename -force</code></td>
+<td>覆盖</td>
+<td>同一磁盘内是原子操作，不会出现"写了一半的 NC"</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h2>5. 挂载位置（最容易错的一步）</h2>
+<h3>正确位置</h3>
+<p><strong>Post Builder → 程序和刀轨 → 程序 → 程序结束序列 → 选中 <code class="notranslate">{End of Program}</code> 那一行 → 添加 <code class="notranslate">PB_CMD_prepend_tool_list</code> → 拖到最后一位。</strong></p>
+<p>本 post 的成员表（<code class="notranslate">.pui</code> 第 1051 行）现在是：</p>
+<pre class="notranslate"><code class="notranslate">{End of Program} { ... end_of_program_5 PB_CMD_output1_tool_life rewind_code rewind_stop_code MOM_set_seq_off }
+</code></pre>
+<p>加完应变成：</p>
+<pre class="notranslate"><code class="notranslate">{End of Program} { ... end_of_program_5 PB_CMD_output1_tool_life rewind_code rewind_stop_code MOM_set_seq_off PB_CMD_prepend_tool_list }
+</code></pre>
+<h3>为什么必须是最后一位</h3>
+<p>PB 生成 <code class="notranslate">MOM_end_of_program</code> 时，成员按序展开，<strong>之后</strong>才固定补上 <code class="notranslate">LIST_FILE_TRAILER</code> 和 <code class="notranslate">CLOSE_files</code>：</p>
+<div class="highlight highlight-source-tcl"><pre class="notranslate">MOM_do_template rewind_code          ← M99
+MOM_do_template rewind_stop_code     ← 末尾 %
+MOM_set_seq_off
+PB_CMD_prepend_tool_list             ← 我们加在这里（已确认安全）
+LIST_FILE_TRAILER
+CLOSE_files</pre></div>
+<ul>
+<li>此时 <code class="notranslate">M99</code> 和末尾 <code class="notranslate">%</code> 已经写完，读到的文件是完整的；</li>
+<li><code class="notranslate">LIST_FILE_TRAILER</code> 在本 post 里空转（<code class="notranslate">mom_sys_list_output = OFF</code>，<code class="notranslate">list_file</code> 不存在）；</li>
+<li><code class="notranslate">CLOSE_files</code> 只关 <code class="notranslate">list_file</code> / <code class="notranslate">warn_file</code>，<strong>不碰 NC 通道</strong>；</li>
+<li>末尾那句 <code class="notranslate">if [CMD_EXIST PB_CMD_kin_end_of_program]</code> 因为该 proc 不存在而跳过 ⇒ <strong>关句柄之后没人再写 NC</strong>。</li>
+</ul>
+<p>如果挂在中间（比如 <code class="notranslate">rewind_code</code> 之前），一关句柄，后面的 <code class="notranslate">M99</code>、<code class="notranslate">%</code> 就写不进去了——<strong>尾部会丢代码</strong>，而且不报错，最难发现。</p>
+<hr>
+<h2>6. 使用注意事项</h2>
+<h3>6.1 五条硬性要求（缺一就坏）</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>#</th>
+<th>要求</th>
+<th>不做的后果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>挂在 <code class="notranslate">{End of Program}</code> <strong>最后一位</strong></td>
+<td>尾部 <code class="notranslate">M99</code> / <code class="notranslate">%</code> 丢失</td>
+</tr>
+<tr>
+<td>2</td>
+<td>先 <code class="notranslate">MOM_close_output_file</code></td>
+<td>读到缺尾内容；Windows 改名报"拒绝访问"</td>
+</tr>
+<tr>
+<td>3</td>
+<td>读写都 <code class="notranslate">-translation binary</code></td>
+<td>每行后面多一个空行（<code class="notranslate">\r\r\n</code>）；中文注释乱码</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code class="notranslate">.tmp</code> + <code class="notranslate">file rename -force</code></td>
+<td>中途出错时 NC 被清空，直接报废</td>
+</tr>
+<tr>
+<td>5</td>
+<td>注释内容里不能有 <code class="notranslate">(</code> <code class="notranslate">)</code></td>
+<td>FANUC 提前截断注释，甚至报警</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>6.2 状态与缓存</h3>
+<ul>
+<li><strong><code class="notranslate">toollist</code> / <code class="notranslate">cuttime()</code> / <code class="notranslate">toollife()</code> 是全局变量，NX 同一会话里是"活的"。</strong> 三者都已在本 post 的 <code class="notranslate">PB_CMD_init_flag</code> / 换刀段维护（<code class="notranslate">toollist</code> 在 7286 起清空）。<strong>如果你自己再加别的数组（比如 <code class="notranslate">tooldia</code>），务必在 <code class="notranslate">PB_CMD_init_flag</code> 里 <code class="notranslate">unset -nocomplain</code></strong>，否则上一次后处理的刀会残留到这一次。</li>
+<li><strong>改了 <code class="notranslate">.tcl</code> 必须重启 NX 再 post。</strong> 这个后处理有 <code class="notranslate">ugpost_base is only loaded once</code> 的保护，同一会话里会继续用内存中的旧脚本，表现为"改了不起作用"。</li>
+<li><strong>PB 保存后会重新生成 <code class="notranslate">.tcl</code>。</strong> 保存后请搜一下 <code class="notranslate">proc PB_CMD_prepend_tool_list</code> 是否真的生成了：没挂事件的自定义命令，个别版本 PB 不会生成，此时先临时挂到一个事件上让 PB 生成，再挪走。</li>
+</ul>
+<h3>6.3 数据口径</h3>
+<ul>
+<li><code class="notranslate">Cut_Time</code> 是 <strong><code class="notranslate">mom_toolpath_cutting_time</code> 累加值</strong>：只统计进给切削，不含快移、换刀、暂停。和机床实际切削时间接近，但不等于机床计时器。</li>
+<li><code class="notranslate">QTY = int(Life_Time / Cut_Time)</code>，与程序尾 <code class="notranslate">IF [#605 GT 14] GOTO1</code> 里的 14 是同一个数。<strong>改了寿命输入规则或切削时间算法，头尾要一起看</strong>，否则头说"能做 14 件"、尾按 15 件报警。</li>
+<li>程序尾那三行 <code class="notranslate">#605=#605+1 / IF ... GOTO / #3006=1</code> 是<strong>运行时</strong>在机床上累加的，<strong>不要搬到程序头</strong>——搬上去会变成"程序一开始就检查并报警"，逻辑反了。</li>
+</ul>
+<h3>6.4 其他</h3>
+<ul>
+<li>清单里<strong>尽量别写中文</strong>。虽然 binary 模式能保证不转码，但部分系统按单字节读注释会错位。</li>
+<li>大程序（上千工序）只是多读一次几百 KB 的文件，几乎无感；真正慢的是 Shop Doc 预扫描方案。</li>
+<li>空程序 / 没有换刀的程序：<code class="notranslate">toollist</code> 为空，直接 <code class="notranslate">return</code>，NC 一个字节不变。</li>
+<li>若最后一步的 <code class="notranslate">file rename</code> 失败（文件被编辑器或杀毒软件占用），后处理会在最后报一个错——<strong>此时 NC 正文已经完整，只是没插上清单</strong>，关掉占用程序重新 post 即可。</li>
+</ul>
+<hr>
+<h2>7. 验收清单</h2>
+<p>post 一个 2~3 道工序、2 把刀的小程序，然后逐条确认：</p>
+<ol>
+<li>清单出现在 <strong>程序名下一行</strong>，不是文件最前面、也不是程序尾；</li>
+<li>每把刀<strong>一行</strong>，刀号顺序 = 首次使用顺序；</li>
+<li>用 Notepad++ 看行尾：全篇 <strong>CRLF</strong>，没有 <code class="notranslate">\r\r</code>、没有多余空行；</li>
+<li>文件尾部 <code class="notranslate">M99</code> 和最后的 <code class="notranslate">%</code> <strong>完整</strong>；</li>
+<li>清单里的 <code class="notranslate">Cut_Time</code> 与程序尾 <code class="notranslate">(T1 Total_Cutting_Time:...)</code> <strong>数值一致</strong>；</li>
+<li><code class="notranslate">QTY</code> 与程序尾 <code class="notranslate">IF [#60x GT n]</code> 里的 <strong>n 一致</strong>；</li>
+<li>同级目录<strong>没有残留 <code class="notranslate">.tmp</code></strong>；</li>
+<li>再 post 一个只有 1 道工序、无换刀的程序，确认不报错、不乱插。</li>
+</ol>
+<hr>
+<h2>8. 想改的时候改哪里</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>想改的</th>
+<th>改哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>插入位置（<code class="notranslate">%</code> 前 / 程序名后 / 第一条 G 代码后）</td>
+<td><code class="notranslate">foreach _ {1 2}</code> 里的 <code class="notranslate">2</code> → <code class="notranslate">1</code> 或 <code class="notranslate">3</code></td>
+</tr>
+<tr>
+<td>行内字段</td>
+<td><code class="notranslate">append ins</code> 那一行</td>
+</tr>
+<tr>
+<td>一行总览（<code class="notranslate">TOOLS: T1 T15 T10</code>）</td>
+<td>先 <code class="notranslate">lappend</code> 到列表，最后 <code class="notranslate">[join $items { }]</code> 拼一次</td>
+</tr>
+<tr>
+<td>加刀具直径 / 名称</td>
+<td>必须在<strong>换刀时</strong>抄进 <code class="notranslate">tooldia($t)</code> / <code class="notranslate">toolname($t)</code>（程序尾读 <code class="notranslate">mom_tool_diameter</code> 只能拿到最后一把刀），并在 <code class="notranslate">PB_CMD_init_flag</code> 里 <code class="notranslate">unset -nocomplain</code></td>
+</tr>
+<tr>
+<td>按刀号排序</td>
+<td><code class="notranslate">foreach t [lsort -integer $toollist]</code></td>
+</tr>
+<tr>
+<td>加表头</td>
+<td>在 <code class="notranslate">set ins ""</code> 后先 <code class="notranslate">append ins</code> 一行 <code class="notranslate">(...)</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h2>9. 附：两条走不通/不推荐的路（避免以后重复踩）</h2>
+<p><strong>① <code class="notranslate">mom_tool_count</code> / <code class="notranslate">mom_tool_use(n,0..1)</code> + <code class="notranslate">.lpt</code> 清单</strong></p>
+<ul>
+<li>它们是喂给 <code class="notranslate">.lpt</code> 报表的，<code class="notranslate">LIST_FILE_TRAILER</code>（<code class="notranslate">ugpost_base.tcl</code> 2331）在程序结束时写四段：加工总时间、纸带长度、警告数、刀具使用时间；</li>
+<li>本 post <code class="notranslate">mom_sys_list_output = "OFF"</code>（tcl 109），<code class="notranslate">.lpt</code> 从来没生成过（桌面全盘搜不到 <code class="notranslate">.lpt</code>）；</li>
+<li>即使打开，<code class="notranslate">mom_tool_use(n,1)</code> 在整个 MACH 目录里<strong>没有任何一处赋值</strong>，时间列会是空的。</li>
+</ul>
+<p><strong>② Shop Doc 预扫描</strong></p>
+<ul>
+<li><code class="notranslate">MOM_do_template_file pb_post_tool_list.tpl</code> + NX 自带的 <code class="notranslate">pb_cmd_tool_list.tcl</code>（<code class="notranslate">PB_CMD_init_tool_list</code> / <code class="notranslate">PB_CMD_create_tool_list</code>），能在程序头拿到全部刀具；</li>
+<li>代价是引擎<strong>再遍历一遍整个程序</strong>，大程序时间翻倍；本手册的"结束后重排"只需多读一次文件，更快。</li>
+</ul>
+<hr>
+<h2>10. 与"新刀标记"那套的关系</h2>
+<p>这两件事是同一个位置的产物，别搞混：</p>
+<ul>
+<li><strong>换刀段</strong>（<code class="notranslate">PB_CMD_tool_change_tool_data</code>）负责：记 <code class="notranslate">toollist</code>、记 <code class="notranslate">toollife($t)</code>、决定这一段输出 New 段还是 Old 段；</li>
+<li><strong>工序结束</strong>（<code class="notranslate">PB_CMD_cancel_variable</code>）负责：累加 <code class="notranslate">cuttime($t)</code>；</li>
+<li><strong>程序结束最后一位</strong>（<code class="notranslate">PB_CMD_prepend_tool_list</code>）负责：把上面三样汇总成几行注释，插到文件头。</li>
+</ul>
+<p>所以清单里出现的每一把刀，都必须在换刀段被登记过——如果某道工序同刀连做、没有触发换刀，它不会重复登记（本来就已登记过），这正是我们要的去重效果。</p></div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://bk.929295.xyz">数控技术博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("08/09/2024"!=""){
+    var startSite=new Date("08/09/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","yingfanyu/yingfanyu.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
