@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# NX 车间文档表头变量：输入与使用方法
+
+> 适用环境：`192.168.95.102` / NX 2606（`D:\Program Files\Siemens\Designcenter2606`）
+> 定制目录：`C:\NX_shopdoc`
+> 文档类型：Tool List（刀具清单）HTML 车间文档
+
+---
+
+## 一、原理
+
+表头不是手动打字填进去的。">
+<meta property="og:title" content="NX 车间文档表头变量：输入与使用方法">
+<meta property="og:description" content="# NX 车间文档表头变量：输入与使用方法
+
+> 适用环境：`192.168.95.102` / NX 2606（`D:\Program Files\Siemens\Designcenter2606`）
+> 定制目录：`C:\NX_shopdoc`
+> 文档类型：Tool List（刀具清单）HTML 车间文档
+
+---
+
+## 一、原理
+
+表头不是手动打字填进去的。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://bk.929295.xyz/post/NX%20-che-jian-wen-dang-biao-tou-bian-liang-%EF%BC%9A-shu-ru-yu-shi-yong-fang-fa.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>NX 车间文档表头变量：输入与使用方法</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">NX 车间文档表头变量：输入与使用方法</h1>
+<div class="title-right">
+    <a href="https://bk.929295.xyz" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/yingfanyu/yingfanyu.github.io/issues/71" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>NX 车间文档表头变量：输入与使用方法</h1>
+<blockquote>
+<p>适用环境：<code class="notranslate">192.168.95.102</code> / NX 2606（<code class="notranslate">D:\Program Files\Siemens\Designcenter2606</code>）<br>
+定制目录：<code class="notranslate">C:\NX_shopdoc</code><br>
+文档类型：Tool List（刀具清单）HTML 车间文档</p>
+</blockquote>
+<hr>
+<h2>一、原理</h2>
+<p>表头不是手动打字填进去的。模板里写死了变量占位符 <code class="notranslate">${...}</code>，NX 在生成车间文档时会用实际值替换：</p>
+<pre class="notranslate"><code class="notranslate">NX 属性  →  mom_attr_&lt;作用域&gt;_&lt;标题&gt;  →  模板 ${...}  →  HTML 单元格
+</code></pre>
+<p>所以正确做法是<strong>在 NX 对应位置放好值</strong>，而不是在生成的表格里改文字。</p>
+<p><code class="notranslate">--</code> 是引擎的占位符，表示该变量<strong>没有取到值</strong>。</p>
+<hr>
+<h2>二、表头变量对照</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>表格标签</th>
+<th>模板变量</th>
+<th>值从哪来</th>
+<th>是否需要输入</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Part name:</td>
+<td><code class="notranslate">${mom_part_name}</code></td>
+<td>部件名（prt 文件名）</td>
+<td>否，改文件名即变</td>
+</tr>
+<tr>
+<td><strong>Drawing name:</strong></td>
+<td><code class="notranslate">${mom_attr_PART_DRWNAME}</code></td>
+<td><strong>部件属性</strong> <code class="notranslate">DRWNAME</code></td>
+<td><strong>是</strong></td>
+</tr>
+<tr>
+<td>Unit:</td>
+<td><code class="notranslate">${mom_Output Unit}</code></td>
+<td>车间文档输出单位设置</td>
+<td>否</td>
+</tr>
+<tr>
+<td><strong>Part number:</strong></td>
+<td><code class="notranslate">${mom_attr_PART_PARTNUM}</code></td>
+<td><strong>部件属性</strong> <code class="notranslate">PARTNUM</code></td>
+<td><strong>是</strong></td>
+</tr>
+<tr>
+<td><strong>Description ：</strong></td>
+<td><code class="notranslate">${mom_attr_PROGRAMVIEW_DESC}</code></td>
+<td><strong>程序组属性</strong> <code class="notranslate">DESC</code></td>
+<td><strong>是</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>变量命名规则</h3>
+<pre class="notranslate"><code class="notranslate">mom_attr_&lt;作用域&gt;_&lt;属性标题&gt;
+</code></pre>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>作用域</th>
+<th>属性挂在哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">PART</code></td>
+<td>部件（<code class="notranslate">文件 → 属性</code>）</td>
+</tr>
+<tr>
+<td><code class="notranslate">PROGRAMVIEW</code></td>
+<td>工序导航器的程序组 / 程序视图节点</td>
+</tr>
+<tr>
+<td><code class="notranslate">OPER</code></td>
+<td>单条工序</td>
+</tr>
+<tr>
+<td><code class="notranslate">TOOL</code></td>
+<td>刀具</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>表头只用到 <code class="notranslate">PART</code> 和 <code class="notranslate">PROGRAMVIEW</code>。</p>
+<blockquote>
+<p>表格正文里的 <code class="notranslate">mom_tool_name</code>、<code class="notranslate">mom_tool_diameter</code>、<code class="notranslate">mom_operation_name</code> 等由引擎自动采集，<strong>不需要也不能手填</strong>。</p>
+</blockquote>
+<hr>
+<h2>三、输入步骤</h2>
+<h3>3.1 Drawing name / Part number（部件属性）</h3>
+<ol>
+<li>菜单 <code class="notranslate">文件 → 属性</code>，切到 <strong>属性</strong> 选项卡</li>
+<li>新建一条属性，类型选 <strong>字符串</strong></li>
+<li>标题填 <code class="notranslate">DRWNAME</code>，值填图纸名称</li>
+<li>再建一条：标题 <code class="notranslate">PARTNUM</code>，值填零件号</li>
+</ol>
+<h3>3.2 Description（程序组属性）</h3>
+<ol>
+<li>打开 <strong>工序导航器</strong>，切到 <strong>程序顺序视图</strong></li>
+<li>选中程序组节点（<code class="notranslate">PROGRAM</code> / <code class="notranslate">NC_PROGRAM</code>）</li>
+<li>右键 <code class="notranslate">属性</code> → <strong>属性</strong> 选项卡</li>
+<li>新建字符串属性 <code class="notranslate">DESC</code>，值填描述</li>
+</ol>
+<blockquote>
+<p>同一程序组下的所有工序共用这条描述；换程序组就要重新建。</p>
+</blockquote>
+<h3>3.3 生效条件</h3>
+<ul>
+<li>属性标题必须是<strong>纯英文大写、不带空格</strong>，建议标题和名称填写一致</li>
+<li>属性值支持中文</li>
+<li>改完<strong>保存部件</strong>，并<strong>重新生成</strong>车间文档（生成时实时读取，不重新生成不会更新）</li>
+</ul>
+<hr>
+<h2>四、多行文字怎么写</h2>
+<p>NX 的属性输入框是单行的，换行会被吞掉，因此约定：</p>
+<p><strong>一个值 + 竖线分隔</strong></p>
+<pre class="notranslate"><code class="notranslate">粗加工|留量0.3|精加工
+</code></pre>
+<p>脚本会把 <code class="notranslate">|</code>（含全角 <code class="notranslate">｜</code>）转换成 <code class="notranslate">&lt;br&gt;</code>，在单元格内换行。<br>
+分隔符定义在 <code class="notranslate">shopdoc_user.tcl</code> 的 <code class="notranslate">::SD_ATTR_br_sep</code>。</p>
+<h3>两条限制</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>对策</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>回车/粘贴的换行丢失</td>
+<td>NX 在属性字段层就把换行去掉了</td>
+<td>用 <code class="notranslate">|</code> 分隔</td>
+</tr>
+<tr>
+<td>多值属性只显示最后一条</td>
+<td>引擎只转发最后一个值</td>
+<td>不要用"允许多值"做多行</td>
+</tr>
+<tr>
+<td>文字太多被截断</td>
+<td>表格行高在模板里写死（<code class="notranslate">height=</code>）</td>
+<td>改模板行高，或精简文字</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>单元格已设为 <code class="notranslate">white-space:normal</code>，Excel 里会自动换行。</p>
+<hr>
+<h2>五、常见问题排查</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显示 <code class="notranslate">--</code></td>
+<td>属性没建 / 标题拼错 / 作用域错（如 DESC 建到部件上）/ 没重新生成</td>
+<td>对照第二节核对标题与作用域，重新生成</td>
+</tr>
+<tr>
+<td>只显示一部分文字</td>
+<td>粘贴的换行被吞 / 用了多值属性</td>
+<td>改用一个值 + <code class="notranslate">|</code></td>
+</tr>
+<tr>
+<td>中文变乱码</td>
+<td>属性值编码问题</td>
+<td>启用 probe 查看实际字符（见第六节）</td>
+</tr>
+<tr>
+<td>表头有值但表格是空的</td>
+<td>生成时未选中工序，或模板选错（audit / shop floor）</td>
+<td>检查车间文档对话框的模板与选择范围</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h2>六、日志与诊断</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>文件</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">C:\NX_shopdoc\sd_attr.log</code></td>
+<td>属性发现与合并记录（常规）</td>
+</tr>
+<tr>
+<td><code class="notranslate">C:\NX_shopdoc\sd_format.log</code></td>
+<td>版式选择器（audit / shop floor）记录</td>
+</tr>
+<tr>
+<td><code class="notranslate">C:\NX_shopdoc\sd_cutting.log</code></td>
+<td>切削参数采集</td>
+</tr>
+<tr>
+<td><code class="notranslate">C:\NX_shopdoc\sd_stop.log</code></td>
+<td>停机/辅助时间</td>
+</tr>
+<tr>
+<td><code class="notranslate">C:\NX_shopdoc\sd_tool_vars.log</code></td>
+<td>刀具变量</td>
+</tr>
+<tr>
+<td><code class="notranslate">C:\NX_shopdoc\sd_attr_probe.log</code></td>
+<td><strong>需手动开启</strong>，见下</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>开启深度排查</h3>
+<p>编辑 <code class="notranslate">C:\NX_shopdoc\shopdoc_user.tcl</code>，把：</p>
+<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::SD_ATTR_probe_on] } { <span class="pl-k">set</span> ::SD_ATTR_probe_on 0 }</pre></div>
+<p>改为 <code class="notranslate">1</code>，然后重新生成一次车间文档。NX 实际发布的所有 <code class="notranslate">mom_attr_*</code> 变量（含作用域前缀、中文 <code class="notranslate">\uXXXX</code> 转义）会全部写入 <code class="notranslate">sd_attr_probe.log</code>，可据此确认真实变量名。</p>
+<p>排查完记得改回 <code class="notranslate">0</code>。</p>
+<hr>
+<h2>七、改哪里，影响谁</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>改动位置</th>
+<th>影响范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NX 里加/改属性</td>
+<td>只影响当前零件</td>
+</tr>
+<tr>
+<td>改 HTML 模板里的 <code class="notranslate">${...}</code></td>
+<td>影响<strong>所有</strong>零件；写死文字则所有零件一样</td>
+</tr>
+<tr>
+<td>改 <code class="notranslate">shopdoc_user.tcl</code></td>
+<td>影响全局行为（换行、列宽、时间统计等）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h2>八、相关文件清单</h2>
+<h3>定制目录 <code class="notranslate">C:\NX_shopdoc</code></h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">shopdoc_user.tcl</code></td>
+<td>主定制脚本（属性换行、列宽、切削参数、时间统计等）</td>
+</tr>
+<tr>
+<td><code class="notranslate">shopdoc_user_post.tcl</code> / <code class="notranslate">.def</code></td>
+<td>后处理挂钩</td>
+</tr>
+<tr>
+<td><code class="notranslate">shopdoc_template_English_tool_list_shopfloor.htm</code></td>
+<td>shop floor 版式模板（15 列）</td>
+</tr>
+<tr>
+<td><code class="notranslate">NXShopDocAsk.exe</code></td>
+<td>生成时弹出的版式选择器（0=audit，1=shop floor，2=取消），<strong>不是</strong>填表头的地方</td>
+</tr>
+<tr>
+<td><code class="notranslate">shopdoc2xlsx.bat</code> / <code class="notranslate">.ps1</code></td>
+<td>一键把生成的 <code class="notranslate">.htm</code> 转成 <code class="notranslate">.xlsx</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>NX 安装目录</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>路径</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">...\MACH\resource\shop_doc\shopdoc_template_English_tool_list_select.htm</code></td>
+<td>audit 版式模板（19 列）</td>
+</tr>
+<tr>
+<td><code class="notranslate">...\MACH\resource\shop_doc\excel_templates\shopdoc_excel.tcl</code></td>
+<td>车间文档引擎</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h2>九、附：导出 Excel</h2>
+<p>NX 的"Excel 输出"实际写出的仍是 <code class="notranslate">.htm</code>（Excel 网页格式，含 mso 样式与 VML 图片）。因此：</p>
+<ol>
+<li>用 Excel 直接打开生成的 <code class="notranslate">.htm</code> → 另存为 <code class="notranslate">.xlsx</code></li>
+<li>或使用 <code class="notranslate">C:\NX_shopdoc\shopdoc2xlsx.bat</code>：
+<ul>
+<li>双击 → 转换同目录下所有 <code class="notranslate">*.htm</code>（自动跳过 <code class="notranslate">shopdoc_template*</code>）</li>
+<li>或把生成的 <code class="notranslate">.htm</code> 拖到 bat 上，只转那一个</li>
+</ul>
+</li>
+</ol>
+<p>实测保真：合并单元格、边框、列宽、图片、表头位置均保留。</p>
+<p><strong>注意</strong></p>
+<ul>
+<li><code class="notranslate">.xlsx</code> 是静态快照，改 NX 后需重新生成 + 重新转换</li>
+<li>不要改用 NX 自带的 <code class="notranslate">shopdoc_template_English.xlsx</code> 等模板，会丢失全部定制（列数、切削参数列、<code class="notranslate">|</code> 换行、属性表头）</li>
+<li>若转换失败并提示"受保护的视图"，把 <code class="notranslate">C:\NX_shopdoc</code> 加入 Excel 的<strong>受信任位置</strong></li>
+</ul></div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://bk.929295.xyz">数控技术博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("08/09/2024"!=""){
+    var startSite=new Date("08/09/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","yingfanyu/yingfanyu.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
