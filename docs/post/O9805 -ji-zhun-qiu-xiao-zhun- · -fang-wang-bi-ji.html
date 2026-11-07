@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# O9805 基准球校准 · 防忘笔记
+
+> 日期：2026-11-06（2026-11-07 修订）　适用：`9805.EIA`（252 行）　配套：`9805_逐行注释.md`
+>
+> **一句话**：用一颗「球径已知、球心已独立测出」的基准球，一次装夹走完 **偏心 → 长度 → 触发半径** 三项校准；
+> 半径用闭式解算，对旧半径、对输入错误都不敏感。">
+<meta property="og:title" content="O9805 基准球校准 · 防忘笔记">
+<meta property="og:description" content="# O9805 基准球校准 · 防忘笔记
+
+> 日期：2026-11-06（2026-11-07 修订）　适用：`9805.EIA`（252 行）　配套：`9805_逐行注释.md`
+>
+> **一句话**：用一颗「球径已知、球心已独立测出」的基准球，一次装夹走完 **偏心 → 长度 → 触发半径** 三项校准；
+> 半径用闭式解算，对旧半径、对输入错误都不敏感。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://bk.929295.xyz/post/O9805%20-ji-zhun-qiu-xiao-zhun-%20%C2%B7%20-fang-wang-bi-ji.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>O9805 基准球校准 · 防忘笔记</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">O9805 基准球校准 · 防忘笔记</h1>
+<div class="title-right">
+    <a href="https://bk.929295.xyz" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/yingfanyu/yingfanyu.github.io/issues/72" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>O9805 基准球校准 · 防忘笔记</h1>
+<blockquote>
+<p>日期：2026-11-06（2026-11-07 修订）　适用：<code class="notranslate">9805.EIA</code>（252 行）　配套：<code class="notranslate">9805_逐行注释.md</code></p>
+<p><strong>一句话</strong>：用一颗「球径已知、球心已独立测出」的基准球，一次装夹走完 <strong>偏心 → 长度 → 触发半径</strong> 三项校准；<br>
+半径用闭式解算，对旧半径、对输入错误都不敏感。</p>
+<p>配图在 <code class="notranslate">img/</code> 下，每张都有 <code class="notranslate">.svg</code> 和 <code class="notranslate">.png</code> 两个版本。若编辑器不显示 SVG，把正文里的 <code class="notranslate">.svg</code> 改成 <code class="notranslate">.png</code> 即可。</p>
+</blockquote>
+<hr>
+<h2>目录</h2>
+<ul>
+<li><a href="#0-%E4%B8%89%E5%88%86%E9%92%9F%E9%80%9F%E8%A7%88">0. 三分钟速览</a></li>
+<li><a href="#1-%E6%A0%A1%E5%87%86%E5%8E%9F%E7%90%86">1. 校准原理</a></li>
+<li><a href="#2-%E6%95%B0%E5%AD%A6%E4%BB%8E%E5%87%A0%E4%BD%95%E5%88%B0%E9%97%AD%E5%BC%8F%E8%A7%A3">2. 数学：从几何到闭式解</a></li>
+<li><a href="#3-%E4%BB%8A%E5%A4%A9%E7%9C%9F%E6%AD%A3%E7%BA%A0%E7%BB%93%E8%BF%87%E7%9A%84-9-%E4%B8%AA%E7%82%B9">3. 今天真正纠结过的 9 个点</a></li>
+<li><a href="#4-%E7%A8%8B%E5%BA%8F%E7%BB%93%E6%9E%84">4. 程序结构</a></li>
+<li><a href="#5-%E4%BC%A0%E7%BB%9F%E6%96%B9%E6%B3%95-vs-%E6%9C%AC%E6%B3%95">5. 传统方法 vs 本法</a></li>
+<li><a href="#6-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95">6. 使用方法</a></li>
+<li><a href="#7-%E5%8F%98%E6%9B%B4%E8%AE%B0%E5%BD%95">7. 变更记录</a></li>
+</ul>
+<hr>
+<h2>0. 三分钟速览</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>要校的东西</th>
+<th>存到哪</th>
+<th>靠什么算出来</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>测球触发半径 X / Y</td>
+<td><code class="notranslate">#500</code> / <code class="notranslate">#501</code></td>
+<td>赤道四点 + 闭式解</td>
+</tr>
+<tr>
+<td>测针偏心 X / Y</td>
+<td><code class="notranslate">#502</code> / <code class="notranslate">#503</code></td>
+<td>赤道四点（与半径同源）</td>
+</tr>
+<tr>
+<td>刀长</td>
+<td>对应刀补区 <code class="notranslate">+#11000+T</code></td>
+<td>触球顶得到 Δ，累加到刀补</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>整趟只碰球 <strong>6 次</strong>：粗触顶 1 + 赤道 4 + 顶测 1。（旧版 10 次，多的 4 次是预对中，已删，理由见 <a href="#39-%E9%82%A3-4-%E6%AC%A1%E9%A2%84%E5%AF%B9%E4%B8%AD%E5%88%B0%E5%BA%95%E8%AF%A5%E4%B8%8D%E8%AF%A5%E6%9C%89">3.9</a>）</p>
+<p>三条最容易被忘记的结论：</p>
+<ol>
+<li><strong>必须在赤道测</strong>——不是"差不多在赤道"，是「测球中心」严格落在过球心的水平面上。偏了，法向就斜了，触发方向与将来测孔不一致。</li>
+<li><strong>V 有错，半径就错</strong>——公式对 V 很敏感：V 差 3 mm，半径差约 320 µm。所以 V 必须用<strong>实测球心</strong>（<code class="notranslate">#160</code>）算，不能用名义球心。</li>
+<li><strong>刀补最后写</strong>——写完刀补，所有"依赖旧刀长"的动作就都不能再做了。程序里写刀补是倒数第二个动作，写完只剩抬刀。</li>
+</ol>
+<hr>
+<h2>1. 校准原理</h2>
+<h3>1.1 触发式测针"报"的到底是什么坐标</h3>
+<p>这是所有误差的源头，必须先拧清楚：</p>
+<ul>
+<li><strong>X / Y</strong>：触发瞬间，机床报的是<strong>测球中心</strong>的位置。所以测孔时算半径要 <code class="notranslate">+r</code>，测外圆要 <code class="notranslate">−r</code>。</li>
+<li><strong>Z</strong>：刀长补偿对的是<strong>测球最低点（球底顶点）</strong>，不是球心。所以程序里的 Z 坐标 = 球底的高度，<strong>球心比它高一个 r</strong>。</li>
+</ul>
+<p>这一条直接决定了后面所有公式里那个"减 r"从哪来（见 <a href="#23-z-%E5%9D%90%E6%A0%87%E7%BA%A6%E5%AE%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%8C%87%E4%BB%A4%E8%A6%81%E5%87%8F-r">2.3</a>）。</p>
+<h3>1.2 三个量，三种测法</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>量</th>
+<th>物理含义</th>
+<th>怎么测</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>触发半径 <code class="notranslate">r</code></td>
+<td>测球中心到"电子触发点"的距离（不是磨出来的实际球半径，是触发瞬间的有效半径）</td>
+<td>赤道四点，配对求半跨</td>
+</tr>
+<tr>
+<td>偏心 <code class="notranslate">EX/EY</code></td>
+<td>输入球心与"主轴读到的球心"之差 = 球心填表偏差 + 测球偏心</td>
+<td>赤道四点的中点 vs 输入球心</td>
+</tr>
+<tr>
+<td>刀长偏差 <code class="notranslate">Δ</code></td>
+<td>刀补与实际长度的差</td>
+<td>球顶单点触碰</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>三者<strong>共用同一颗球、同一次装夹、同一次运行</strong>，这就是"用球"的核心价值：不用换器具、不用重找零点。</p>
+<blockquote>
+<p><strong><code class="notranslate">#502/#503</code> 里装的不是纯测球偏心。</strong> 它是 <code class="notranslate">输入球心 − 中点 = Δ + E</code>：<br>
+<code class="notranslate">Δ</code> 是球心填表偏差，<code class="notranslate">E</code> 是测球偏心。球心填得准（<code class="notranslate">Δ≈0</code>），它就是纯 <code class="notranslate">E</code>；<br>
+球心填偏 0.5 mm，它就被污染 0.5 mm。所以"用中心寻找规把球心测准"不只是为了算半径，<br>
+也是为了这条参数本身。</p>
+<p>反过来，<code class="notranslate">E</code> 多大都不影响<strong>半径</strong> —— 半径用的是两触点之<strong>差</strong>，<code class="notranslate">E</code> 同时平移两点，相减抵消。</p>
+</blockquote>
+<h3>1.3 为什么必须是赤道</h3>
+<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/67483e32-c7a1-4ab1-a5c4-7237eda84b79"><img width="720" height="460" alt="Image" src="https://github.com/user-attachments/assets/67483e32-c7a1-4ab1-a5c4-7237eda84b79" style="max-width: 100%; height: auto; max-height: 460px;; aspect-ratio: 720 / 460; background-color: var(--bgColor-muted); border-radius: 6px" class="js-gh-image-fallback"></a></p>
+<p>接触法向 = 球心到测球中心的连线方向。只有当测球中心和球心<strong>等高</strong>时，这条线才是水平的。</p>
+<ul>
+<li>赤道上：法向水平 → 测球沿水平方向压向球面 → 与将来测孔壁、测凸台侧面<strong>完全同条件</strong>。探针的方向性差异（预行程、各向触发力不同）在这种同条件下自动抵消。</li>
+<li>偏离赤道：法向倾斜 θ → 触发变成"横向 + 轴向"的混合 → 方向性误差按 sinθ 混进结果，标定条件 ≠ 使用条件。</li>
+</ul>
+<blockquote>
+<p><strong>这条是"校准条件必须等于使用条件"的直接应用。</strong> 不是精度问题，是系统误差问题——它不会因为多测几次而变小。</p>
+</blockquote>
+<h3>1.4 为什么用球，不用环规</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th></th>
+<th>环规 / 圆柱销</th>
+<th>基准球</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>能校什么</td>
+<td>只能校半径（侧壁竖直，Z 位置无所谓）</td>
+<td>半径 + 偏心 + 长度，一次装夹全干完</td>
+</tr>
+<tr>
+<td>高度敏感</td>
+<td>不敏感（这正是它的优点）</td>
+<td>敏感，必须精确落在赤道</td>
+</tr>
+<tr>
+<td>器具成本</td>
+<td>高（要一套）</td>
+<td>低（一颗球 + 证书）</td>
+</tr>
+<tr>
+<td>5 轴 / 万向测头</td>
+<td>不适用</td>
+<td>适用（球各向同性）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>Renishaw 的标准器具其实是<strong>环规</strong>（手册原文：<em>"The probe is positioned inside a calibrated ring gauge"</em>），环规侧壁竖直，所以"高度"这个问题在他们的标准流程里根本不存在。球是给 5 轴和自动标定用的，那时候就必须处理赤道问题——也就是本程序要解决的事。</p>
+<hr>
+<h2>2. 数学：从几何到闭式解</h2>
+<h3>2.1 记号</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>记号</th>
+<th>程序里</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">Rs</code></td>
+<td><code class="notranslate">#133</code> = D/2</td>
+<td>基准球半径（已知，来自证书）</td>
+</tr>
+<tr>
+<td><code class="notranslate">r</code></td>
+<td>待求</td>
+<td>测球触发半径</td>
+</tr>
+<tr>
+<td><code class="notranslate">S</code></td>
+<td><code class="notranslate">#1</code>/<code class="notranslate">#2</code></td>
+<td>两球球心距 = <code class="notranslate">Rs + r</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">D</code></td>
+<td><code class="notranslate">#8</code>/<code class="notranslate">#9</code></td>
+<td>实测水平半跨（两侧触点差的一半）</td>
+</tr>
+<tr>
+<td><code class="notranslate">Z</code></td>
+<td><code class="notranslate">#154</code></td>
+<td>本次测量的指令 Z（= 球底高度）</td>
+</tr>
+<tr>
+<td><code class="notranslate">Zc</code></td>
+<td><code class="notranslate">#160</code></td>
+<td><strong>实测</strong>球心 Z</td>
+</tr>
+<tr>
+<td><code class="notranslate">V</code></td>
+<td><code class="notranslate">#6</code></td>
+<td><code class="notranslate">Z − Zc − Rs</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">h</code></td>
+<td>——</td>
+<td>测球中心高出球心的高度</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>2.2 几何关系</h3>
+<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/d56d2710-546a-4d74-bfdb-575d0f96b4e0"><img width="720" height="420" alt="Image" src="https://github.com/user-attachments/assets/d56d2710-546a-4d74-bfdb-575d0f96b4e0" style="max-width: 100%; height: auto; max-height: 420px;; aspect-ratio: 720 / 420; background-color: var(--bgColor-muted); border-radius: 6px" class="js-gh-image-fallback"></a></p>
+<p>触发瞬间两球外切，球心距 <code class="notranslate">S = Rs + r</code>。把它拆成水平、竖直两个分量：</p>
+<pre class="notranslate"><code class="notranslate">S² = D² + h²          …… ①
+S  = Rs + r           …… ②
+h  = r + Z − Zc       …… ③   （因为 Z 是球底，球心比它高 r）
+</code></pre>
+<p><strong>这里就是第一个坑</strong>：想直接算出 r，得先知道 h；可 h 里面就有 r（式③）。所以<strong>不能直接开方</strong>。</p>
+<h3>2.3 Z 坐标约定：为什么指令要减 r</h3>
+<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/d44cc3d5-cd42-4324-ba60-197686dfd9a4"><img width="720" height="380" alt="Image" src="https://github.com/user-attachments/assets/d44cc3d5-cd42-4324-ba60-197686dfd9a4" style="max-width: 100%; height: auto; max-height: 380px;; aspect-ratio: 720 / 380; background-color: var(--bgColor-muted); border-radius: 6px" class="js-gh-image-fallback"></a></p>
+<p>把三个高度摆在一起就清楚了：球心、测球中心、球底（指令 Z）。球心 = 球底 + r + h。</p>
+<p>于是式③成立。程序里把平面摆在 <code class="notranslate">Zc − r定位</code>，就是为了让球底比球心低一个 r，从而让<strong>测球中心正好落在赤道上</strong>。</p>
+<h3>2.4 解方程：把 r 消掉</h3>
+<p>关键是引入 <code class="notranslate">V</code>，它的定义<strong>故意多减了一个 Rs</strong>：</p>
+<pre class="notranslate"><code class="notranslate">V ≡ Z − Zc − Rs
+</code></pre>
+<p>那么：</p>
+<pre class="notranslate"><code class="notranslate">S + V = (Rs + r) + (Z − Zc − Rs) = r + Z − Zc = h     …… ④
+</code></pre>
+<p><strong>r 被消掉了。</strong> 这一步是整个推导的核心——把"含未知量 r 的 h"换成"含未知量 S 的 (S+V)"，因为 S 和 r 之间只差一个常数 Rs。</p>
+<p>代回式①：</p>
+<pre class="notranslate"><code class="notranslate">S² = D² + (S + V)²
+S² = D² + S² + 2SV + V²
+ 0 = D² + 2SV + V²
+S  = −(D² + V²) / (2V)
+r  = S − Rs
+</code></pre>
+<p>程序里就是这三行：</p>
+<pre class="notranslate"><code class="notranslate">#6=#154-#160-#133              V = Z − Zc − Rs
+#1=[[#8*#8]+[#6*#6]]/[-2*#6]   S = −(D²+V²)/(2V)
+#159=#1-#133                   r = S − Rs
+</code></pre>
+<blockquote>
+<p><strong>注意符号</strong>：<code class="notranslate">V</code> 恒为负（因为 <code class="notranslate">Z − Zc ≈ −r</code>，再减 Rs 更负），所以 <code class="notranslate">−2V</code> 是正的，<code class="notranslate">S</code> 是正的。若 V 接近 0，说明测球中心跑到球极点附近，公式发散——程序里 <code class="notranslate">|V| &lt; 1mm</code> 直接报 96。</p>
+</blockquote>
+<h3>2.5 赤道处的退化</h3>
+<p>如果平面<strong>真的</strong>在赤道（<code class="notranslate">r定位 = r</code>），那么：</p>
+<pre class="notranslate"><code class="notranslate">V = −(Rs + r) = −S
+S = (D² + S²)/(2S) → S² = D² → S = D
+r = D − Rs
+</code></pre>
+<p>退化回最朴素的形式。这说明闭式解是<strong>通用式</strong>，名义半径法只是它 <code class="notranslate">h = 0</code> 的特例。</p>
+<h3>2.6 对旧半径的免疫力</h3>
+<p>代入 <code class="notranslate">Z = Zc − r定位</code>：</p>
+<pre class="notranslate"><code class="notranslate">V = −(r定位 + Rs)，  S + V = r − r定位 = h
+</code></pre>
+<p>不管 <code class="notranslate">r定位</code> 取什么值，<code class="notranslate">S + V</code> 永远等于真实的 <code class="notranslate">h</code>。所以：</p>
+<ul>
+<li>旧触发半径 <code class="notranslate">#500</code> 错得再离谱，<code class="notranslate">S</code> 解出来依然精确等于 <code class="notranslate">Rs + r</code>；</li>
+<li>当时用 20 万组随机数（Rs、r、r定位 全随机）验证过，<strong>误差恒为 0</strong>（只受浮点尾数影响）。</li>
+</ul>
+<p><strong>含义</strong>：<code class="notranslate">R</code> 参数（名义测球半径）不是"计算输入"，只是"定位依据"。它错了，数还是对的，只是触点的法向不再水平（见 <a href="#38-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E4%BB%A5%E7%BB%99%E4%B8%80%E4%B8%AA%E5%90%8D%E4%B9%89%E5%8D%8A%E5%BE%84%E5%8D%B4%E5%8F%88%E4%B8%8D%E5%BD%B1%E5%93%8D%E7%BB%93%E6%9E%9C">3.8</a>）。</p>
+<hr>
+<h2>3. 今天真正纠结过的 9 个点</h2>
+<p>这一节是这份笔记的主体。把当时卡住的地方按顺序记下来，下次直接跳到这里。</p>
+<h3>3.1 为什么是 <code class="notranslate">Rs + r</code>，不是 <code class="notranslate">Rs − r</code></h3>
+<p>最初照着 9803（<strong>内孔</strong>环规）的写法抄了一个 <code class="notranslate">Rs − r</code>，代进去得到荒谬结果，还以为必须"回代迭代"。</p>
+<ul>
+<li>内孔：测球在孔内，测球中心到孔壁距离 = <code class="notranslate">R孔 − r</code>（<strong>减</strong>）</li>
+<li>外球：测球在球外，两球外切，球心距 = <code class="notranslate">Rs + r</code>（<strong>加</strong>）</li>
+</ul>
+<p>符号一改，立刻变成闭式解，<strong>迭代方案整个作废</strong>。教训：先判断"测头在内侧还是外侧"。</p>
+<h3>3.2 Z 指令为什么要减 r</h3>
+<p>因为<strong>刀长补偿对的是测球最低点，不是球心</strong>（<a href="#11-%E8%A7%A6%E5%8F%91%E5%BC%8F%E6%B5%8B%E9%92%88%E6%8A%A5%E7%9A%84%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88%E5%9D%90%E6%A0%87">1.1</a>）。程序写 <code class="notranslate">Z = Zc − r</code>，物理上就是"球底落在球心下方 r 处"，等价于"测球中心落在赤道上"。</p>
+<p>当时的疑问是"顶点要在球心下方 r 处，测球中心才在赤道"——这句话里的"顶点"指的就是球底顶点，没毛病，只是说法容易歧义。</p>
+<h3>3.3 V 为什么要多减一个 Rs</h3>
+<p>不是物理，是<strong>代数技巧</strong>。多减一个 Rs，才能让 <code class="notranslate">S + V</code> 恰好等于 <code class="notranslate">h</code>，从而把 r 从方程里赶出去（<a href="#24-%E8%A7%A3%E6%96%B9%E7%A8%8B%E6%8A%8A-r-%E6%B6%88%E6%8E%89">2.4</a>）。</p>
+<p>如果 V 定义成 <code class="notranslate">Z − Zc</code>，那 <code class="notranslate">S + V = Rs + r + (Z−Zc)</code>，r 还赖在里面，方程就解不动了。</p>
+<h3>3.4 为什么不能"触发瞬间直接读 h 和 D"</h3>
+<p>D 能直接读，h <strong>不能</strong>——h 是"测球中心到球心"的竖直距离，而球心位置本身要靠触顶得到，且 h 里含未知的 r。表观上"两球相切，量一下不就完了"，实际上缺一个方程。</p>
+<p><strong>绕的这一下（引入 S+V）不是多余，是把未知量 r 替换成未知量 S 的唯一办法。</strong></p>
+<h3>3.5 V 没用实测球心的 bug</h3>
+<p>早期版本 V 里用的是<strong>名义球心</strong> <code class="notranslate">Zc</code>，而不是触顶后的实测球心 <code class="notranslate">#160</code>。后果：</p>
+<pre class="notranslate"><code class="notranslate">Δ = 3 mm 时不修正 → 半径错约 0.32 mm（320 µm）
+而且这个错值还能通过 2 mm 的防呆门限，静默写进 #500
+</code></pre>
+<p>修正办法：<code class="notranslate">#160</code> 在粗触顶、长度两步里逐级更新，V 直接用 <code class="notranslate">#160</code>：</p>
+<pre class="notranslate"><code class="notranslate">#6=#154-#160-#133
+</code></pre>
+<p><strong>教训</strong>：凡是"球心"出现的地方，一律用 <code class="notranslate">#160</code>，不要用 <code class="notranslate">#132</code>（#132 只是入口给的名义值）。</p>
+<h3>3.6 偏心为什么必须和半径同源</h3>
+<p>当初程序里本来有两组四点：<code class="notranslate">0.5Rs</code> 高度一组（粗对中）、赤道一组（正式）。偏心若取自前者，<br>
+数值上差得不多，但物理含义完全不同：</p>
+<ul>
+<li>偏心的定义是"测球球心相对主轴轴线的偏移"，将来<strong>任何方向</strong>的测量都会带着它；</li>
+<li>触发性能随方向变化：法向斜的触点，等效触发点与法向水平的触点不一样；</li>
+<li>所以只有在<strong>与将来测量同条件</strong>（法向水平）下测出来的偏心，才是那个会被重复带出去的偏心。</li>
+</ul>
+<p>这一版把 <code class="notranslate">0.5Rs</code> 那组整个删掉后，这个隐患自动消失了 —— 半径和偏心来自同一组赤道四点，<br>
+不存在"取错来源"的可能。删掉的依据见 <a href="#39-%E9%82%A3-4-%E6%AC%A1%E9%A2%84%E5%AF%B9%E4%B8%AD%E5%88%B0%E5%BA%95%E8%AF%A5%E4%B8%8D%E8%AF%A5%E6%9C%89">3.9</a>。</p>
+<h3>3.7 为什么刀补必须最后写</h3>
+<p>写刀补会改变 <code class="notranslate">#116</code>（当前刀长），而程序里所有 Z 坐标都是"程序坐标 = 机床坐标 − #116"。一旦改了 <code class="notranslate">#116</code>：</p>
+<ul>
+<li>安全高度 <code class="notranslate">#160 + Rs + Q</code> 的含义就变了；</li>
+<li>起点高度 <code class="notranslate">#157</code> 的含义也变了（所以最后一步要 <code class="notranslate">Z[#157 - Δ]</code> 才是回到原高度）。</li>
+</ul>
+<p>所以顺序被固定死：<strong>测量 → 写参数 → 退刀 → 写刀补 → 抬回起点（减 Δ）</strong>。</p>
+<h3>3.8 为什么可以给一个名义半径，却又不影响结果</h3>
+<p>这是今天最后加的 <code class="notranslate">R</code> 参数（详见 <a href="#7-%E5%8F%98%E6%9B%B4%E8%AE%B0%E5%BD%95">7</a>）。逻辑链：</p>
+<ol>
+<li><code class="notranslate">R</code> 只决定"平面摆在哪"，进不了公式（<a href="#26-%E5%AF%B9%E6%97%A7%E5%8D%8A%E5%BE%84%E7%9A%84%E5%85%8D%E7%96%AB%E5%8A%9B">2.6</a>）。</li>
+<li>摆错平面 → <code class="notranslate">h ≠ 0</code> → 但 <code class="notranslate">S + V</code> 仍然等于真实的 <code class="notranslate">h</code> → 解出来的 <code class="notranslate">r</code> 仍然精确。</li>
+<li>所以 <code class="notranslate">R</code> <strong>填错不影响数值</strong>，只影响"法向是否水平"。</li>
+<li><code class="notranslate">R</code> 太大（超过球半径）→ 平面落到球底下 → 根本不触发 → 现有 93 报警兜住。</li>
+</ol>
+<p>那为什么还要它？<strong>为了让赤道条件真正成立</strong>，而不是让数字对。尤其是换测针首次运行时，旧 <code class="notranslate">#500</code> 可能差好几个毫米，此时不给 <code class="notranslate">R</code>，平面会明显偏离赤道。</p>
+<h3>3.9 那 4 次预对中到底该不该有</h3>
+<p>这个问题问了两层，第二层比第一层更值得记。</p>
+<p><strong>第一层：它有什么用？</strong><br>
+旧版有「<code class="notranslate">0.5Rs</code> 高度四点，结果不保存」。它唯一的作用是：把轴摆到球心，让紧接着的顶测<br>
+落在真球顶，而不是落在斜面上。顶测若偏 <code class="notranslate">e</code>，球顶会被测低 <code class="notranslate">e²/2(Rs+r)</code><br>
+（测球中心沿的球面半径是 <code class="notranslate">Rs+r</code>，不是 <code class="notranslate">Rs</code>；<code class="notranslate">Rs≫r</code> 时就是常见的 <code class="notranslate">e²/2D</code> 那个近似）：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>球心 XY 偏差 e</th>
+<th>顶测偏低</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1 mm</td>
+<td>0.4 µm</td>
+</tr>
+<tr>
+<td>0.5 mm</td>
+<td>8.9 µm</td>
+</tr>
+<tr>
+<td>1.0 mm</td>
+<td>36 µm</td>
+</tr>
+<tr>
+<td>2.0 mm</td>
+<td>143 µm</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>这个误差会进 <code class="notranslate">Δ长</code>、进刀补、进后面所有 Z 向测量。所以"顶测必须在真球顶"是硬要求，<br>
+那 4 次不是为了对中而对中，是为了这个。</p>
+<p><strong>第二层：能不能换个更便宜的方式满足它？</strong><br>
+能，但理由要说得更准一点 —— <strong>中点不等于球心，它等于「球心 − 测球偏心」</strong>。</p>
+<p>三个量分开：<code class="notranslate">C</code> = 球心物理位置，<code class="notranslate">Δ</code> = 起测点（输入球心）偏了多少，<code class="notranslate">E</code> = 测球偏心。<br>
+两侧触发时主轴读数是 <code class="notranslate">C ± Rh − E</code>（<code class="notranslate">Rh = sqrt((Rs+r)²−h²)</code>），相加除二得 <code class="notranslate">C − E</code>：<br>
+<code class="notranslate">Δ</code> 整个消失，但 <code class="notranslate">E</code> 留着。</p>
+<p>关键在这：程序算的 <code class="notranslate">#144 = 输入球心 − 中点 = Δ + E</code>，正好把两个偏差一起兜住。<br>
+所以顶测定位到 <code class="notranslate">#130 − #144</code> 时，主轴落在 <code class="notranslate">C − E</code>，<strong>测球球心精确落在 <code class="notranslate">C</code></strong>。<br>
+而半径用两点之<strong>差</strong> <code class="notranslate">2Rh</code>，<code class="notranslate">E</code> 相减抵消，一点不被污染。</p>
+<p>换句话说：中点不是球心，但它加一个固定偏移后<strong>就是我们要的那个量</strong>，而且不随起测位置变。<br>
+所以顺序倒过来即可：</p>
+<pre class="notranslate"><code class="notranslate">旧：粗触顶 → 0.5Rs 四点（对中） → 顶测 → 赤道四点（半径+偏心）
+新：粗触顶 → 赤道四点（半径+偏心，顺手得到球心位置） → 顶测
+</code></pre>
+<p><code class="notranslate">0.5Rs</code> 那 4 次就变成纯冗余，删掉，10 次变 6 次。</p>
+<p><strong>代价只有一条</strong>：赤道平面的高度基准从 <code class="notranslate">Δ长</code>（精）变成 <code class="notranslate">Δ粗</code>（粗），两者差 <code class="notranslate">e²/2(Rs+r)</code>。<br>
+这个差会让半径解产生残差（端到端模拟，Rs=12.5、r=1.5）：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>球心 XY 偏差 e</th>
+<th>给了 R（r定位 = r）</th>
+<th>没给 R，旧半径差 1 mm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1 mm</td>
+<td>0.00 µm</td>
+<td>0.03 µm</td>
+</tr>
+<tr>
+<td>0.5 mm</td>
+<td>0.00 µm</td>
+<td>0.7 µm</td>
+</tr>
+<tr>
+<td>1.0 mm</td>
+<td>0.05 µm</td>
+<td>2.7 µm</td>
+</tr>
+<tr>
+<td>2.0 mm</td>
+<td>0.7 µm</td>
+<td>10 µm</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>也就是说：<strong>给了 <code class="notranslate">R</code>，几乎回到"数学上严格 0"</strong>；没给 <code class="notranslate">R</code> 且球心偏 1 mm 才有 3 µm。<br>
+而偏 2 mm 会撞上 95 报警门槛，不会静默通过。</p>
+<p><strong>顺带回答"为什么偏偏是 0.5Rs"</strong>：没有依据，是个折中。对中精度与高度无关（中点性质），<br>
+高度只影响三件事 —— 触点法向倾角、起测点安全余量、对平面高度误差的敏感度。<br>
+水平圆半径 <code class="notranslate">sqrt((Rs+r)²−h²)</code> 对 h 的导数在极点趋无穷、在赤道为 0：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>高度</th>
+<th>水平圆</th>
+<th>法向</th>
+<th>对 Z 误差的敏感度</th>
+<th>Z 容错</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.7Rs</td>
+<td>0.71Rs</td>
+<td>44°</td>
+<td>大</td>
+<td>±0.7Rs</td>
+</tr>
+<tr>
+<td>0.5Rs</td>
+<td>0.87Rs</td>
+<td>30°</td>
+<td>中</td>
+<td>±0.5Rs</td>
+</tr>
+<tr>
+<td>0.1Rs</td>
+<td>0.995Rs</td>
+<td>5.7°</td>
+<td>最小</td>
+<td>±0.1Rs</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><code class="notranslate">0.6Rs</code> / <code class="notranslate">0.7Rs</code> 没有任何理由（更靠极点、更敏感）。真要保留，<code class="notranslate">0.1Rs</code> 在数学上更好<br>
+（Rs=12.5 时 Z 余量仍有 1.25 mm，远大于 <code class="notranslate">Δ粗</code> 的几十 µm）。但既然已经删了，这条只作备忘。</p>
+<hr>
+<h2>4. 程序结构</h2>
+<h3>4.1 流程</h3>
+<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/bb4b041e-aedd-45ea-90b0-c04a1acfc678"><img width="720" height="520" alt="Image" src="https://github.com/user-attachments/assets/bb4b041e-aedd-45ea-90b0-c04a1acfc678" style="max-width: 100%; height: auto; max-height: 520px;; aspect-ratio: 720 / 520; background-color: var(--bgColor-muted); border-radius: 6px" class="js-gh-image-fallback"></a></p>
+<h3>4.2 为什么是这个顺序</h3>
+<p>刀长未知时，<strong>唯一能盲触的方向是正上方</strong>——球顶是最高点，从上面下来必然碰到，不会撞侧面。<br>
+所以第一步只能是触顶，没有别的选择。</p>
+<ol>
+<li><strong>粗触顶</strong>（<code class="notranslate">U</code> 可关）→ 拿到 Z 基准，赤道平面才有高度可摆；</li>
+<li><strong>赤道四点</strong> → 半径 + 偏心；这一步<strong>不需要先对中</strong>，因为中点不随起测位置变，而且 <code class="notranslate">#144</code> 把测球偏心一并算进去了；</li>
+<li><strong>顶测长度</strong> → 定位到 <code class="notranslate">#130−#144</code>（测球球心对准真球心），触在球顶而不是斜面，<code class="notranslate">Δ</code> 才干净。</li>
+</ol>
+<p><strong>每一步都在为下一步消除一个未知量</strong>：粗触顶消除"球大概在哪"，赤道四点消除"球心到底在哪、半径多少"，<br>
+顶测消除"刀长差多少"。旧顺序在这三步之间多绕了一圈（先对中 → 再顶测 → 再回赤道），<br>
+新顺序是一条直链，所以能省下 4 次触发。</p>
+<p>三条硬约束把这个顺序钉死了，破坏任何一条都会引入 µm 级误差：</p>
+<ul>
+<li><strong>顶测必须在真球心正上方</strong> —— 否则球顶被测低 <code class="notranslate">e²/2(Rs+r)</code>（e=0.5 mm 就 8.9 µm）；</li>
+<li><strong>赤道四点的平面和 V 必须用同一个球心基准</strong> —— 混用会引入 <code class="notranslate">ε</code> 失配（见 <a href="#26-%E5%AF%B9%E6%97%A7%E5%8D%8A%E5%BE%84%E7%9A%84%E5%85%8D%E7%96%AB%E5%8A%9B">2.6</a>）；</li>
+<li><strong>刀补必须最后写</strong> —— 见 <a href="#37-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%88%80%E8%A1%A5%E5%BF%85%E9%A1%BB%E6%9C%80%E5%90%8E%E5%86%99">3.7</a>。</li>
+</ul>
+<h3>4.3 变量地图</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>变量</th>
+<th>用途</th>
+<th>谁写的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">#130</code> <code class="notranslate">#131</code> <code class="notranslate">#132</code></td>
+<td>球心 X / Y / Z（入口值）</td>
+<td>操作者</td>
+</tr>
+<tr>
+<td><code class="notranslate">#133</code></td>
+<td>Rs = D/2</td>
+<td>入口 D</td>
+</tr>
+<tr>
+<td><code class="notranslate">#135</code> <code class="notranslate">#147</code></td>
+<td><strong>r定位</strong> X / Y（= R，或旧 #500/#501）</td>
+<td>本程序</td>
+</tr>
+<tr>
+<td><code class="notranslate">#136</code> <code class="notranslate">#137</code> <code class="notranslate">#138</code></td>
+<td>Q 间隙 / U 搜索深度 / K 上限</td>
+<td>本程序</td>
+</tr>
+<tr>
+<td><code class="notranslate">#139</code> <code class="notranslate">#140</code></td>
+<td>旧触发半径（只作默认值）</td>
+<td>本程序</td>
+</tr>
+<tr>
+<td><code class="notranslate">#141</code> <code class="notranslate">#146</code></td>
+<td>Δ粗 / Δ长</td>
+<td>测量得到</td>
+</tr>
+<tr>
+<td><code class="notranslate">#150</code>~<code class="notranslate">#153</code></td>
+<td>四个触点的实测坐标</td>
+<td>测量得到</td>
+</tr>
+<tr>
+<td><code class="notranslate">#154</code></td>
+<td>本次测量平面的指令 Z</td>
+<td>本程序</td>
+</tr>
+<tr>
+<td><code class="notranslate">#155</code> <code class="notranslate">#156</code> <code class="notranslate">#157</code></td>
+<td>进入时的起点 X / Y / Z</td>
+<td>本程序</td>
+</tr>
+<tr>
+<td><code class="notranslate">#158</code> <code class="notranslate">#159</code></td>
+<td>新半径 RX / RY → 写 #500 / #501</td>
+<td>计算</td>
+</tr>
+<tr>
+<td><code class="notranslate">#160</code></td>
+<td><strong>实测球心 Z</strong>（所有高度的基准）</td>
+<td>本程序</td>
+</tr>
+<tr>
+<td><code class="notranslate">#144</code> <code class="notranslate">#145</code></td>
+<td>新偏心 EX / EY → 写 #502 / #503</td>
+<td>计算</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>两个禁区</strong>：<code class="notranslate">#148</code>（9810 每次调用都会改写）、<code class="notranslate">#100</code>（9810 内部用）。当初就是想用 <code class="notranslate">#148</code> 存半径，查了 9810 源码才发现不行。</p>
+<h3>4.4 安全设计</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>机制</th>
+<th>做法</th>
+<th>防的是什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>所有移动走 9810</td>
+<td><code class="notranslate">G65P9810...F#119</code>，带到位检测</td>
+<td>撞刀、程序错位（报 86）</td>
+</tr>
+<tr>
+<td>起测点在球外</td>
+<td><code class="notranslate">球心 ± (Rs + r定位 + Q)</code></td>
+<td>从球外进刀，不依赖旧半径准不准</td>
+</tr>
+<tr>
+<td>第一次触球就在赤道</td>
+<td>上面那条公式，Q 默认 5 mm</td>
+<td>赤道是球最宽处，余量最小（只剩 Q−球心偏差）；球心坐标不可靠时把 <code class="notranslate">Q</code> 给大，如 <code class="notranslate">Q10</code></td>
+</tr>
+<tr>
+<td>抬刀判断</td>
+<td><code class="notranslate">IF[#1LT#157]</code> 才抬</td>
+<td>已经在高处就不再动</td>
+</tr>
+<tr>
+<td>Δ 上限 K</td>
+<td><code class="notranslate">ABS[Δ] &gt; K</code> 报警 94</td>
+<td>球装错、坐标填错、探针没开到位</td>
+</tr>
+<tr>
+<td>偏心门限</td>
+<td>新旧差 &gt; 2mm 报警 95</td>
+<td>换了大号测针、球心填错</td>
+</tr>
+<tr>
+<td>半径门限</td>
+<td>&lt;0.2 或 &gt;10 或与基准差 &gt;2mm 报警 96</td>
+<td>公式发散、极端输入错误</td>
+</tr>
+<tr>
+<td>刀补最后写</td>
+<td>写完只剩抬刀</td>
+<td>改完刀长还用旧值算坐标</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>4.5 报警表</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>号</th>
+<th>含义</th>
+<th>最可能的原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>86</td>
+<td>路径受阻（9810 内部）</td>
+<td>目标点与实际位置差太多，撞到了</td>
+</tr>
+<tr>
+<td>91</td>
+<td>D 或 T 没给</td>
+<td>调用格式漏参数</td>
+</tr>
+<tr>
+<td>92</td>
+<td>探针未开</td>
+<td>忘了开探针 / 电池</td>
+</tr>
+<tr>
+<td>93</td>
+<td>触发失败</td>
+<td>目标位置没有工件；<code class="notranslate">R</code> 给太大，平面落到球底下</td>
+</tr>
+<tr>
+<td>94</td>
+<td>Δ 超限</td>
+<td>球心 Z 填错、球没放对</td>
+</tr>
+<tr>
+<td>95</td>
+<td>偏心超限</td>
+<td>球心 X/Y 填错、球装偏</td>
+</tr>
+<tr>
+<td>96</td>
+<td>半径超范围</td>
+<td>V 接近 0、D 填错、换错测针</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h2>5. 传统方法 vs 本法</h2>
+<h3>5.1 传统怎么做（Renishaw / Mazak O8002 一类）</h3>
+<ol>
+<li>程序先让<strong>主轴转 180°</strong>，用同一点两次触碰求出主轴轴线（自找中心）；</li>
+<li>用<strong>名义测球半径</strong>把测球摆到"名义赤道"；</li>
+<li>测完直接 <code class="notranslate">r = D − Rs</code>（或等价的简化式）；</li>
+<li>全程不需要知道球心坐标。</li>
+</ol>
+<p><strong>设计动机</strong>：宏必须能在<strong>任何一台机床、<code class="notranslate">#500 = 0</code> 的全新状态</strong>下从零跑通。它唯一自带的参考就是证书上的球径。</p>
+<h3>5.2 我们怎么做</h3>
+<ol>
+<li>球心 X/Y/Z 由操作者用<strong>中心寻找规 + 块规</strong>独立测出并输入；</li>
+<li>用这个球心定义赤道平面（可再用 <code class="notranslate">R</code> 精确定位）；</li>
+<li>测完用<strong>闭式解</strong>算半径，对旧值不敏感。</li>
+</ol>
+<p><strong>设计动机</strong>：这台机床的球心是<strong>可以事先测准</strong>的，那就不必在程序里"猜"。</p>
+<h3>5.3 对比</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>维度</th>
+<th>传统（名义半径法）</th>
+<th>本法（实测球心 + 闭式解）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>球心来源</td>
+<td>程序自找（180° 定向）</td>
+<td>机外独立测</td>
+</tr>
+<tr>
+<td>赤道定位</td>
+<td>名义 r，实际偏差 <code class="notranslate">h = r真 − r名义</code></td>
+<td><code class="notranslate">R</code> 或旧值，公式自洽</td>
+</tr>
+<tr>
+<td>半径算法</td>
+<td>简化式 <code class="notranslate">r = D − Rs</code></td>
+<td>闭式解 <code class="notranslate">S = −(D²+V²)/(2V)</code></td>
+</tr>
+<tr>
+<td>对 h 的敏感度</td>
+<td>误差 ≈ <code class="notranslate">h² / 2D</code></td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>测球名义半径填错 1 mm</td>
+<td>静默错约 <strong>36 µm</strong></td>
+<td><strong>0</strong>（只影响法向倾角）</td>
+</tr>
+<tr>
+<td>球心坐标填错</td>
+<td>不受影响（不用球心坐标）</td>
+<td><strong>1:1 全错</strong></td>
+</tr>
+<tr>
+<td>全新机床 <code class="notranslate">#500=0</code></td>
+<td>能直接跑</td>
+<td>需要一个初始值（旧值或 <code class="notranslate">R</code>）</td>
+</tr>
+<tr>
+<td>是否依赖外部器具</td>
+<td>不依赖</td>
+<td>依赖球心测量</td>
+</tr>
+<tr>
+<td>代码复杂度</td>
+<td>高（自找中心要多次定向）</td>
+<td>低（球心直接用）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>5.4 结论</h3>
+<p><strong>不是谁更科学，是约束不同。</strong></p>
+<ul>
+<li>他们的约束是"通用、免前置条件"，所以愿意接受 <code class="notranslate">h</code> 带来的微小误差——而且这个误差在他们那儿确实可忽略：DIN 5401 Grade 5 的球径公差只有 ±5.32 µm（直径），名义半径与真值差不到 3 µm，<code class="notranslate">h²/2D ≈ 0.2 nm</code>，等于零。</li>
+<li>我们的约束是"这台机床、球心能测"，所以把球心当已知量，换来的是<strong>对输入错误免疫</strong>和<strong>赤道条件精确成立</strong>。</li>
+</ul>
+<p>真正的差别不在精度（两者都在 1～2 µm 量级），而在<strong>鲁棒性方向</strong>：他们怕"没基础"，我们怕"球心测错"。</p>
+<p><a target="_blank" rel="noopener noreferrer" href="img/fig5_error.svg"><img src="img/fig5_error.svg" alt="误差对比" style="max-width: 100%;"></a></p>
+<p>上面这条红线只在"名义半径和真值差很多"时才有意义。他们的世界里 <code class="notranslate">h ≈ 0</code>，所以一直都在曲线原点附近；我们的世界里 <code class="notranslate">h</code> 可能是 1 mm（旧测针差一个型号），所以必须用不敏感的方法。</p>
+<h3>5.5 调研到的硬事实（留档）</h3>
+<ul>
+<li><strong>Renishaw 的标准器具是环规</strong>。手册原文：<em>"The probe is positioned inside a calibrated ring gauge"</em>；Z 参数可选，<em>"If this is omitted, a ring gauge cycle is assumed."</em> 环规侧壁竖直，高度问题不存在。</li>
+<li><strong>官方认可"已知位置一次做完"</strong>：<em>"If the calibration feature is accurately known for both size and position... it is then possible for you to write a program which completes the full calibration procedure in one operation."</em> → <strong>9805 就是这句话的特例</strong>。</li>
+<li><strong>存的是触发半径，不是实际球半径</strong>：<em>"stored radius values are based on the true electronic trigger points. These values are different from the physical sizes."</em></li>
+<li><strong>标定速度必须等于测量速度</strong>（预行程随速度变）。程序里标定用 <code class="notranslate">#119</code>（3000 mm/min），后续测量也用 <code class="notranslate">#119</code>。</li>
+<li><strong>DIN 5401 Grade 5</strong>：3～12 mm 球，直径公差 ±5.32 µm，球度 0.13 µm。</li>
+</ul>
+<hr>
+<h2>6. 使用方法</h2>
+<h3>6.1 准备</h3>
+<ol>
+<li>基准球吸在台面（或磁座）上，擦干净，<strong>不许有油、铁屑</strong>；</li>
+<li>用中心寻找规找 X / Y，精度到 1～2 µm 就够（球心误差会 1:1 进结果，所以别糊弄）；</li>
+<li>用块规 / 对刀块定球顶 Z，<code class="notranslate">球心 Z = 顶点 Z − Rs</code>；</li>
+<li>探针电池正常，测杆无弯曲，测球无粘屑。</li>
+</ol>
+<blockquote>
+<p>也可以把工件坐标系（G54）直接设在球心，这样调用时 <code class="notranslate">X Y Z</code> 全省略。</p>
+</blockquote>
+<h3>6.2 调用</h3>
+<div class="highlight highlight-source-gcode"><pre class="notranslate"><span class="pl-mb">G65</span> <span class="pl-sr">P9805</span> <span class="pl-c1">D25.000</span> <span class="pl-c1">T24</span> <span class="pl-c1">R1.500</span> <span class="pl-c1">U10</span></pre></div>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>字母</th>
+<th>含义</th>
+<th>省略时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">D</code></td>
+<td>基准球<strong>直径</strong></td>
+<td>必须给（报警 91）</td>
+</tr>
+<tr>
+<td><code class="notranslate">T</code></td>
+<td>刀补号</td>
+<td>必须给（报警 91）</td>
+</tr>
+<tr>
+<td><code class="notranslate">R</code></td>
+<td>名义<strong>测球半径</strong>（只定位，不计算）</td>
+<td>用旧触发半径</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q</code></td>
+<td>安全间隙 / 超程</td>
+<td>5 mm</td>
+</tr>
+<tr>
+<td><code class="notranslate">U</code></td>
+<td>粗触顶搜索深度（负值 = 关闭）</td>
+<td>10 mm</td>
+</tr>
+<tr>
+<td><code class="notranslate">K</code></td>
+<td>Δ 允许上限</td>
+<td>10 mm</td>
+</tr>
+<tr>
+<td><code class="notranslate">X Y Z</code></td>
+<td>球心坐标</td>
+<td>0（= 工件零点）</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>6.3 三种场景</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>场景</th>
+<th>建议写法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>首次校准</strong>（<code class="notranslate">#500=0</code>）</td>
+<td><code class="notranslate">G65P9805 D25. T24 R1.5</code></td>
+<td><code class="notranslate">R</code> 很重要，否则平面位置没依据</td>
+</tr>
+<tr>
+<td><strong>换测针</strong>（r 变化大）</td>
+<td><code class="notranslate">G65P9805 D25. T24 R1.5</code></td>
+<td>必须给新的 <code class="notranslate">R</code></td>
+</tr>
+<tr>
+<td><strong>日常复核</strong>（同一测针）</td>
+<td><code class="notranslate">G65P9805 D25. T24</code></td>
+<td>不给 <code class="notranslate">R</code>，用上次的 #500，行为与老版本完全一致</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p>因为第一次触球就在赤道（球最宽处），起测点到球面的余量只有 <code class="notranslate">Q − 球心偏差</code>。<br>
+<code class="notranslate">Q</code> 默认 5 mm，正常装夹偏差 &lt; 0.5 mm 时余量 4.5 mm，很安全；但如果你对球心坐标没把握<br>
+（比如第一次上这颗球、或者球是随手吸上去的），给 <code class="notranslate">Q10</code> 更稳。</p>
+</blockquote>
+<h3>6.4 结果判读</h3>
+<ul>
+<li><strong>连跑两遍</strong>，看 <code class="notranslate">#500</code> 两次的差：应 &lt; 2 µm。差得多 → 球没擦干净 / 球没固定 / 测杆松。</li>
+<li><code class="notranslate">#500</code> 与 <code class="notranslate">#501</code> 应非常接近（差 &lt; 2 µm），差太多说明测针本身有问题（杆弯了）。</li>
+<li><code class="notranslate">#502</code> / <code class="notranslate">#503</code> 与上次比不应有突变。</li>
+<li>想交叉验证：隔天再跑一次（同一测针、同一颗球），两次 <code class="notranslate">#500</code> 应一致在 1～2 µm 内。两次差得多，说明有东西在漂（球、测杆、温度），不是程序的问题。</li>
+</ul>
+<h3>6.5 排查表</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>现象</th>
+<th>先查什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>报警 93（没触到）</td>
+<td><code class="notranslate">R</code> 是否给太大；球是否放对位置；探针是否打开</td>
+</tr>
+<tr>
+<td>报警 95（偏心超限）</td>
+<td>球心 X/Y 坐标是否填错；球是否没吸牢</td>
+</tr>
+<tr>
+<td>报警 96（半径超范围）</td>
+<td><code class="notranslate">D</code> 是否填成半径；是否换错测针；V 是否接近 0</td>
+</tr>
+<tr>
+<td>半径偏大/偏小 0.1 mm 级</td>
+<td>球心 Z 是否测错（Δ 大了会连带）</td>
+</tr>
+<tr>
+<td>重复性差（&gt;5 µm）</td>
+<td>球面清洁、测针刚性、进给速度是否一致</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>6.6 适用范围与边界</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>适用</td>
+<td>三轴（主轴平行 Z），X / Y 两向触发半径 + 偏心 + 长度</td>
+</tr>
+<tr>
+<td>不适用</td>
+<td>5 轴 / 万向测头需要<strong>矢量表</strong>（<code class="notranslate">#510</code>~<code class="notranslate">#517</code>），本程序<strong>不写</strong>矢量</td>
+</tr>
+<tr>
+<td>测球尺寸</td>
+<td>半径门限 0.2～10 mm（即 D0.4～D20）。超出范围会被 96 误拦，需改门限</td>
+</tr>
+<tr>
+<td>球的要求</td>
+<td>必须刚性固定，运行中不能有位移；球面不许有油、屑、碰伤</td>
+</tr>
+<tr>
+<td>速度</td>
+<td>标定与后续测量都用 <code class="notranslate">#119</code>（3000 mm/min），<strong>不要</strong>为了"稳"而降速，否则预行程不一致</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<h2>7. 变更记录</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>日期</th>
+<th>变更</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-11-06</td>
+<td>建立 O9805（266 行）</td>
+<td>球心可独立测得，一次走完三步</td>
+</tr>
+<tr>
+<td>2026-11-06</td>
+<td>修正 V 未用实测球心的 bug</td>
+<td>Δ=3mm 时半径错 320 µm 且能通过防呆</td>
+</tr>
+<tr>
+<td>2026-11-06</td>
+<td>增加可选参数 <code class="notranslate">S</code> = 名义测球半径（279 行）</td>
+<td>换测针首次运行时平面定位与退让余量</td>
+</tr>
+<tr>
+<td>2026-11-06</td>
+<td><code class="notranslate">S</code> 改名 <code class="notranslate">R</code>，原 <code class="notranslate">R</code>（搜索深度）改名 <code class="notranslate">U</code></td>
+<td><code class="notranslate">R</code> 更容易联想到"半径"，<code class="notranslate">S</code> 易联想到坐标系</td>
+</tr>
+<tr>
+<td>2026-11-07</td>
+<td>删掉 0.5Rs 预对中，顺序改为"赤道四点 → 顶测"（279→252 行，10→6 次触发）</td>
+<td>中点 = 球心−测球偏心，与起测位置无关；<code class="notranslate">#144</code> 含该偏心，定位后测球球心正好落在球顶。预对中纯冗余；代价是平面基准由 <code class="notranslate">Δ长</code> 变 <code class="notranslate">Δ粗</code>，给 <code class="notranslate">R</code> 时残差 &lt; 1 µm</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p><strong>注意</strong>：<code class="notranslate">9801/9802/9803</code> 里的 <code class="notranslate">R</code> 是"退让距离"，与本程序的 <code class="notranslate">R</code>（测球半径）含义不同。三个程序互不调用，各自闭环。</p>
+</blockquote>
+<p><a href="https://github.com/user-attachments/files/34506860/9805.zip">基准球校准程序O9805.zip</a></p>
+<hr>
+<h2>附：一分钟自检清单</h2>
+<p>上机前问自己五个问题：</p>
+<ol>
+<li>球擦干净了吗？球吸牢了吗？</li>
+<li>球心 X / Y / Z 三个数，是<strong>测出来的</strong>还是<strong>估的</strong>？</li>
+<li><code class="notranslate">D</code> 填的是<strong>直径</strong>（不是半径）吗？</li>
+<li>换过测针吗？换过就给 <code class="notranslate">R</code>。</li>
+<li>跑完连跑第二遍，两次 <code class="notranslate">#500</code> 差多少？</li>
+</ol></div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://bk.929295.xyz">数控技术博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("08/09/2024"!=""){
+    var startSite=new Date("08/09/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","yingfanyu/yingfanyu.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
