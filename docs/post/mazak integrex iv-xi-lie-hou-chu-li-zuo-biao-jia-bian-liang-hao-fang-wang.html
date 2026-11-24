@@ -27,7 +27,7 @@
 <meta property="og:url" content="https://bk.929295.xyz/post/mazak%20integrex%20iv-xi-lie-hou-chu-li-zuo-biao-jia-bian-liang-hao-fang-wang.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
 <title>mazak integrex iv系列后处理坐标加变量号防忘</title>
-<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
 
 
 </head>
@@ -246,15 +246,17 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <h1>第 1 章 · 为什么要加这个变量号</h1>
 <h2>1.1 问题的起点：坐标是"死数"</h2>
 <p>后处理吐出来的坐标，原本都是<strong>写死的数值</strong>：</p>
-<div class="highlight highlight-source-gcode"><pre class="notranslate"><span class="pl-mb">G0</span> <span class="pl-s">X111.5</span> <span class="pl-s">Y0.0</span> Z62.
-<span class="pl-mb">G1</span> <span class="pl-s">X84.9138</span> <span class="pl-s">Y15.7205</span> <span class="pl-c1">F141.48</span></pre></div>
+<pre lang="gcode" class="notranslate"><code class="notranslate">G0 X111.5 Y0.0 Z62.
+G1 X84.9138 Y15.7205 F141.48
+</code></pre>
 <p>这个 <code class="notranslate">111.5</code> 是出程序那一刻从模型上算出来的。以后只要<strong>工件在机床上的位置和出程序时不一样</strong><br>
 （夹具换了一套、工件在转台上重新装夹、找正后差了几丝、托盘/工位换了），<br>
 坐标就得重新算、程序就得重新出、工件号就得重新对。</p>
 <h2>1.2 加变量号之后：数值 + 宏变量</h2>
 <p>FANUC 允许在地址后面直接用表达式（<code class="notranslate">[...]</code> 是宏程序的表达式括号），于是可以写成：</p>
-<div class="highlight highlight-source-gcode"><pre class="notranslate"><span class="pl-mb">G0</span> <span class="pl-s">X</span>[111.5<span class="pl-c1">+</span><span class="pl-smi">#646</span>] <span class="pl-s">Y</span>[0.0<span class="pl-c1">+</span><span class="pl-smi">#647</span>] Z62.
-<span class="pl-mb">G1</span> <span class="pl-s">X</span>[84.9138<span class="pl-c1">+</span><span class="pl-smi">#646</span>] <span class="pl-s">Y</span>[15.7205<span class="pl-c1">+</span><span class="pl-smi">#647</span>] <span class="pl-c1">F141.48</span></pre></div>
+<pre lang="gcode" class="notranslate"><code class="notranslate">G0 X[111.5+#646] Y[0.0+#647] Z62.
+G1 X[84.9138+#646] Y[15.7205+#647] F141.48
+</code></pre>
 <p>机床执行时，实际落点 = 后处理算出来的基准值 <strong>+</strong> <code class="notranslate">#646</code> 里当时的值。<br>
 <code class="notranslate">#646</code> 是<strong>公共宏变量</strong>（<code class="notranslate">#500</code> 以上断电保持），可以在机床侧随时改：</p>
 <ul>
@@ -569,105 +571,110 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <p>以下 4 段就是全部改动。位置见每段标题。<strong>改的是明文母本</strong>，改完再加密（见修订13）。</p>
 </blockquote>
 <h2>3.1 事件入口（<code class="notranslate">.tcl</code> 第 782–785 行）</h2>
-<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-k">proc</span> <span class="pl-en">MOM_add_variable</span> { } {
-<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
+<pre lang="tcl" class="notranslate"><code class="notranslate">proc MOM_add_variable { } {
+#=============================================================
    PB_CMD_add_variable_flag
-}</pre></div>
+}
+</code></pre>
 <blockquote>
 <p>说明：<code class="notranslate">MOM_&lt;事件名&gt;</code> 是 PB 的约定 —— <code class="notranslate">.pui</code> 里登记了 <code class="notranslate">add_variable → PB_CMD_add_variable_flag</code>，<br>
 PB 保存时就会把 <code class="notranslate">MOM_add_variable</code> 生成为"调用该命令"。<strong>这段其实不用手写</strong>，<br>
 在 PB 里登记好自己就会出现；手改 <code class="notranslate">.pui</code> 的话才需要补。</p>
 </blockquote>
 <h2>3.2 开关函数（<code class="notranslate">.tcl</code> 第 5802–5840 行，函数名 <code class="notranslate">PB_CMD_add_variable_flag</code>）</h2>
-<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-k">proc</span> <span class="pl-en">PB_CMD_add_variable_flag</span> { } {
-<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
-<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
-<span class="pl-c"><span class="pl-c">#</span> 【需求③】工序"开始事件"里加了 UDE "add_variable" 且状态为 Active 时，</span>
-<span class="pl-c"><span class="pl-c">#</span>           只对【本道工序】打开坐标宏开关；工序结束时由</span>
-<span class="pl-c"><span class="pl-c">#</span>           PB_CMD_collect_cutting_time 自动关闭。</span>
-<span class="pl-c"><span class="pl-c">#</span>   注意：NX 送进来的状态值是全大写 ACTIVE，所以做大小写无关判断。</span>
-<span class="pl-c"><span class="pl-c">#</span>   事件里可填 x_var / y_var 指定宏变量号；填 0 或不填则用默认公式：</span>
-<span class="pl-c"><span class="pl-c">#</span>       X -&gt; #600 + 刀号*5 - 4        Y -&gt; #600 + 刀号*5 - 3</span>
-<span class="pl-c"><span class="pl-c">#</span>=============================================================</span>
-   <span class="pl-k">global</span> mom_command_status
-   <span class="pl-k">global</span> mom_x_var mom_y_var
+<pre lang="tcl" class="notranslate"><code class="notranslate">proc PB_CMD_add_variable_flag { } {
+#=============================================================
+#=============================================================
+# 【需求③】工序"开始事件"里加了 UDE "add_variable" 且状态为 Active 时，
+#           只对【本道工序】打开坐标宏开关；工序结束时由
+#           PB_CMD_collect_cutting_time 自动关闭。
+#   注意：NX 送进来的状态值是全大写 ACTIVE，所以做大小写无关判断。
+#   事件里可填 x_var / y_var 指定宏变量号；填 0 或不填则用默认公式：
+#       X -&gt; #600 + 刀号*5 - 4        Y -&gt; #600 + 刀号*5 - 3
+#=============================================================
+   global mom_command_status
+   global mom_x_var mom_y_var
 
-   <span class="pl-k">set</span> st <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_command_status] } {
-      <span class="pl-k">set</span> st [<span class="pl-k">string</span> tolower [<span class="pl-k">string</span> trim <span class="pl-smi">$mom_command_status</span>]]
+   set st ""
+   if { [info exists mom_command_status] } {
+      set st [string tolower [string trim $mom_command_status]]
    }
 
-   <span class="pl-k">set</span> ::nc_addvar_on 0
-   <span class="pl-k">set</span> ::nc_x_var 0
-   <span class="pl-k">set</span> ::nc_y_var 0
+   set ::nc_addvar_on 0
+   set ::nc_x_var 0
+   set ::nc_y_var 0
 
-   <span class="pl-k">if</span> { [<span class="pl-k">lsearch</span> -exact {<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> inactive off no false disable disabled none} <span class="pl-smi">$st</span>] &lt; 0 } {
+   if { [lsearch -exact {"" inactive off no false disable disabled none} $st] &lt; 0 } {
 
-      <span class="pl-k">set</span> ::nc_addvar_on 1
+      set ::nc_addvar_on 1
 
-      <span class="pl-k">set</span> v 0
-      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_x_var] } { <span class="pl-k">regexp</span> <span class="pl-sr">{[0-9]+}</span> <span class="pl-smi">$mom_x_var</span> v }
-      <span class="pl-k">if</span> { <span class="pl-smi">$v</span> &gt; 0 } { <span class="pl-k">set</span> ::nc_x_var <span class="pl-smi">$v</span> }
+      set v 0
+      if { [info exists mom_x_var] } { regexp {[0-9]+} $mom_x_var v }
+      if { $v &gt; 0 } { set ::nc_x_var $v }
 
-      <span class="pl-k">set</span> v 0
-      <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_y_var] } { <span class="pl-k">regexp</span> <span class="pl-sr">{[0-9]+}</span> <span class="pl-smi">$mom_y_var</span> v }
-      <span class="pl-k">if</span> { <span class="pl-smi">$v</span> &gt; 0 } { <span class="pl-k">set</span> ::nc_y_var <span class="pl-smi">$v</span> }
+      set v 0
+      if { [info exists mom_y_var] } { regexp {[0-9]+} $mom_y_var v }
+      if { $v &gt; 0 } { set ::nc_y_var $v }
    }
 
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_dbg] &amp;&amp; <span class="pl-smi">$::nc_dbg</span> == 1 } {
-      MOM_output_literal <span class="pl-s"><span class="pl-pds">"</span>(DBGADD on=<span class="pl-smi">$::nc_addvar_on</span> x=<span class="pl-smi">$::nc_x_var</span> y=<span class="pl-smi">$::nc_y_var</span>)<span class="pl-pds">"</span></span>
+   if { [info exists ::nc_dbg] &amp;&amp; $::nc_dbg == 1 } {
+      MOM_output_literal "(DBGADD on=$::nc_addvar_on x=$::nc_x_var y=$::nc_y_var)"
    }
-}</pre></div>
+}
+</code></pre>
 <h2>3.3 输出前改写 —— <code class="notranslate">PB_CMD_before_output</code> 的 <strong>B 段</strong>（<code class="notranslate">.tcl</code> 第 5973–6008 行）</h2>
 <blockquote>
 <p>该 proc 从第 5931 行开始，A 段（5940–5971）是循环 R 值跟踪（需求②），<strong>一字未动</strong>。<br>
 下面是 B 段，紧跟在 A 段之后、<code class="notranslate">}</code> 之前。</p>
 </blockquote>
-<div class="highlight highlight-source-tcl"><pre class="notranslate">   <span class="pl-c"><span class="pl-c">#</span> ============ B. coord macro (UNCHANGED - rev6) ============</span>
-   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists ::nc_addvar_on] || <span class="pl-smi">$::nc_addvar_on</span> != 1 } { <span class="pl-k">return</span> }
-   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists mom_o_buffer] || [<span class="pl-k">string</span> length <span class="pl-smi">$mom_o_buffer</span>] == 0 } { <span class="pl-k">return</span> }
+<pre lang="tcl" class="notranslate"><code class="notranslate">   # ============ B. coord macro (UNCHANGED - rev6) ============
+   if { ![info exists ::nc_addvar_on] || $::nc_addvar_on != 1 } { return }
+   if { ![info exists mom_o_buffer] || [string length $mom_o_buffer] == 0 } { return }
 
-   <span class="pl-k">set</span> buf <span class="pl-smi">$mom_o_buffer</span>
+   set buf $mom_o_buffer
 
-   <span class="pl-k">if</span> { [<span class="pl-k">string</span> first <span class="pl-smi">$mom_sys_control_out</span> <span class="pl-smi">$buf</span>] &gt;= 0 } { <span class="pl-k">return</span> }
-   <span class="pl-k">if</span> { [<span class="pl-k">string</span> first <span class="pl-s"><span class="pl-pds">"</span>)<span class="pl-pds">"</span></span> <span class="pl-smi">$buf</span>] &gt;= 0 } { <span class="pl-k">return</span> }
-   <span class="pl-k">if</span> { [<span class="pl-k">regexp</span> <span class="pl-sr">{G(53|28|30|52|92|10|04|4|68)\M}</span> <span class="pl-smi">$buf</span>] } { <span class="pl-k">return</span> }
+   if { [string first $mom_sys_control_out $buf] &gt;= 0 } { return }
+   if { [string first ")" $buf] &gt;= 0 } { return }
+   if { [regexp {G(53|28|30|52|92|10|04|4|68)\M} $buf] } { return }
 
-   <span class="pl-k">set</span> tn 0
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists mom_tool_number] } {
-      <span class="pl-k">set</span> tn <span class="pl-smi">$mom_tool_number</span>
-      <span class="pl-k">if</span> { <span class="pl-smi">$tn</span> &gt; 100 } { <span class="pl-k">set</span> tn [<span class="pl-k">expr</span> {int(double(<span class="pl-smi">$tn</span>) / 100.0 + 0.5)}] }
+   set tn 0
+   if { [info exists mom_tool_number] } {
+      set tn $mom_tool_number
+      if { $tn &gt; 100 } { set tn [expr {int(double($tn) / 100.0 + 0.5)}] }
    }
-   <span class="pl-k">set</span> xn [<span class="pl-k">expr</span> {600 + <span class="pl-smi">$tn</span> * 5 - 4}]
-   <span class="pl-k">set</span> yn [<span class="pl-k">expr</span> {600 + <span class="pl-smi">$tn</span> * 5 - 3}]
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_x_var] &amp;&amp; <span class="pl-smi">$::nc_x_var</span> &gt; 0 } { <span class="pl-k">set</span> xn <span class="pl-smi">$::nc_x_var</span> }
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_y_var] &amp;&amp; <span class="pl-smi">$::nc_y_var</span> &gt; 0 } { <span class="pl-k">set</span> yn <span class="pl-smi">$::nc_y_var</span> }
+   set xn [expr {600 + $tn * 5 - 4}]
+   set yn [expr {600 + $tn * 5 - 3}]
+   if { [info exists ::nc_x_var] &amp;&amp; $::nc_x_var &gt; 0 } { set xn $::nc_x_var }
+   if { [info exists ::nc_y_var] &amp;&amp; $::nc_y_var &gt; 0 } { set yn $::nc_y_var }
 
-   <span class="pl-k">set</span> lx <span class="pl-smi">$mom_sys_leader(X)</span>
-   <span class="pl-k">set</span> ly <span class="pl-smi">$mom_sys_leader(Y)</span>
-   <span class="pl-k">set</span> n 0
+   set lx $mom_sys_leader(X)
+   set ly $mom_sys_leader(Y)
+   set n 0
 
-   <span class="pl-k">if</span> { [<span class="pl-k">string</span> length <span class="pl-smi">$lx</span>] &gt; 0 } {
-      <span class="pl-k">set</span> pat [<span class="pl-k">format</span> {%s(-?[0-9.]+)} <span class="pl-smi">$lx</span>]
-      <span class="pl-k">set</span> rep [<span class="pl-k">format</span> {%s[%s+#%s]} <span class="pl-smi">$lx</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\\</span>1<span class="pl-pds">"</span></span> <span class="pl-smi">$xn</span>]
-      <span class="pl-k">incr</span> n [<span class="pl-k">regsub</span> -all <span class="pl-sr"><span class="pl-smi">$pat</span></span> <span class="pl-smi">$buf</span> <span class="pl-smi">$rep</span> buf]
+   if { [string length $lx] &gt; 0 } {
+      set pat [format {%s(-?[0-9.]+)} $lx]
+      set rep [format {%s[%s+#%s]} $lx "\\1" $xn]
+      incr n [regsub -all $pat $buf $rep buf]
    }
-   <span class="pl-k">if</span> { [<span class="pl-k">string</span> length <span class="pl-smi">$ly</span>] &gt; 0 } {
-      <span class="pl-k">set</span> pat [<span class="pl-k">format</span> {%s(-?[0-9.]+)} <span class="pl-smi">$ly</span>]
-      <span class="pl-k">set</span> rep [<span class="pl-k">format</span> {%s[%s+#%s]} <span class="pl-smi">$ly</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\\</span>1<span class="pl-pds">"</span></span> <span class="pl-smi">$yn</span>]
-      <span class="pl-k">incr</span> n [<span class="pl-k">regsub</span> -all <span class="pl-sr"><span class="pl-smi">$pat</span></span> <span class="pl-smi">$buf</span> <span class="pl-smi">$rep</span> buf]
+   if { [string length $ly] &gt; 0 } {
+      set pat [format {%s(-?[0-9.]+)} $ly]
+      set rep [format {%s[%s+#%s]} $ly "\\1" $yn]
+      incr n [regsub -all $pat $buf $rep buf]
    }
 
-   <span class="pl-k">if</span> { <span class="pl-smi">$n</span> &gt; 0 } { <span class="pl-k">set</span> mom_o_buffer <span class="pl-smi">$buf</span> }</pre></div>
+   if { $n &gt; 0 } { set mom_o_buffer $buf }
+</code></pre>
 <p>同时，proc 开头的 <code class="notranslate">global</code> 清单（第 5933–5936 行）需要这几项：</p>
-<div class="highlight highlight-source-tcl"><pre class="notranslate">   <span class="pl-k">global</span> mom_o_buffer
-   <span class="pl-k">global</span> mom_sys_leader
-   <span class="pl-k">global</span> mom_sys_control_out
-   <span class="pl-k">global</span> mom_tool_number</pre></div>
+<pre lang="tcl" class="notranslate"><code class="notranslate">   global mom_o_buffer
+   global mom_sys_leader
+   global mom_sys_control_out
+   global mom_tool_number
+</code></pre>
 <h2>3.4 工序结束复位 —— <code class="notranslate">PB_CMD_collect_cutting_time</code> 末尾（<code class="notranslate">.tcl</code> 第 6382–6384 行）</h2>
-<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 【需求③】本道工序结束，关闭坐标宏开关，</span>
-   <span class="pl-c"><span class="pl-c">#</span>            防止污染后面没加 add_variable 事件的工序。</span>
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_addvar_on] } { <span class="pl-k">set</span> ::nc_addvar_on 0 }</pre></div>
+<pre lang="tcl" class="notranslate"><code class="notranslate"># 【需求③】本道工序结束，关闭坐标宏开关，
+   #            防止污染后面没加 add_variable 事件的工序。
+   if { [info exists ::nc_addvar_on] } { set ::nc_addvar_on 0 }
+</code></pre>
 <blockquote>
 <p>⚠ <strong>这里有一个真实缺陷，见第 5.7 节</strong> —— 该函数第 6347 行有一句<br>
 <code class="notranslate">if { ![info exists mom_tool_number] } { return }</code>，<strong>在复位之前</strong>。<br>
@@ -677,9 +684,10 @@ PB 保存时就会把 <code class="notranslate">MOM_add_variable</code> 生成�
 <hr>
 <h1>第 4 章 · 主要代码逐行解释</h1>
 <h2>4.1 <code class="notranslate">MOM_add_variable</code>（事件入口）</h2>
-<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-k">proc</span> <span class="pl-en">MOM_add_variable</span> { } {          ;<span class="pl-c"><span class="pl-c">#</span> NX 在工序里遇到 add_variable 这个 UDE 时调用的入口</span>
-   PB_CMD_add_variable_flag          ;<span class="pl-c"><span class="pl-c">#</span> 唯一动作：转交给开关函数</span>
-}</pre></div>
+<pre lang="tcl" class="notranslate"><code class="notranslate">proc MOM_add_variable { } {          ;# NX 在工序里遇到 add_variable 这个 UDE 时调用的入口
+   PB_CMD_add_variable_flag          ;# 唯一动作：转交给开关函数
+}
+</code></pre>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
@@ -882,7 +890,8 @@ PB 保存时就会把 <code class="notranslate">MOM_add_variable</code> 生成�
 把"即将落盘的那一行"里的工件坐标改写成"基准值 + 宏变量"的形式，<br>
 并且靠三条跳过规则（注释行 / 右括号行 / G 码黑名单）做到<strong>只改该改的</strong>。</p>
 <h2>4.4 复位那两行</h2>
-<div class="highlight highlight-source-tcl"><pre class="notranslate">   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_addvar_on] } { <span class="pl-k">set</span> ::nc_addvar_on 0 }</pre></div>
+<pre lang="tcl" class="notranslate"><code class="notranslate">   if { [info exists ::nc_addvar_on] } { set ::nc_addvar_on 0 }
+</code></pre>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
@@ -1015,25 +1024,27 @@ Tcl 里 proc 之间不共享局部变量，而"事件"和"每一行输出"分别
 但<strong>不要重新排列它们</strong>，也不要往 B 段里塞 A 段的逻辑。</p>
 <h2>5.7 ⚠ 已知缺陷：复位语句可能被跳过（建议修）</h2>
 <p><code class="notranslate">PB_CMD_collect_cutting_time</code> 的结构是：</p>
-<div class="highlight highlight-source-tcl"><pre class="notranslate"><span class="pl-k">proc</span> <span class="pl-en">PB_CMD_collect_cutting_time</span> { } {
+<pre lang="tcl" class="notranslate"><code class="notranslate">proc PB_CMD_collect_cutting_time { } {
    ...
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_new_tool_request] } { <span class="pl-k">set</span> ::nc_new_tool_request 0 }   ;<span class="pl-c"><span class="pl-c">#</span> ← 6345</span>
-   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists mom_tool_number] } { <span class="pl-k">return</span> }                              ;<span class="pl-c"><span class="pl-c">#</span> ← 6347 ★ 提前返回</span>
+   if { [info exists ::nc_new_tool_request] } { set ::nc_new_tool_request 0 }   ;# ← 6345
+   if { ![info exists mom_tool_number] } { return }                              ;# ← 6347 ★ 提前返回
    ... 累加切削时间 / 记刀号 / 记文本 ...
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_addvar_on] } { <span class="pl-k">set</span> ::nc_addvar_on 0 }                   ;<span class="pl-c"><span class="pl-c">#</span> ← 6384 复位</span>
-}</pre></div>
+   if { [info exists ::nc_addvar_on] } { set ::nc_addvar_on 0 }                   ;# ← 6384 复位
+}
+</code></pre>
 <p><strong>问题</strong>：一旦"本道工序没有 <code class="notranslate">mom_tool_number</code>"，第 6347 行就 <code class="notranslate">return</code>，<br>
 <strong>第 6384 行的复位永远不会执行</strong> → 开关残留 → <strong>下一道没加事件的工序也会被套上方括号</strong>。</p>
 <p><strong>风险高不高</strong>：实际出程序时 <code class="notranslate">End of Path</code> 几乎总是有刀号（工序都用刀），所以平时看不出来；<br>
 但这是一个"迟早会咬人"的隐患。</p>
 <p><strong>建议改法（把复位提到 <code class="notranslate">return</code> 之前）</strong>：</p>
-<div class="highlight highlight-source-tcl"><pre class="notranslate">   <span class="pl-c"><span class="pl-c">#</span> 【需求③】工序结束先关坐标宏开关（必须放在下面那句 return 之前！）</span>
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_addvar_on] } { <span class="pl-k">set</span> ::nc_addvar_on 0 }
+<pre lang="tcl" class="notranslate"><code class="notranslate">   # 【需求③】工序结束先关坐标宏开关（必须放在下面那句 return 之前！）
+   if { [info exists ::nc_addvar_on] } { set ::nc_addvar_on 0 }
 
-   <span class="pl-c"><span class="pl-c">#</span> 需求①保险：本道工序结束，把"本工序的 set_new_tool 标记"清掉</span>
-   <span class="pl-k">if</span> { [<span class="pl-k">info</span> exists ::nc_new_tool_request] } { <span class="pl-k">set</span> ::nc_new_tool_request 0 }
+   # 需求①保险：本道工序结束，把"本工序的 set_new_tool 标记"清掉
+   if { [info exists ::nc_new_tool_request] } { set ::nc_new_tool_request 0 }
 
-   <span class="pl-k">if</span> { ![<span class="pl-k">info</span> exists mom_tool_number] } { <span class="pl-k">return</span> }</pre></div>
+   if { ![info exists mom_tool_number] } { return }
+</code></pre>
 <blockquote>
 <p>需要我改的话说一声 —— 改完要重新走一遍"降 ni → 加密 → Deploy-TBC"的流程。</p>
 </blockquote>
