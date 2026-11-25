@@ -10,13 +10,13 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="# 防忘笔记：干涉实体与对向齿面点云的最小距离
+<meta name="description" content="# 点到干涉圆柱体最小距离计算 · 防忘笔记
 
-> 侧边开粗 F4 反解的核心一环。">
+> 配套表格：`点到干涉圆柱体的距离计算.xlsx`（Sheet1）。">
 <meta property="og:title" content="点到干涉圆柱体最小距离计算 · 防忘笔记">
-<meta property="og:description" content="# 防忘笔记：干涉实体与对向齿面点云的最小距离
+<meta property="og:description" content="# 点到干涉圆柱体最小距离计算 · 防忘笔记
 
-> 侧边开粗 F4 反解的核心一环。">
+> 配套表格：`点到干涉圆柱体的距离计算.xlsx`（Sheet1）。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://bk.929295.xyz/post/dian-dao-gan-she-yuan-zhu-ti-zui-xiao-ju-li-ji-suan-%20%C2%B7%20-fang-wang-bi-ji.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
@@ -87,250 +87,210 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><h1>防忘笔记：干涉实体与对向齿面点云的最小距离</h1>
+<div class="markdown-body" id="postBody"><h1>点到干涉圆柱体最小距离计算 · 防忘笔记</h1>
 <blockquote>
-<p>侧边开粗 F4 反解的核心一环。来源：C# <code class="notranslate">PathCore.cs</code> 的 <code class="notranslate">ToolDist</code> / <code class="notranslate">RoughClrAt3D</code>，已一字不差移植到 Excel VBA（<code class="notranslate">modF4Solver</code> 的 <code class="notranslate">Clr3</code>）。<br>
-一句话：<strong>把齿面撒成点云，逐点算"这个点到刀具实体有多远"，取最小值，就是当前加工角度 F4 下的间隙 g。F4 二分 40 次，让 g 收敛到 0.5 mm。</strong></p>
+<p>配套表格：<code class="notranslate">点到干涉圆柱体的距离计算.xlsx</code>（Sheet1）。本笔记按表内 A18:A39 的八步注释整理，并修正了注释中的笔误、标出了公式陷阱。</p>
 </blockquote>
-<hr>
-<h2>0. 问题背景</h2>
-<ul>
-<li>要选加工角度 F4，判据是：<strong>刀具实体离对向齿面恰好 0.5 mm</strong>（不撞刀、不留料）。</li>
-<li>齿面是曲面，刀具是有厚度、带圆角的圆盘，直接算"两个实体距离"很难。</li>
-<li>做法：把对向齿面撒成 <strong>1559 个点</strong>（只建一次，68 个刀路点共用），逐点算点到刀具实体的距离，取最小。</li>
-</ul>
-<hr>
-<h2>1. 刀具实体怎么建模</h2>
-<p>刀具不是薄片，是一枚<strong>圆角厚圆盘</strong>。相关尺寸（本算例）：</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>符号</th>
-<th>含义</th>
-<th>值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>R刀 = dia/2</td>
-<td>刀盘半径</td>
-<td>62.5 mm</td>
-</tr>
-<tr>
-<td>T = thick</td>
-<td>刀厚</td>
-<td>3.18 mm</td>
-</tr>
-<tr>
-<td>r = tipRc</td>
-<td>刃口圆角</td>
-<td>0.8 mm</td>
-</tr>
-<tr>
-<td>a = R刀 − r</td>
-<td><strong>内芯半径</strong>（径向去掉圆角）</td>
-<td>61.7 mm</td>
-</tr>
-<tr>
-<td>b = T/2 − r</td>
-<td><strong>内芯半厚</strong>（轴向去掉圆角）</td>
-<td>0.79 mm</td>
-</tr>
-<tr>
-<td>tipOffset</td>
-<td>工作刃相对刀心的轴向位置（可正可负）</td>
-<td>3.18 mm</td>
-</tr>
-<tr>
-<td>bodyOff</td>
-<td>干涉实体中心相对刀心的轴向偏置</td>
-<td>1.59 mm</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p><strong>关键坑 ①：<code class="notranslate">tipOffset</code> 不等于实际参与计算的偏置。</strong><br>
-工作刃恒在 <code class="notranslate">tipOffset</code>，实体朝刀心方向延伸一个刀厚，所以干涉实体的中心是：</p>
-<pre class="notranslate"><code class="notranslate">bodyOff = tipOffset − sign(tipOffset) · T/2
-</code></pre>
-<ul>
-<li>本例正刀 <code class="notranslate">tipOffset=+3.18</code> → <code class="notranslate">bodyOff = 3.18 − 1.59 = 1.59</code></li>
-<li>反刀 <code class="notranslate">tipOffset=−3.18</code> → <code class="notranslate">bodyOff = −3.18 + 1.59 = −1.59</code></li>
-<li>代码注释明确：早期写死 <code class="notranslate">tipOffset − T/2</code>，负刀时实体会多偏一个刀厚，间隙失真——已修正为带 <code class="notranslate">sign</code>。</li>
-</ul>
-<hr>
-<h2>2. 完整计算链（对一个点云点 P）</h2>
-<p>刀心 <code class="notranslate">O=(X,Y,Z)</code>，单位刀轴 <code class="notranslate">N=(I,J,K)</code>，点云点 <code class="notranslate">P=(px,py,pz)</code>。</p>
-<h3>第一步：向量分解</h3>
-<pre class="notranslate"><code class="notranslate">v  = P − O               点相对刀心的矢量
-ha = v · N               轴向投影（有正负）
-r  = v − ha·N            垂直于刀轴的分量
-d  = |r|                 点到刀轴线的垂距
-</code></pre>
-<ul>
-<li><strong>d 就是标准的"空间中点到直线的距离"</strong>，向量写法等价于 <code class="notranslate">|v × N|</code>（N 为单位矢量）。那条直线由"刀心 + 刀轴矢量"确定。</li>
-<li><strong>关键坑 ②：d 与 <code class="notranslate">bodyOff</code> 无关。</strong> 源码注释原话"垂距方向（与偏置无关）"——偏置沿刀轴平移，轴线还是那条线，垂距自然不变。偏置只进入轴向一路 <code class="notranslate">h = ha − bodyOff</code>。</li>
-</ul>
-<p>图2 向量分解求 d</p>
-<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/fc030949-e0f7-4f89-bd46-92cb6d70f6f0"><img width="1600" height="900" alt="fig2_vector_d" src="https://github.com/user-attachments/assets/fc030949-e0f7-4f89-bd46-92cb6d70f6f0" style="max-width: 100%; height: auto; max-height: 900px;; aspect-ratio: 1600 / 900; background-color: var(--bgColor-muted); border-radius: 6px" class="js-gh-image-fallback"></a></p>
-<h3>第二步：轴向坐标</h3>
-<pre class="notranslate"><code class="notranslate">h = ha − bodyOff         点相对"干涉实体中心"的轴向坐标（带符号）
-</code></pre>
-<h3>第三步：扣内芯，得超出量 dd / hh</h3>
-<pre class="notranslate"><code class="notranslate">dd = max(d − a, 0)       a = 61.7，径向超出内芯圆柱多少
-hh = max(|h| − b, 0)     b = 0.79，轴向超出内芯多少
-</code></pre>
-<ul>
-<li><strong>关键坑 ③：dd 不等于 d。</strong> dd 是 d 扣掉内芯半径后的"超出量"。点若落在 <code class="notranslate">d ≤ a</code>（投影在刀具端面内），径向这一项就是 0。</li>
-<li>同理 hh 是 |h| 扣掉内芯半厚后的超出量。</li>
-</ul>
-<p>图3 dd 与 hh 的计算</p>
-<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/6a45a8f4-c5d8-4f4b-b215-c64565bd0775"><img width="1600" height="900" alt="fig3_dd_hh" src="https://github.com/user-attachments/assets/6a45a8f4-c5d8-4f4b-b215-c64565bd0775" style="max-width: 100%; height: auto; max-height: 900px;; aspect-ratio: 1600 / 900; background-color: var(--bgColor-muted); border-radius: 6px" class="js-gh-image-fallback"></a></p>
-<h3>第四步：合成 + 补圆角</h3>
-<pre class="notranslate"><code class="notranslate">g = √(dd² + hh²) − r     圆角半径 r = 0.8
-</code></pre>
-<ul>
-<li>因为 dd、hh 都按<strong>内芯</strong>尺寸算，外缘那圈圆角要统一减 r 补回来。这是 CAD 里"圆角实体有向距离场（SDF）"的标准写法。</li>
-</ul>
-<h3>第五步：取最小</h3>
-<p>对 1559 个点都算 g，<strong>取最小值</strong>就是当前 F4 的间隙：</p>
-<pre class="notranslate"><code class="notranslate">g(F4) = min over all points of g_i
-</code></pre>
-<p>然后扫描定括号、二分 40 次，找 g = 0.5 的 F4。</p>
-<hr>
-<h2>3. 三种落位，一个公式通吃</h2>
-<p>最近点可能落在<strong>侧刃（只有 dd）</strong>、<strong>端刃（只有 hh）</strong>、<strong>圆角区（dd、hh 都有）</strong>。<code class="notranslate">√(dd²+hh²) − r</code> 一个式子自动覆盖三种，<strong>不需要判断落在哪一段</strong>：</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>落位</th>
-<th>dd</th>
-<th>hh</th>
-<th>本例距离 g</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>侧面外</td>
-<td>1.3907</td>
-<td>0</td>
-<td>0.5907 mm</td>
-</tr>
-<tr>
-<td>端面外</td>
-<td>0</td>
-<td>6.3367</td>
-<td>5.5367 mm</td>
-</tr>
-<tr>
-<td>圆角区（最近点）</td>
-<td>1.2591</td>
-<td>0.3236</td>
-<td><strong>0.5000 mm</strong></td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>图4 三种落位对照</p>
-<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/12b34a00-441a-45f1-9783-c47bb46034ae"><img width="1600" height="900" alt="fig4_three_cases" src="https://github.com/user-attachments/assets/12b34a00-441a-45f1-9783-c47bb46034ae" style="max-width: 100%; height: auto; max-height: 900px;; aspect-ratio: 1600 / 900; background-color: var(--bgColor-muted); border-radius: 6px" class="js-gh-image-fallback"></a></p>
-<hr>
-<h2>4. 本算例完整数字（对得住的答案）</h2>
-<p>取第一个刀路点 <code class="notranslate">s=16.7494</code>，解出 <code class="notranslate">F4=27.033208142613°</code>。最近点是点云第 <strong>11</strong> 号点，恰落圆角区：</p>
+<h2>一、已知量与符号约定</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
 <th>量</th>
-<th>值</th>
+<th>表格位置</th>
+<th>本例数值</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>刀心 O</td>
-<td>(74.2917, 45.2602, −35.5942)</td>
+<td>刀心点坐标 C（贴刀心那一刃）</td>
+<td>B3:D3</td>
+<td>(89.881894, 3.789083, −17.187633)</td>
 </tr>
 <tr>
-<td>刀轴 N</td>
-<td>(−0.20640, 0.68557, −0.69814)</td>
+<td>刀轴单位矢量 u = (i, j, k)</td>
+<td>G3:I3</td>
+<td>(0.455705, 0.881805, −0.12146)</td>
 </tr>
 <tr>
-<td>齿面点 P</td>
-<td>(25.6178, 10.7805, −55.7455)</td>
+<td>圆柱直径 D / 厚度 T / 棱圆角 r</td>
+<td>M3 / N3 / O3</td>
+<td>125 / 3.18 / 0.8</td>
 </tr>
 <tr>
-<td>v = P − O</td>
-<td>(−48.6739, −34.4797, −20.1513)</td>
+<td>偏置方向 s（正刀 +1，反刀 −1）</td>
+<td>P3</td>
+<td>−1（注释 A18 用的是 +1，见坑 4）</td>
 </tr>
 <tr>
-<td>ha = v·N</td>
-<td>0.4764</td>
-</tr>
-<tr>
-<td><strong>d = |r|</strong></td>
-<td><strong>62.9591</strong></td>
-</tr>
-<tr>
-<td>h = ha − bodyOff</td>
-<td>−1.1136</td>
-</tr>
-<tr>
-<td>dd = d − 61.7</td>
-<td>1.2591</td>
-</tr>
-<tr>
-<td>hh = |h| − 0.79</td>
-<td>0.3236</td>
-</tr>
-<tr>
-<td><strong>g = √(dd²+hh²) − 0.8</strong></td>
-<td><strong>0.500000000002</strong>（目标 0.5，收敛）</td>
+<td>点云点 P</td>
+<td>G7:I7</td>
+<td>(48.2872, 20.415958, −60.500537)</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
-<p>图1 空间关系</p>
-<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/aa04e6c4-1c5b-4060-a656-32a1014c20ca"><img width="1600" height="900" alt="fig1_3d_relation" src="https://github.com/user-attachments/assets/aa04e6c4-1c5b-4060-a656-32a1014c20ca" style="max-width: 100%; height: auto; max-height: 900px;; aspect-ratio: 1600 / 900; background-color: var(--bgColor-muted); border-radius: 6px" class="js-gh-image-fallback"></a></p>
-<hr>
-<h2>5. 代码位置速查</h2>
+<p>由尺寸推两个<strong>内芯</strong>参数（所有后续判据都基于它们，不是基于 R=62.5）：</p>
+<pre class="notranslate"><code class="notranslate">a = D/2 − r      = 125/2 − 0.8 = 61.7    ← 内芯半径（L7）
+b = (T − 2r)/2   = (3.18 − 1.6)/2 = 0.79  ← 内芯半高（M7）
+</code></pre>
+<p><strong>实体心</strong>：<code class="notranslate">C_ent = C + u · (s·T/2)</code>。即沿刀轴走"厚度一半 × 偏置方向"，s=+1 走 +1.59，s=−1 走 −1.59。</p>
+<h2>二、八步计算流程</h2>
+<p><strong>① 实体心</strong>（对应 A19:A21，s=+1 的值）</p>
+<pre class="notranslate"><code class="notranslate">x = 89.881894 + 0.455705×1×3.18/2 = 90.606465
+y = 3.789083  + 0.881805×1×3.18/2 = 5.191153
+z = −17.187633 + (−0.12146)×1×3.18/2 = −17.380754   （B7:D7）
+</code></pre>
+<p><strong>② 相对坐标</strong> <code class="notranslate">V = P − C_ent</code>（A23:A25）</p>
+<pre class="notranslate"><code class="notranslate">V = (−42.319265, 15.224805, −43.119783)   （B11:D11）
+</code></pre>
+<blockquote>
+<p>坑 1：A25 写成 <code class="notranslate">+43.1197</code>，实际是 <code class="notranslate">−60.5005 − (−17.3808) = −43.1197</code>。A27/A29 用的是负值，是对的。</p>
+</blockquote>
+<p><strong>③ 点到实体心的距离</strong> <code class="notranslate">D_v = |V|</code>（A27，F11）</p>
+<pre class="notranslate"><code class="notranslate">D_v = √(42.319265² + 15.224805² + 43.119783²) = 62.305943
+</code></pre>
+<p><strong>④ 轴向距离</strong> <code class="notranslate">h = V·u</code>（A29，B14）</p>
+<pre class="notranslate"><code class="notranslate">h = −42.3193×0.455705 + 15.2248×0.881805 + (−43.1198)×(−0.12146)
+  = −0.622463
+</code></pre>
+<p>u 是单位矢量，所以点积直接是 mm，不用再除 |u|。</p>
+<p><strong>⑤ 到刀轴垂距</strong> <code class="notranslate">d</code>（A30，D14）</p>
+<pre class="notranslate"><code class="notranslate">d = √(D_v² − h²) = √(62.305943² − 0.622463²) = 62.302834
+</code></pre>
+<blockquote>
+<p>坑 6：勾股反推依赖 |u|=1，本表 J3=0.9999998 并非严格 1。严谨写法（与代码一致）是正交分解：<br>
+<code class="notranslate">d = √((Vx−h·i)² + (Vy−h·j)² + (Vz−h·k)²)</code></p>
+</blockquote>
+<p><strong>⑥ 内芯半径/半高</strong> → a=61.7、b=0.79（A32:A33，L7/M7）</p>
+<p><strong>⑦ dd 与 hh</strong>（A35:A36，F14/G14）——都做了 max(·,0) 钳位</p>
+<pre class="notranslate"><code class="notranslate">dd = max(d − a, 0)      = max(62.302834 − 61.7, 0) = 0.602834
+hh = max(|h| − b, 0)    = max(0.622463 − 0.79, 0)  = 0
+</code></pre>
+<p><strong>⑧ 最小距离 L</strong>（A38:A39，I14/L14）——见下一节。本例 I14=L14=−0.197166。</p>
+<h2>三、两套公式与适用条件（最容易忘）</h2>
+<p><strong>公式①（I14，通用精确式）</strong></p>
+<pre class="notranslate"><code class="notranslate">L = √(dd² + hh²) − r
+</code></pre>
+<p>点在实体外或圆角/侧面/端面壳层内时，<strong>这就是精确最小距离</strong>，无需分区。</p>
+<blockquote>
+<p>坑 2：A38 写成 <code class="notranslate">√(dd²+hh²) + 0.8</code>，"+"是笔误，应为 <code class="notranslate">− 0.8</code>（结果 −0.197166 是对的）。</p>
+</blockquote>
+<p><strong>公式②（L14，注释里当成备用式）</strong></p>
+<pre class="notranslate"><code class="notranslate">L = SIGN(I14) · ( r + min(a − d, b − |h|) )
+</code></pre>
+<blockquote>
+<p>坑 3：A39 注释称此式"只有到轴线距离＜内芯半径时适用"。本例 d=62.30 <strong>大于</strong> a=61.7，并不满足该前提，公式却碰巧给出了正确值。这个适用条件写错了。</p>
+</blockquote>
+<p><strong>公式②的真实适用范围</strong>（推导：把 min 的两种取值代回）</p>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
-<th>内容</th>
-<th>C#</th>
-<th>Python / Excel</th>
+<th>点所在区域</th>
+<th>L14 是否等于精确值</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>点到刀具距离 <code class="notranslate">ToolDist</code></td>
-<td><code class="notranslate">PathCore.cs:1612-1626</code></td>
-<td><code class="notranslate">solve_f4_verify.py:clr3</code> / VBA <code class="notranslate">Clr3</code></td>
+<td>芯部内（d≤a 且 |h|≤b）</td>
+<td>✓ 等于 −(r+min)，即精确侵入深度</td>
 </tr>
 <tr>
-<td>实体中心 <code class="notranslate">bodyOff</code></td>
-<td><code class="notranslate">PathCore.cs:1767</code></td>
-<td><code class="notranslate">case_3d.json:tool.body_center</code></td>
+<td>仅径向超出（d&gt;a、|h|≤b）</td>
+<td>✓ 退化成 I14</td>
 </tr>
 <tr>
-<td>间隙主循环 <code class="notranslate">RoughClrAt3D</code></td>
-<td><code class="notranslate">PathCore.cs:1757-1771</code></td>
-<td><code class="notranslate">solve_f4_verify.py:clr3</code></td>
+<td>仅轴向超出（d≤a、|h|&gt;b）</td>
+<td>✓ 退化成 I14</td>
 </tr>
 <tr>
-<td>对向齿面点云 <code class="notranslate">RoughOppSurface</code></td>
-<td><code class="notranslate">PathCore.cs:1641+</code></td>
-<td><code class="notranslate">build_cloud</code></td>
+<td>双超出圆角区（d&gt;a 且 |h|&gt;b）</td>
+<td>✗ 不等于 √(dd²+hh²)−r</td>
 </tr>
 <tr>
-<td>求解 <code class="notranslate">SolveRoughF4</code></td>
-<td><code class="notranslate">PathCore.cs:1730+</code></td>
-<td>VBA <code class="notranslate">modF4Solver</code>（532 行）</td>
+<td>实体外部</td>
+<td>✗ <strong>符号会反过来</strong>（给出负值）</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
-<p><strong>现象备忘</strong>：C# 里 <code class="notranslate">Math.Sqrt(负数)=NaN</code>，Python 里会抛异常，移植时必须加 <code class="notranslate">max(inner,0)</code> 保护；F4 求解遇到 NaN 要降级处理（三维判据失败时退回平面判据 / 上下限兜底）。</p>
-<hr>
-<h2>6. 一句话记忆</h2>
-<blockquote>
-<p><strong>v 拆两半：垂距 d、轴向 h；各自扣内芯（d−61.7、|h|−0.79）得 dd、hh；合成开根再减圆角 0.8，1559 点取最小，二分调 F4 到 0.5。</strong><br>
-d 用点到轴线投影公式、与偏置无关；dd 是扣完半径的超出量，别和 d 混。</p>
-</blockquote></div>
+<p>实测反例：把 P3 改成 −1 时，d=62.3028、|h|=2.5575（双超出且点在实体外），I14=<strong>+1.067510</strong> 正确，而 L14=<strong>−0.967536</strong> 错误。</p>
+<p><strong>结论：日常只用公式①就够了。</strong> 只有需要"点在芯部内时的真实侵入深度"才用精确统一式：</p>
+<pre class="notranslate"><code class="notranslate">L_exact = IF( AND(d&lt;=a, |h|&lt;=b),
+              −( r + MIN(a−d, b−|h|) ),       ← 芯部内，精确侵入深度
+              √(dd²+hh²) − r )                 ← 其余，精确距离
+</code></pre>
+<p>表内 <code class="notranslate">点到干涉圆柱体的距离计算_修正版.xlsx</code> 的 J14 已是这个式子，K14 给出它与 I14 的差值。</p>
+<h2>四、最高频的 6 个坑（速记）</h2>
+<ol>
+<li><strong>z 相对坐标符号</strong>：<code class="notranslate">P_z − C_z</code> 两负相减得负，别漏负号（A25）。</li>
+<li><strong>A38 的 "+"</strong>：是 <code class="notranslate">− r</code> 不是 <code class="notranslate">+ r</code>。</li>
+<li><strong>A39 的适用条件</strong>：写反了，公式②不是给"d&lt;a"用的；点在实体外时它会给错符号。</li>
+<li><strong>偏置方向符号</strong>：注释 A18:A21 按 s=+1 写，表格 P3=−1。改 s 时实体心整体沿 u 移 T=3.18 mm，点没动，h 会变，判据结果也随之变——这不是算错。</li>
+<li><strong>钳位值 −0.8 不是实测深度</strong>：<code class="notranslate">ToolDist</code> 在芯部内把距离钳成 −r，真实侵入深度是 <code class="notranslate">−(r+min(a−d,b−|h|))</code>。本例 s=+1 时两者恰好都是 −0.1972，是因为点在壳层内；只有在芯部内两者才有差别。</li>
+<li><strong>d 用正交分解更稳</strong>：勾股反推 <code class="notranslate">√(D_v²−h²)</code> 依赖刀轴严格单位化；本表 J3≈0.9999998，有微小误差。</li>
+</ol>
+<h2>五、Excel 单元格速查</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>步骤</th>
+<th>单元格</th>
+<th>公式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>实体心</td>
+<td>B7:D7</td>
+<td><code class="notranslate">=B3+G3*(N3*P3/2)</code> 等三列</td>
+</tr>
+<tr>
+<td>相对坐标</td>
+<td>B11:D11</td>
+<td><code class="notranslate">=G7-B7</code> 等</td>
+</tr>
+<tr>
+<td></td>
+<td>F11</td>
+<td><code class="notranslate">=SQRT(B11^2+C11^2+D11^2)</code></td>
+</tr>
+<tr>
+<td>轴向距离 h</td>
+<td>B14</td>
+<td><code class="notranslate">=B11*G3+C11*H3+D11*I3</code></td>
+</tr>
+<tr>
+<td>垂距 d</td>
+<td>D14</td>
+<td><code class="notranslate">=SQRT((B11-B14*G3)^2+(C11-B14*H3)^2+(D11-B14*I3)^2)</code>（修正版写法）</td>
+</tr>
+<tr>
+<td>内芯 a / b</td>
+<td>L7 / M7</td>
+<td><code class="notranslate">=M3/2-O3</code> / <code class="notranslate">=(N3-O3*2)/2</code></td>
+</tr>
+<tr>
+<td>dd / hh</td>
+<td>F14 / G14</td>
+<td><code class="notranslate">=IF(D14-L7&gt;0,D14-L7,0)</code> / <code class="notranslate">=IF(ABS(B14)-M7&gt;0,ABS(B14)-M7,0)</code></td>
+</tr>
+<tr>
+<td>判据 L（钳位）</td>
+<td>I14</td>
+<td><code class="notranslate">=SQRT(F14^2+G14^2)-O3</code></td>
+</tr>
+<tr>
+<td>精确 L（不钳位）</td>
+<td>J14（修正版）</td>
+<td><code class="notranslate">=IF(AND(D14&lt;=L7,ABS(B14)&lt;=M7),-(O3+MIN(L7-D14,M7-ABS(B14))),I14)</code></td>
+</tr>
+<tr>
+<td>两口径差值</td>
+<td>K14（修正版）</td>
+<td><code class="notranslate">=J14-I14</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><code class="notranslate">clamp</code> 若要在 Excel 里限位：<code class="notranslate">=MAX(-b, MIN(h, b))</code> 或 <code class="notranslate">=MEDIAN(-b, h, b)</code>。</p>
+<p><a href="https://github.com/user-attachments/files/35395613/_.xlsx">点到干涉圆柱体的距离计算_修正版.xlsx</a></p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
