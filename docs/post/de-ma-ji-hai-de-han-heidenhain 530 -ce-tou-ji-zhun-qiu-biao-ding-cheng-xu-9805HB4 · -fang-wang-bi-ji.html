@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# 9805HB4 测头标定 · 防忘笔记讲解及对比
+
+> 机器：iTNC 530 / TCH PROBE 0（手动探测循环）
+> 程序：`9805HB4.H`（316 行，0–315），机上实测通过版
+> 这份笔记解决一个问题：**三个月后你还会不会记得为什么这么写。">
+<meta property="og:title" content="德马吉海德汉heidenhain 530 测头基准球标定程序9805HB4 · 防忘笔记">
+<meta property="og:description" content="# 9805HB4 测头标定 · 防忘笔记讲解及对比
+
+> 机器：iTNC 530 / TCH PROBE 0（手动探测循环）
+> 程序：`9805HB4.H`（316 行，0–315），机上实测通过版
+> 这份笔记解决一个问题：**三个月后你还会不会记得为什么这么写。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://bk.929295.xyz/post/de-ma-ji-hai-de-han-heidenhain%20530%20-ce-tou-ji-zhun-qiu-biao-ding-cheng-xu-9805HB4%20%C2%B7%20-fang-wang-bi-ji.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>德马吉海德汉heidenhain 530 测头基准球标定程序9805HB4 · 防忘笔记</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">德马吉海德汉heidenhain 530 测头基准球标定程序9805HB4 · 防忘笔记</h1>
+<div class="title-right">
+    <a href="https://bk.929295.xyz" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/yingfanyu/yingfanyu.github.io/issues/74" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>9805HB4 测头标定 · 防忘笔记讲解及对比</h1>
+<blockquote>
+<p>机器：iTNC 530 / TCH PROBE 0（手动探测循环）<br>
+程序：<code class="notranslate">9805HB4.H</code>（316 行，0–315），机上实测通过版<br>
+这份笔记解决一个问题：<strong>三个月后你还会不会记得为什么这么写。</strong></p>
+</blockquote>
+<blockquote>
+<p><strong>有一个大坑：校准前刀具表内的xy偏心应该都清除掉，带着刀具表内的偏心和角度进行校准的时候，测头中心的位置是错误的，导致最后的测量结果有误。FN 17: SYSWRITE ID 50 NR24 =0(清除X偏心),FN 17: SYSWRITE ID 50 NR25 =0(清除Y偏心),FN 17: SYSWRITE ID 50 NR26 =0(清除手动环规校准自动输入的角度)。刀具表内的偏心的意思是在测头在该角度下的XY偏心</strong></p>
+</blockquote>
+<hr>
+<h2>0. 一句话</h2>
+<p>一次装夹、10 次触发，把一根测针的 <strong>球半径 r、长度 L、偏心 Ex/Ey</strong> 全部量出来并写回刀具表；<br>
+表里原来填的是 0、0.2、5 mm 甚至负数，<strong>跑一趟就正</strong>，不用跑第二趟。</p>
+<pre class="notranslate"><code class="notranslate">输出四件套：  Q80 = r      Q81 = |E|      Q82/Q83 = Ex/Ey      Q84 = L
+写回刀表：    NR2(R)  NR1(L)  NR24(Ex)  NR25(Ey)
+</code></pre>
+<hr>
+<h2>1. 校准原理</h2>
+<h3>1.1 谁是谁：一个已知 + 四个未知</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>量</th>
+<th>符号</th>
+<th>大小</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基准球直径</td>
+<td>D = Q1</td>
+<td>25 mm（千分尺量过）</td>
+<td>输入</td>
+</tr>
+<tr>
+<td>基准球半径</td>
+<td>RS = Q20 = Q1/2</td>
+<td>12.5</td>
+<td>派生</td>
+</tr>
+<tr>
+<td>测球半径</td>
+<td><strong>r</strong></td>
+<td>≈ 0.963</td>
+<td><strong>要标定</strong></td>
+</tr>
+<tr>
+<td>测针长度</td>
+<td><strong>L</strong></td>
+<td>几十 mm</td>
+<td><strong>要标定</strong></td>
+</tr>
+<tr>
+<td>测球偏心</td>
+<td><strong>Ex / Ey</strong></td>
+<td>几十 µm</td>
+<td><strong>要标定</strong></td>
+</tr>
+<tr>
+<td>球心到测球中心距离</td>
+<td>A = RS + r</td>
+<td>≈ 13.463</td>
+<td>中间量</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>注意：<code class="notranslate">Q1</code> 是<strong>基准球</strong>直径（25 mm），不是测球直径。整个程序里 <code class="notranslate">RS = 12.5</code> 都是基准球半径。</p>
+<h3>1.2 第一个坑：<code class="notranslate">0.1</code> 行填的是"触点"，不是"逼近点"</h3>
+<pre class="notranslate"><code class="notranslate">TCH PROBE 0.0 REF. PLANE Q50 X+     ← 结果参数
+TCH PROBE 0.1  X+Q33  Y+Q7  Z+Q30   ← 名义触点坐标
+</code></pre>
+<p><code class="notranslate">TCH PROBE 0.1</code> 里给的是<strong>理论上触球的那一点</strong>（球面极点）。循环拿到它之后，<strong>自己会沿探测方向再让开一个"刀具半径"</strong>（用刀表 R）才走。所以：</p>
+<ul>
+<li>填 <code class="notranslate">Q33 = Q6 − RS</code>（球面左极点）→ 对。</li>
+<li>填 <code class="notranslate">Q29</code>/<code class="notranslate">Q25</code>（之前算的预定位）→ 循环会<strong>再多让一个半径</strong>，站位比触点还靠里，等于预设了一个错位置，量出来的东西带固定偏置。</li>
+<li><strong>不要把 r 再加到 0.1 行上</strong>，循环已经加过一次了。</li>
+</ul>
+<h3>1.3 第二个坑：侧触平面永远不在赤道上</h3>
+<p>粗触顶（第 1 次触发）的结果 <code class="notranslate">Q60</code> 是循环用<strong>刀表 R</strong> 折算出来的"假定触点"：</p>
+<pre class="notranslate"><code class="notranslate">Q60 = 球心Z + RS + (r − R表)          ← 循环减掉的是表 R，不是真 r
+Q30 = Q60 − RS = 球心Z + (r − R表)    ← 四根侧面触针的 Z 高度
+</code></pre>
+<p><strong>所以平面高度 w = r − R表，永远在赤道上方（或下方）</strong>，不是赤道。</p>
+<p>实测那一次：表 R 填 0.2、真 r = 0.963 → w = 0.763 mm，四个侧触点全在赤道<strong>上方 0.763</strong>。<br>
+这就是为什么"半径输 0.2，跑完小了 0.02 多"——半宽量到的是一根<strong>弦</strong>，不是直径。</p>
+<h3>1.4 第三个坑：半宽是弦长 —— 闭式解的由来</h3>
+<p>侧触瞬间，测球中心 P 到球心 C 的距离<strong>恒等于 A = RS + r</strong>（球尖永远贴在球面上）。<br>
+平面高度 w 已知（w = r − R表），所以水平投影（就是半宽 m）：</p>
+<pre class="notranslate"><code class="notranslate">m² = A² − w²
+</code></pre>
+<p>又因为 <code class="notranslate">w = r − R表 = (RS + r) − (RS + R表) = A − K</code>，其中 <code class="notranslate">K = RS + R表</code>：</p>
+<pre class="notranslate"><code class="notranslate">m² = A² − (A − K)² = 2KA − K²
+→  A = (m² + K²) / (2K)          ← 程序 218–229 行就是这四步
+→  r = A − RS
+</code></pre>
+<p>这就是 9805HB4 半径块的全部。<strong>K 必须用表 R</strong>，因为循环就是拿表 R 补的；用真 r 去凑反而不自洽。</p>
+<p>验算（表 R = 0.2，真 r = 0.963）：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>步骤</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A = RS + r</td>
+<td>13.463</td>
+</tr>
+<tr>
+<td>w = r − R表</td>
+<td>0.763</td>
+</tr>
+<tr>
+<td>m = √(A² − w²)</td>
+<td>13.4413</td>
+</tr>
+<tr>
+<td>老公式 <code class="notranslate">r = m − RS</code></td>
+<td><strong>0.9413（−21.7 µm）</strong> ← 你测到的"小 0.02 多"</td>
+</tr>
+<tr>
+<td>新公式 <code class="notranslate">A = (m²+K²)/2K</code></td>
+<td>13.4630 → <strong>r = 0.9630（0 µm）</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>球心还输偏了 2 mm 那一次：老公式 0.8058（−157 µm，你看到的"0.8 多"），新公式 0.9632（+0.2 µm）。</p>
+<blockquote>
+<p>一句话记住：<strong><code class="notranslate">r = m − RS</code> 只在"平面正好过赤道且球心正好准"时成立；两个条件在这台机上都不成立，所以必须解方程。</strong></p>
+</blockquote>
+<h3>1.5 球心偏了怎么办：0° 与 180° 对劈</h3>
+<p>偏心 E 的定义：测球中心相对主轴轴线偏了 (Ex, Ey)。</p>
+<p><code class="notranslate">Cycle 0</code> 在每次触发前，会把刀表 24/25 列按当前主轴角度投影后<strong>加进触发坐标</strong>。所以读回来的"球心"是：</p>
+<pre class="notranslate"><code class="notranslate">Q63 = C + e − E = C − (E − e)      ← 0°：表值 e 与真实 E 之差
+Q65 = C − e + E = C + (E − e)      ← 180°：投影反向
+</code></pre>
+<ul>
+<li>两个一劈：<code class="notranslate">Q82 = (Q65 − Q63)/2 = E − e</code>（<strong>残差</strong>），<code class="notranslate">Q86 = Q63 + Q82 = C</code> —— 恒等于真球心，<strong>与表里 e 填什么无关</strong>（199–200 行）</li>
+<li>半宽相反：两下是<strong>等量平移</strong>，在差值里自己抵消，所以 <code class="notranslate">MX = (Q51−Q50)/2</code> 与偏心无关 ✔</li>
+</ul>
+<blockquote>
+<p>注意区分两个 E：<code class="notranslate">Q81</code> 是<strong>残差模长</strong>（表里校正量之外还剩多少），不是绝对偏心。表里已经准了，<code class="notranslate">Q81</code> 就该接近 0。</p>
+</blockquote>
+<p><strong>Q12 = 0 时没有 180° 那一组</strong>，只能拿你输入的 <code class="notranslate">Q6/Q7</code> 当真球心。此时：<br>
+球心偏 d0 ⟹ r 的误差 ≈ d0²/(2·A)，2 mm 就吃掉 150 µm。<strong>所以 Q12=0 只能用于"球心已经确认准"的复查场合。</strong></p>
+<h3>1.6 偏心为什么必须"增量写"</h3>
+<p>24/25 列的语义是<strong>校正量</strong>，不是"实测偏心"：循环会把它加回去。所以写绝对值 = 把残差当新值，</p>
+<pre class="notranslate"><code class="notranslate">增益 = −1  ⟹  每跑一次符号翻一次，永远不收敛
+</code></pre>
+<p>实测证据：填 +0.5 / +0.5，跑一趟变成 <strong>−0.4986 / −0.5111</strong>（≈ −输入），第二趟又翻回来。</p>
+<p>改成<strong>增量</strong>：</p>
+<pre class="notranslate"><code class="notranslate">新值 = 旧值 + 残差      （290–291 行：Q43 = Q45 + Q82）
+</code></pre>
+<p>一趟到位，第二趟残差 ≈ 0，不再动。这是整个程序里最容易忘、也最要命的一条。</p>
+<h3>1.7 为什么 R 必须先写表，再测 L</h3>
+<p>极点触顶的结果同样是"假定触点"：</p>
+<pre class="notranslate"><code class="notranslate">Q73 = 球心Z + RS + (r − R表)
+Q76 = Q73 − Q19 = ΔL + (r − R表)
+</code></pre>
+<ul>
+<li><strong>先写 R</strong>（259–260 行）→ 表 R 此时已经等于测得的 r → <code class="notranslate">(r − R表) ≈ 0</code> → <code class="notranslate">Q76</code> 就是纯 ΔL → <code class="notranslate">Q84 = L + ΔL</code>，一次到位。</li>
+<li><strong>若先测 L 再写 R</strong> → 必须补 <code class="notranslate">(r − R表)</code> 这一项，老版本的 <code class="notranslate">Q77 = Q80 − Q2</code> 就是补它；两个顺序配套，删了一个就必须改另一个。</li>
+</ul>
+<p>这也是为什么表格 R 填错 0.7 时，老版本"第一趟 L 短 0.7、第二趟自己回来"——那是 <code class="notranslate">Q77</code> 多减了一次，不是机床的毛病。</p>
+<h3>1.8 L 的基准：Q8 是"1:1"进来的</h3>
+<p><code class="notranslate">Q19 = Q8 + RS</code> 是球顶名义 Z，<code class="notranslate">Q76 = Q73 − Q19</code>。所以 <strong>Q8 差多少，L 就差多少，一阶线性，没有平方项</strong>。<br>
+Q8 必须来自量块/对刀仪的实测球心 Z，不能"看着差不多"。这也是唯一一个输入错了会让整台机床 Z 偏掉的参数。</p>
+<hr>
+<h2>2. 实现方法</h2>
+<h3>2.1 主流程</h3>
+<pre class="notranslate"><code class="notranslate">                      ┌─ 输入 Q1 Q3 Q4 Q5 Q6 Q7 Q8 Q12
+                      ├─ 读刀表 L R DL DR（无 IDX = 当前刀）
+                      ├─ L &lt; 5 ? ──是──▶ LBL902  Q91=-3 停
+                      └─ 派生 RS / 球顶 / 站位 / 触点坐标
+                                  │
+                 CYCL DEF 13.1 ANGLE0 + M19   ← 主轴先归 0°
+                                  │
+                        ① 粗触顶 Z−（Q60）→ Q30 = Q60 − RS 定平面
+                                  │
+            ② 0°  X+ X− Y+ Y−    → Q50 Q51 Q52 Q53
+                                  │
+                  Q12 &gt; 0.5 ? ──否──▶ Q54..Q57 = Q50..Q53 跳过 180°
+                                  │是
+                 CYCL DEF 13.1 ANGLE180 + M19 + MP6161=0
+            ③ 180° X+ X− Y+ Y−   → Q54 Q55 Q56 Q57
+                 ANGLE0 + M19 + MP6161=19  ← 恢复原值
+                                  │
+              半宽 → 球心 → 偏心 → 真球心(Q86/Q87)
+                                  │
+             判分裂 Q91=−2（仅 Q12=1 且 Q81&lt;0.01）
+                                  │
+                      闭式解 r（Q80）
+                                  │
+               r&gt;10 或 r&lt;0 ? ──是──▶ LBL902  Q91=-3 停
+                                  │否
+                       写 R（NR2）  ← 必须先写
+                                  │
+            读 24/25 → 真极点 Q37/Q38 → ④ 极点触顶 Z−（Q73）
+                                  │
+                  Q73 还是 99999 ? ──是──▶ LBL903  Q91=-4 停
+                                  │否
+                       Q76 = Q73 − Q19 = ΔL → 写 L（NR1）
+                                  │
+               Q91 ≥ 0.5 ? ──否──▶ 跳过偏心写
+                                  │是
+                  Q43/Q44 = 旧 + 残差 → 范围检查 → 写 NR24/25
+                                  │
+                        L Z+Q5 → M0（看数）→ M30
+</code></pre>
+<h3>2.2 九段与行号索引</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>段</th>
+<th>行号</th>
+<th>干什么</th>
+<th>关键量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入</td>
+<td>22–30</td>
+<td>调刀、给 8 个输入</td>
+<td>Q1 Q3 Q4 Q5 Q6 Q7 Q8 Q12</td>
+</tr>
+<tr>
+<td>读刀</td>
+<td>32–37</td>
+<td>读 L R DL DR，算有效值</td>
+<td>Q2 Q11 Q15 Q16</td>
+</tr>
+<tr>
+<td>L 闸门</td>
+<td>39–40</td>
+<td>L&lt;5 当空列，直接停</td>
+<td>Q95</td>
+</tr>
+<tr>
+<td>派生</td>
+<td>42–57</td>
+<td>RS、球顶、站位、触点</td>
+<td>Q19–Q36</td>
+</tr>
+<tr>
+<td>定向</td>
+<td>61–63</td>
+<td>主轴归 0°</td>
+<td>—</td>
+</tr>
+<tr>
+<td>粗触顶</td>
+<td>65–74</td>
+<td>找平面</td>
+<td>Q60 → Q30</td>
+</tr>
+<tr>
+<td>0° 四向</td>
+<td>76–102</td>
+<td>量两根弦</td>
+<td>Q50–Q53</td>
+</tr>
+<tr>
+<td>180° 段</td>
+<td>104–152</td>
+<td>换向再量（含 MP6161 两句）</td>
+<td>Q54–Q57</td>
+</tr>
+<tr>
+<td>计算</td>
+<td>154–245</td>
+<td>半宽→球心→偏心→r</td>
+<td>Q58–Q98</td>
+</tr>
+<tr>
+<td>写表</td>
+<td>246–302</td>
+<td>R → L → Ex/Ey</td>
+<td>Q32 Q31 Q43 Q44</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>2.3 主轴定向：三段，缺一不可</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>行</th>
+<th>语句</th>
+<th>为什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>61–63</td>
+<td><code class="notranslate">CYCL DEF 13.1 ANGLE0</code> + <code class="notranslate">L M19</code></td>
+<td>上电后主轴角度是"上一支程序留下的"，不归零则 24/25 的投影方向全错</td>
+</tr>
+<tr>
+<td>112–114</td>
+<td><code class="notranslate">ANGLE180</code> + <code class="notranslate">M19</code></td>
+<td>转到 180°，让偏心在触发坐标里反向</td>
+</tr>
+<tr>
+<td>147–149</td>
+<td><code class="notranslate">ANGLE0</code> + <code class="notranslate">M19</code></td>
+<td>回 0°，否则后面极点触顶和下次加工的定向都变了</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>2.4 MP6161 的两处写入（这次新加的，专治"自动回 0°"）</h3>
+<pre lang="heidenhain" class="notranslate"><code class="notranslate">112  CYCL DEF 13.0 ORIENTATION
+113  CYCL DEF 13.1 ANGLE180
+114  L M19
+115  FN 17: SYSWRITE ID 1000 NR6161 =+0     ← 临时改成 0
+116  CYCL DEF 9.0 DWELL TIME
+117  CYCL DEF 9.1 DWELL1                    ← 等 1 s 让参数生效
+...
+147  CYCL DEF 13.0 ORIENTATION
+148  CYCL DEF 13.1 ANGLE0
+149  L M19
+150  FN 17: SYSWRITE ID 1000 NR6161 =+19    ← 恢复原值
+151  CYCL DEF 9.0 DWELL TIME
+152  CYCL DEF 9.1 DWELL1
+</code></pre>
+<p><strong>症状</strong>：180° 段程序明明写了 <code class="notranslate">ANGLE180</code>，四个触点却全落回 0°。<br>
+<strong>后果</strong>：0° 和 180° 两组数据重合 → <code class="notranslate">Q81 ≈ 0</code> → <code class="notranslate">Q91 = −2</code>，偏心写不进（或写入 0），看起来就是"偏心永远不收敛"。</p>
+<p><strong>机理</strong>：本机把 MP6161 当作"探测前的主轴定向角"用，循环每次触发前会按它重新定向，把 <code class="notranslate">CYCL DEF 13.1</code> 的结果顶掉。写 0 之后不再强制回转，主轴就老老实实停在 180°。跑完必须写回 <strong>19</strong>（本机原值）。</p>
+<blockquote>
+<p><g-emoji class="g-emoji" alias="warning">⚠️</g-emoji> <strong>三条铁律</strong></p>
+<ol>
+<li><strong>换机先抄原值</strong>：19 是本机的数，别的机器不一样。改之前先 <code class="notranslate">SYSREAD</code> 或手抄。</li>
+<li><strong>中途别拍复位/断电</strong>：程序停在 115–150 行之间时，参数还留在 0。恢复后手工改回 19，否则下一次探测的定向行为是错的。</li>
+<li><strong>写不进去就认命</strong>：参数被锁/权限不足时 <code class="notranslate">SYSWRITE</code> 无声失败，180° 段等于在 0° 量 → 全靠 <code class="notranslate">Q91 = −2</code> 兜底。看到 −2 先查 MP6161。</li>
+</ol>
+</blockquote>
+<p><strong>另一个观察（未改，仅记录）</strong>：0° 段（76–102 行）是在 MP6161 还是原值 19 的情况下跑的。如果你的机器按 19° 定向，那么 0° 组其实是 19° 组。实测精度没受影响（半径公式与角度无关），但<strong>偏心的角度基准会差 19°</strong>。要更严格就在程序最开始也写一次 0，但那会改动已经验证通过的流程 —— <strong>先记着，别动。</strong></p>
+<h3>2.5 18 → 4：中间量怎么收成结果</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>结果</th>
+<th>公式</th>
+<th>行</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MX@0 / MY@0</td>
+<td><code class="notranslate">(Q51−Q50)/2</code>、<code class="notranslate">(Q53−Q52)/2</code></td>
+<td>155–158</td>
+</tr>
+<tr>
+<td>MX@180 / MY@180</td>
+<td><code class="notranslate">(Q55−Q54)/2</code>、<code class="notranslate">(Q57−Q56)/2</code></td>
+<td>159–162</td>
+</tr>
+<tr>
+<td>球心<a class="user-mention notranslate" data-hovercard-type="user" data-hovercard-url="/users/0/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/0">@0</a></td>
+<td><code class="notranslate">Q63 = (Q50+Q51)/2</code>、<code class="notranslate">Q64</code></td>
+<td>164–167</td>
+</tr>
+<tr>
+<td>球心<a class="user-mention notranslate" data-hovercard-type="user" data-hovercard-url="/users/180/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/180">@180</a></td>
+<td><code class="notranslate">Q65 = (Q54+Q55)/2</code>、<code class="notranslate">Q66</code></td>
+<td>168–171</td>
+</tr>
+<tr>
+<td>Ex / Ey</td>
+<td><code class="notranslate">(Q65−Q63)/2</code>、<code class="notranslate">(Q66−Q64)/2</code>（Q12=0 时用 <code class="notranslate">Q6−Q63</code>）</td>
+<td>173–182</td>
+</tr>
+<tr>
+<td>E</td>
+<td><code class="notranslate">Q81 = √(Q82²+Q83²)</code></td>
+<td>183–186</td>
+</tr>
+<tr>
+<td>真球心</td>
+<td><code class="notranslate">Q86 = Q63+Q82</code>、<code class="notranslate">Q87 = Q64+Q83</code></td>
+<td>199–200</td>
+</tr>
+<tr>
+<td>r</td>
+<td><code class="notranslate">A=(m²+K²)/2K</code>，两组取平均，<code class="notranslate">r=A−RS</code></td>
+<td>202–245</td>
+</tr>
+<tr>
+<td>L</td>
+<td><code class="notranslate">Q76 = Q73−Q19</code>，<code class="notranslate">Q84 = L有效 + Q76</code></td>
+<td>279–281</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>半宽必须"大减小"</strong>：X+ 从 −X 侧出发触左边，所以 <code class="notranslate">Q50 &lt; Q51</code>。写成 <code class="notranslate">Q50−Q51</code> 会得到负半径（老版本踩过）。</p>
+<h3>2.6 状态码与三个出口</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Q91</th>
+<th>含义</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>+1</strong></td>
+<td>正常</td>
+<td>写 R、L、Ex/Ey，M0 看数</td>
+</tr>
+<tr>
+<td><strong>−2</strong></td>
+<td>0°/180° 分裂 &lt; 10 µm：主轴没转过去，或表里本来就有校正量</td>
+<td><strong>不停机</strong>，写 R/L，跳过 24/25</td>
+</tr>
+<tr>
+<td><strong>−3</strong></td>
+<td>刀表 L &lt; 5（空列），或 r 出界（&gt;10 或 &lt;0）</td>
+<td>LBL902，M0 停</td>
+</tr>
+<tr>
+<td><strong>−4</strong></td>
+<td>极点触顶没跑（<code class="notranslate">Q73</code> 还是哨兵 99999）</td>
+<td>LBL903，M0 停</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><code class="notranslate">−2</code> 故意不停机：残差本来就可能是 0（表已准），停机反而挡路。<br>
+<code class="notranslate">−4</code> 要有哨兵才能判：<code class="notranslate">Q73 = 99999</code> 先塞进去，循环不跑就没人改写它（275 行）。</p>
+<hr>
+<h2>3. 使用说明</h2>
+<h3>3.1 上机前检查清单（每次）</h3>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> <strong>MP6165 = 0</strong>（探测时不补偿刀具半径）；<strong>MP6161 记下原值</strong>（本机 19）</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> <code class="notranslate">TOOL CALL 11 Z</code> —— 第 22 行的刀号对不对（本机测头是 11 号刀）</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 刀表里这把刀有 <strong>L</strong>（没有会走到 LBL902），<strong>R 随便填</strong></li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 24/25 列（Ex/Ey）<strong>随便填</strong>，包括垃圾值</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 基准球吸牢、球面擦干净，<strong>D 用千分尺量</strong>（不要用铭牌 25.000）</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> <code class="notranslate">Q8</code> = 球心 Z，用<strong>量块/对刀仪</strong>得，别估</li>
+<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 刀具长度补偿必须在当前刀上（程序读的是"当前刀"）</li>
+</ul>
+<h3>3.2 输入怎么给</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>给法</th>
+<th>给错的后果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">Q1</code></td>
+<td>基准球直径</td>
+<td>千分尺实测，如 25.000</td>
+<td>r 直接错 Q1/2 的差</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q3</code></td>
+<td>球顶上方余量</td>
+<td>2 mm</td>
+<td>太小会撞，太大慢</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q4</code></td>
+<td>侧向余量</td>
+<td>2 mm</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q5</code></td>
+<td>安全 Z（当前坐标系）</td>
+<td>60</td>
+<td>太小会撞夹具</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q6/Q7</code></td>
+<td>球心 XY</td>
+<td>Q12=1 可粗（±2 mm 都行）；<strong>Q12=0 必须准到 0.05</strong></td>
+<td>Q12=0 时 r 按 d0²/2A 掉</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q8</code></td>
+<td>球心 Z</td>
+<td>量块实测</td>
+<td>L 1:1 跟着错</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q12</code></td>
+<td>1 = 0°+180°；0 = 只跑 0°</td>
+<td><strong>平时用 1</strong></td>
+<td>0 只适合复查</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>3.3 一次运行的节奏</h3>
+<pre class="notranslate"><code class="notranslate">Q12=1：10 次触发   ≈ 3–5 min
+  ① 粗触顶  ② 0°×4  ③ 180°×4  ④ 极点触顶
+Q12=0： 6 次触发
+</code></pre>
+<p>结束时 <code class="notranslate">M0</code> 停，屏幕上是 <code class="notranslate">Q80 Q81 Q82 Q83 Q84 Q85 Q91</code>，抄下来再按循环启动。</p>
+<h3>3.4 结果怎么读</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>正常范围</th>
+<th>判读</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">Q80</code></td>
+<td>测球半径 r</td>
+<td>0.5–3 mm</td>
+<td>与铭牌差 &lt; 20 µm 正常</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q81</code></td>
+<td>偏心模长 |E|</td>
+<td>0–0.3 mm</td>
+<td>&gt; 0.5 说明撞过/装歪</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q82/Q83</code></td>
+<td>Ex / Ey（残差）</td>
+<td>几十 µm</td>
+<td>第二趟应 ≈ 0</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q84</code></td>
+<td>新 L</td>
+<td>与旧 L 差 &lt; 3 mm</td>
+<td>差太多说明 Q8 错了</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q85</code></td>
+<td>ΔL</td>
+<td>±3 mm</td>
+<td>就是这次 L 该改多少</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q91</code></td>
+<td>状态</td>
+<td>+1</td>
+<td>见 2.6</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>3.5 异常对照表</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>现象</th>
+<th>大概原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">Q91 = −2</code></td>
+<td>180° 没转过去 / MP6161 没写进去 / 表里已有校正量</td>
+<td>查 MP6161；表清零后重跑</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q91 = −3</code></td>
+<td>刀表没 L，或 r 算出 0/负/&gt;10</td>
+<td>补 L；查 Q1 是否给成测球直径</td>
+</tr>
+<tr>
+<td><code class="notranslate">Q91 = −4</code></td>
+<td>极点触顶没触发</td>
+<td>查球顶高度、<code class="notranslate">Q3</code>、探针是否断</td>
+</tr>
+<tr>
+<td>r 每趟都变几十 µm</td>
+<td>球面脏 / 球没吸牢 / 转速未停稳</td>
+<td>擦球、重吸、等 2 s 再跑</td>
+</tr>
+<tr>
+<td>偏心符号每趟翻</td>
+<td>用了覆盖写而不是增量写</td>
+<td>检查 290–291 行</td>
+</tr>
+<tr>
+<td>L 每趟差同一个值</td>
+<td>Q8 错（1:1 进 L）</td>
+<td>用块规重对 Q8</td>
+</tr>
+<tr>
+<td>半径永远差 0.02 多</td>
+<td>用了 <code class="notranslate">r = m − RS</code> 而不是闭式解</td>
+<td>检查 212–245 行</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>3.6 六个坑（血泪版）</h3>
+<ol>
+<li><strong><code class="notranslate">0.1</code> 行填触点，不填逼近点</strong>，也不要自己加 r。</li>
+<li><strong>半宽要"大减小"</strong>，反了就是负半径。</li>
+<li><strong>偏心只能增量写</strong>，覆盖写必然符号翻转。</li>
+<li><strong>R 必须先写表再测 L</strong>，顺序换了公式就得改。</li>
+<li><strong>极点触顶要在真极点</strong>（<code class="notranslate">Q63 − 表Ex</code>），偏 δ 就吃 δ²/2RS 的斜坡误差。</li>
+<li><strong><code class="notranslate">Q1</code> 是基准球，不是测球</strong> —— 这个错最贵。</li>
+</ol>
+<hr>
+<h2>4. 已验证的实测记录</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>工况</th>
+<th>表 R</th>
+<th>球心输入</th>
+<th>真 r</th>
+<th>老公式</th>
+<th>本版</th>
+<th>你看到的现象</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>表 R 填 0.2，球心准</td>
+<td>0.2</td>
+<td>0/0</td>
+<td>0.963</td>
+<td>0.9413</td>
+<td><strong>0.9630</strong></td>
+<td>"小了 0.02 多" ✔</td>
+</tr>
+<tr>
+<td>球心 XY 各偏 2 mm</td>
+<td>0.2</td>
+<td>2/2</td>
+<td>0.963</td>
+<td>0.8058</td>
+<td><strong>0.9632</strong></td>
+<td>"变成 0.8 多" ✔</td>
+</tr>
+<tr>
+<td>偏心填 +0.5/+0.5</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>覆盖写 → −0.4986</td>
+<td>增量写 → 收敛</td>
+<td>"这么奇怪的数字" ✔</td>
+</tr>
+<tr>
+<td>表 R 故意小 0.7</td>
+<td>0.263</td>
+<td>准</td>
+<td>0.963</td>
+<td>L 短 0.7（Q77 时代）</td>
+<td>L 不动</td>
+<td>"第二趟又回来" ✔</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>自检脚本：<code class="notranslate">check_code.py</code>（直接执行 .H 里的算术行，不是另写公式）</p>
+<pre class="notranslate"><code class="notranslate">  R=0.2 圆心准    0.963  0.200     0.9630   -0.0000
+  R=0.2 圆心偏2/2 0.963  0.200     0.9632   +0.0002
+  R=0 空列 圆心准 0.963  0.000     0.9630   -0.0000
+  r=2.5 R=0.2 偏3 2.500  0.200     2.5009   +0.0009
+</code></pre>
+<hr>
+<h2>5. 与 Mazak O9804 的异同</h2>
+<p>Mazak 侧对应的是 <code class="notranslate">O9804 (REN CAL VEC STYLUS RAD)</code> + 宏 9721/9722/9724/9726/9727（Renishaw Inspection Plus 那套）。</p>
+<h3>5.1 一句话对比</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th></th>
+<th>Mazak O9804</th>
+<th>9805HB4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本质</td>
+<td><strong>矢量半径标定</strong>：量 8 个方向的半径偏差，存成角度表</td>
+<td><strong>三合一标定</strong>：解 r / L / E，写回刀表</td>
+</tr>
+<tr>
+<td>输出</td>
+<td><code class="notranslate">#500</code>–<code class="notranslate">#517</code>（每 30° 一个修正量）</td>
+<td>刀表 4 列：R、L、24、25</td>
+</tr>
+<tr>
+<td>谁去用这些数</td>
+<td>后续测量循环按探测方向查表</td>
+<td>系统自己按刀表补</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>5.2 相同的六件事</h3>
+<ol>
+<li><strong>都以基准球为基准</strong>：O9804 输入 <code class="notranslate">D</code>(#7) 缺了直接报警 91；HB4 输入 <code class="notranslate">Q1</code>。</li>
+<li><strong>都先找球心</strong>：O9804 用 X±/Y± 对触取中点 <code class="notranslate">#127/#128</code>；HB4 用 0°/180° 四向 + 对劈。</li>
+<li><strong>都用"实测触发点 − D/2"当修正量</strong>：O9804 <code class="notranslate">ABS[#7/2 − ABS[#124−#127]]</code>；HB4 的 <code class="notranslate">m</code> 就是同一件事的弦长版。</li>
+<li><strong>都要求刀具长度补偿已生效</strong>：O9804 查 <code class="notranslate">#4008=49</code> 否则报警 89；HB4 靠 <code class="notranslate">TOOL CALL</code> + <code class="notranslate">SYSREAD ID50 NR1</code>。</li>
+<li><strong>都有"没触到"的监控</strong>：O9804 用 <code class="notranslate">#123=0.005</code> 到位窗口 + <code class="notranslate">#149</code> 错误码 + 报警 91/92/93；HB4 用 <code class="notranslate">Q73</code> 哨兵 + <code class="notranslate">Q91</code>。</li>
+<li><strong>结束都回安全位</strong>：O9804 <code class="notranslate">G0X#10Y#12</code>；HB4 <code class="notranslate">L Z+Q5</code> + <code class="notranslate">M0</code>。</li>
+</ol>
+<h3>5.3 不同的十件事</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>维度</th>
+<th>Mazak O9804</th>
+<th>9805HB4</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>语言</td>
+<td>Fanuc 宏 B（EIA）</td>
+<td>海德汉 Q 参数 + 固定循环</td>
+<td>不能互抄</td>
+</tr>
+<tr>
+<td>方向数</td>
+<td>8 个矢量方向 + 4 个对触点</td>
+<td>4 个对触点 + 1 个极点</td>
+<td>触发次数相近（10–12 次）</td>
+</tr>
+<tr>
+<td>半径模型</td>
+<td>直接 <code class="notranslate">|D/2 − 实测距离|</code>，线性</td>
+<td>闭式解，含平面高度与球心偏差</td>
+<td>HB4 一次到位；9804 的偏差定义本身就是"该方向的等效半径"</td>
+</tr>
+<tr>
+<td>偏心</td>
+<td><strong>不管</strong>，被吃进矢量表</td>
+<td>显式解 Ex/Ey 并写刀表</td>
+<td>见 5.4</td>
+</tr>
+<tr>
+<td>表写入</td>
+<td>每次先 <code class="notranslate">#135..#148 = #0</code> 清空，再<strong>绝对写</strong></td>
+<td>24/25 必须<strong>增量写</strong></td>
+<td>语义相反，照搬必出错</td>
+</tr>
+<tr>
+<td>探测指令</td>
+<td><code class="notranslate">G31</code> 跳跃 + 后退 + 二次低进给（P9726 里触两下）</td>
+<td><code class="notranslate">TCH PROBE 0.0/0.1</code> 单次触发</td>
+<td>9804 抗污能力强</td>
+</tr>
+<tr>
+<td>读数</td>
+<td><code class="notranslate">#5061/#5062/#5063</code>（跳跃瞬间机床坐标）</td>
+<td><code class="notranslate">Q115/Q116</code>（已含 24/25 投影）+ <code class="notranslate">Q73</code></td>
+<td>HB4 读到的是残差不是绝对值</td>
+</tr>
+<tr>
+<td>出错</td>
+<td>直接报警停机（<code class="notranslate">#3000=9x</code>）</td>
+<td>不停机，写 <code class="notranslate">Q91</code> 状态码</td>
+<td>HB4 能"降级继续"</td>
+</tr>
+<tr>
+<td>单位</td>
+<td><code class="notranslate">#4006</code> 分支 mm/inch，<code class="notranslate">#129</code> 系数</td>
+<td>固定 MM（程序头写死）</td>
+<td>—</td>
+</tr>
+<tr>
+<td>参数存放</td>
+<td>宏变量 <code class="notranslate">#500</code> 区（掉电保持）</td>
+<td>刀表列（系统统一管理，换刀自动跟）</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<blockquote>
+<p>O9804 的矢量角度是 30/60、120/150、210/240、300/330 —— 刻意绕开 0/90/180/270：那四条轴线由前面的 X±/Y± 对触负责，矢量表只填"斜方向"的空。</p>
+</blockquote>
+<h3>5.4 为什么 HB4 必须显式管偏心，9804 不用</h3>
+<p>O9804 的修正量定义是"<strong>从实测球心到触发点的距离，与 D/2 的差</strong>"。偏心让触发点整体平移 —— 平移在"某个方向的距离"里表现为该方向的半径偏差，于是<strong>偏心被自动吸收进矢量表</strong>。代价是：这只在"按同角度探测"时对得上，换个角度就得查表的另一格。</p>
+<p>海德汉这边不行：<code class="notranslate">Cycle 0</code> 会把 24/25 <strong>投影后加到每一个触发坐标</strong>上，你不显式减掉它，它就会污染球心（<code class="notranslate">Q63 = C − E</code>），而球心一旦错，<code class="notranslate">Q12=1</code> 的对劈就退化成 <code class="notranslate">Q12=0</code>，2 mm 的球心误差能吃掉 150 µm 半径。所以 HB4 必须先把 E 解出来、真球心 <code class="notranslate">Q86/Q87</code> 定死，半径块才有意义。</p>
+<p>反过来说：<strong>9804 的矢量表适合"多方向测量"，HB4 的四个数适合"一把刀走天下"</strong>。海德汉的测量循环只认刀表 R/L，没有"按角度查半径"的机制，所以只能把偏心折进 24/25，让系统每次触发时自己转。</p>
+<h3>5.5 互相能借什么</h3>
+<ul>
+<li><strong>9804 → HB4</strong>：二次低进给重触（P9726 里触两下取第二下）。HB4 现在是单次触发，球面有油膜时会有 3–5 µm 抖动，加一次"后退 8×余量再慢速重触"能压下去。代价：每次多 8 行、多一倍时间。</li>
+<li><strong>9804 → HB4</strong>：到位窗口监控（<code class="notranslate">#123</code>）。HB4 只判"有没有触发"，没判"触发得离不离谱"，可以加一条 <code class="notranslate">|Q115 − 名义触点| &gt; 2×R</code> 就停。</li>
+<li><strong>HB4 → 9804</strong>：闭式解。如果哪天在马扎克上发现"平面不在赤道"导致的半径偏差，把 <code class="notranslate">(m²+K²)/2K − RS</code> 换进 <code class="notranslate">#[#4+#5]</code> 那一行即可。</li>
+</ul>
+<hr>
+<h2>6. 附录：Q 参数总表</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Q</th>
+<th>含义</th>
+<th>Q</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>基准球直径 D</td>
+<td>Q50–Q53</td>
+<td>0° 四次触发坐标（X+ X− Y+ Y−）</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>有效 R（R+DR）</td>
+<td>Q54–Q57</td>
+<td>180° 四次触发坐标</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>球顶上方余量</td>
+<td>Q58/Q59</td>
+<td>MX@0 / MY@0</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>侧向余量</td>
+<td>Q60</td>
+<td>粗触顶结果（假定触点）</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>安全 Z</td>
+<td>Q61/Q62</td>
+<td>MX@180 / MY@180</td>
+</tr>
+<tr>
+<td>Q6/Q7/Q8</td>
+<td>球心 XYZ（输入）</td>
+<td>Q63/Q64</td>
+<td>球心<a class="user-mention notranslate" data-hovercard-type="user" data-hovercard-url="/users/0/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/0">@0</a> = C−E</td>
+</tr>
+<tr>
+<td>Q11</td>
+<td>有效 L（L+DL）</td>
+<td>Q65/Q66</td>
+<td>球心<a class="user-mention notranslate" data-hovercard-type="user" data-hovercard-url="/users/180/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/180">@180</a> = C+E</td>
+</tr>
+<tr>
+<td>Q12</td>
+<td>1=0°+180°，0=只 0°</td>
+<td>Q73</td>
+<td>极点触顶结果</td>
+</tr>
+<tr>
+<td>Q15/Q16</td>
+<td>DR / DL</td>
+<td>Q76</td>
+<td>ΔL（Q73−Q19）</td>
+</tr>
+<tr>
+<td>Q19</td>
+<td>球顶 Z = Q8+RS</td>
+<td>Q80</td>
+<td><strong>r</strong></td>
+</tr>
+<tr>
+<td>Q20</td>
+<td>RS = Q1/2</td>
+<td>Q81</td>
+<td><strong>|E|</strong></td>
+</tr>
+<tr>
+<td>Q21</td>
+<td>测杆半径（表 R，空列→2.5）</td>
+<td>Q82/Q83</td>
+<td><strong>Ex / Ey</strong></td>
+</tr>
+<tr>
+<td>Q24</td>
+<td>侧向站位 = RS+R+Q4</td>
+<td>Q84</td>
+<td><strong>新 L</strong></td>
+</tr>
+<tr>
+<td>Q25–Q28</td>
+<td>四个起点</td>
+<td>Q85</td>
+<td>ΔL</td>
+</tr>
+<tr>
+<td>Q29</td>
+<td>逼近 Z = Q19+Q3</td>
+<td>Q86/Q87</td>
+<td>真球心 XY</td>
+</tr>
+<tr>
+<td>Q30</td>
+<td>侧触平面 Z = Q60−RS</td>
+<td>Q88/Q89</td>
+<td>DX / DY</td>
+</tr>
+<tr>
+<td>Q31/Q32</td>
+<td>L 列 / R 列写回值</td>
+<td>Q90</td>
+<td>K = RS+R表</td>
+</tr>
+<tr>
+<td>Q33–Q36</td>
+<td>四个名义触点</td>
+<td>Q91</td>
+<td>状态码</td>
+</tr>
+<tr>
+<td>Q37/Q38</td>
+<td>真极点 XY</td>
+<td>Q92–Q96</td>
+<td>中间量（平方/临时）</td>
+</tr>
+<tr>
+<td>Q43/Q44</td>
+<td>新 Ex / Ey</td>
+<td>Q97/Q98</td>
+<td>AX / AY</td>
+</tr>
+<tr>
+<td>Q45/Q46</td>
+<td>表里现有 Ex / Ey</td>
+<td>Q95</td>
+<td>临时/闸门用</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<p><em><a href="/api/files/01m76tp1xaf2m93vdpatz1y6q1">德马吉海德汉heidenhain 530探针基准球标定程序9805HB4.zip</a></em></p>
+<p><em><a href="/api/files/01m76trvpwb74c1ret0nbddr35">9805HB4_逐行注释.txt</a></em></p>
+<p><em>本文档对应 <code class="notranslate">9805HB4.H</code> 机上实测版（316 行）。逐行说明见 <code class="notranslate">9805HB4_逐行注释.txt</code>。</em></p></div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://bk.929295.xyz">数控技术博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("08/09/2024"!=""){
+    var startSite=new Date("08/09/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","yingfanyu/yingfanyu.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
